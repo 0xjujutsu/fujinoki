@@ -1,0 +1,56 @@
+[package]
+name = "fujinoki-node"
+version = "0.1.0"
+description = "TBD"
+license = "MPL-2.0"
+edition = "2021"
+autobenches = false
+
+[lib]
+bench = false
+
+[features]
+# enable "HMR" for embedded assets
+dynamic_embed_contents = [
+  "turbopack-binding/__turbo_tasks_fs_dynamic_embed_contents",
+]
+
+[lints]
+workspace = true
+
+[dependencies]
+anyhow = { workspace = true, features = ["backtrace"] }
+async-stream = "0.3.4"
+async-trait = { workspace = true }
+bytes = { workspace = true }
+const_format = "0.2.30"
+futures = { workspace = true }
+futures-retry = { workspace = true }
+indexmap = { workspace = true, features = ["serde"] }
+indoc = { workspace = true }
+mime = { workspace = true }
+once_cell = { workspace = true }
+owo-colors = { workspace = true }
+parking_lot = { workspace = true }
+regex = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+serde_qs = { workspace = true }
+tokio = { workspace = true, features = ["full"] }
+tracing = { workspace = true }
+
+fujinoki-cli-utils = { workspace = true }
+
+turbopack-binding = { workspace = true, features = [
+  "__turbo_tasks",
+  "__turbo_tasks_bytes",
+  "__turbo_tasks_env",
+  "__turbo_tasks_fs",
+  "__turbopack_core",
+  "__turbopack_ecmascript",
+  "__turbopack_node",
+  "__turbopack_resolve",
+] }
+
+[build-dependencies]
+turbopack-binding = { workspace = true, features = ["__turbo_tasks_build"] }

@@ -1,0 +1,102 @@
+[package]
+name = "fujinoki-cli"
+version = "0.1.0"
+edition = "2021"
+license = "MPL-2.0"
+
+[lib]
+bench = false
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lints]
+workspace = true
+
+[[bin]]
+name = "fujinoki-cli"
+path = "src/main.rs"
+bench = false
+
+[features]
+default = ["custom_allocator", "rustls-tls"]
+serializable = []
+tokio_console = [
+  "dep:console-subscriber",
+  "tokio/tracing",
+  "turbopack-binding/__turbo_tasks_tokio_tracing",
+]
+profile = []
+custom_allocator = ["turbopack-binding/__turbo_tasks_malloc"]
+native-tls = [
+  "reqwest/native-tls",
+  "fujinoki-updater/native-tls",
+  "fujinoki-interactions-server/native-tls",
+  "fujinoki-dev-server/native-tls",
+  "discord-api/native-tls",
+]
+rustls-tls = [
+  "reqwest/rustls-tls",
+  "fujinoki-updater/rustls-tls",
+  "fujinoki-interactions-server/rustls-tls",
+  "fujinoki-dev-server/rustls-tls",
+  "discord-api/rustls-tls",
+]
+
+[dependencies]
+anyhow = { workspace = true, features = ["backtrace"] }
+camino = { workspace = true }
+clap = { workspace = true, features = ["derive", "env"] }
+console = { workspace = true }
+console-subscriber = { workspace = true, optional = true }
+const_format = "0.2.30"
+criterion = { workspace = true, features = ["async_tokio"] }
+dunce = { workspace = true }
+futures = { workspace = true }
+human-panic = "2.0.1"
+num_cpus = "1.16.0"
+once_cell = { workspace = true }
+owo-colors = { workspace = true }
+pretty_assertions = { workspace = true }
+reqwest = { workspace = true, features = ["json"] }
+serde = { workspace = true }
+serde_json = { workspace = true }
+serde_yaml = { workspace = true }
+tempfile = { workspace = true }
+test-case = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true, features = ["full"] }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true, features = ["env-filter", "json"] }
+which = { workspace = true }
+
+discord-api = { workspace = true }
+
+fujinoki-cli-utils = { workspace = true }
+fujinoki-core = { workspace = true }
+fujinoki-dev-server = { workspace = true }
+fujinoki-ecmascript-plugins = { workspace = true }
+fujinoki-interactions-server = { workspace = true }
+fujinoki-updater = { workspace = true }
+fujinoki-websocket = { workspace = true }
+
+turbopath = { workspace = true }
+turborepo-ci = { workspace = true }
+turborepo-repository = { workspace = true }
+
+turbopack-binding = { workspace = true, features = [
+  "__turbo_tasks",
+  "__turbo_tasks_fs",
+  "__turbo_tasks_env",
+  "__turbo_tasks_memory",
+  "__turbo_tasks_hash",
+  "__turbopack_core",
+  "__turbopack_ecmascript_runtime",
+  "__turbopack_env",
+  "__turbopack_node",
+  "__turbopack_nodejs",
+  "__turbopack_trace_utils",
+  "__turbopack_trace_server",
+] }
+
+[build-dependencies]
+turbopack-binding = { workspace = true, features = ["__turbo_tasks_build"] }

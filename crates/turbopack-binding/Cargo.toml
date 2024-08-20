@@ -1,0 +1,138 @@
+[package]
+name = "turbopack-binding"
+version = "0.1.0"
+edition = "2021"
+license = "MPL-2.0"
+autobenches = false
+
+[lib]
+bench = false
+
+[features]
+__turbo = []
+__turbo_tasks_malloc = ["__turbo", "turbo-tasks-malloc"]
+__turbo_tasks_malloc_custom_allocator = ["turbo-tasks-malloc/custom_allocator"]
+__turbo_tasks = ["__turbo", "turbo-tasks"]
+__turbo_tasks_tokio_tracing = ["turbo-tasks/tokio_tracing"]
+__turbo_tasks_build = ["__turbo", "turbo-tasks-build"]
+__turbo_tasks_bytes = ["__turbo", "turbo-tasks-bytes"]
+__turbo_tasks_env = ["__turbo", "turbo-tasks-env"]
+__turbo_tasks_fetch = ["__turbo", "turbo-tasks-fetch"]
+__turbo_tasks_fetch_native-tls = ["__turbo", "turbo-tasks-fetch/native-tls"]
+__turbo_tasks_fetch_rustls-tls = ["__turbo", "turbo-tasks-fetch/rustls-tls"]
+__turbo_tasks_fs = ["__turbo", "turbo-tasks-fs"]
+__turbo_tasks_fs_dynamic_embed_contents = [
+  "turbo-tasks-fs/dynamic_embed_contents",
+]
+__turbo_tasks_hash = ["__turbo", "turbo-tasks-hash"]
+__turbo_tasks_macros = ["__turbo", "turbo-tasks-macros"]
+__turbo_tasks_macros_shared = ["__turbo", "turbo-tasks-macros-shared"]
+__turbo_tasks_memory = ["__turbo", "turbo-tasks-memory"]
+__turbo_tasks_memory_print_task_invalidation = [
+  "__turbo_tasks_memory",
+  "turbo-tasks-memory/print_task_invalidation",
+]
+__turbo_tasks_testing = ["__turbo", "turbo-tasks-testing"]
+
+__turbopack = ["turbopack"]
+__turbopack_bench = ["__turbopack", "turbopack-bench"]
+__turbopack_nodejs = ["__turbopack", "turbopack-nodejs"]
+__turbopack_nodejs_dynamic_embed_contents = [
+  "turbopack-nodejs/dynamic_embed_contents",
+]
+__turbopack_cli_utils = ["__turbopack", "turbopack-cli-utils"]
+__turbopack_core = ["__turbopack", "turbopack-core"]
+__turbopack_core_issue_path = ["turbopack-core/issue_path"]
+__turbopack_create_test_app = ["__turbopack", "turbopack-create-test-app"]
+__turbopack_css = ["__turbopack", "turbopack-css"]
+__turbopack_browser = ["__turbopack", "turbopack-browser"]
+__turbopack_browser_dynamic_embed_contents = [
+  "turbopack-browser/dynamic_embed_contents",
+]
+__turbopack_dev_server = ["__turbopack", "turbopack-dev-server"]
+__turbopack_ecmascript = ["__turbopack", "turbopack-ecmascript"]
+# [Note]: currently all of the transform features are enabled by default
+__turbopack_ecmascript_plugin = [
+  "__turbopack",
+  "turbopack-ecmascript-plugins",
+  "turbopack-ecmascript-plugins/transform_emotion",
+]
+__turbopack_ecmascript_runtime = ["__turbopack", "turbopack-ecmascript-runtime"]
+__turbopack_ecmascript_hmr_protocol = [
+  "__turbopack",
+  "turbopack-ecmascript-hmr-protocol",
+]
+__turbopack_trace_utils = ["__turbopack", "turbopack-trace-utils"]
+__turbopack_trace_server = ["__turbopack", "turbopack-trace-server"]
+
+__turbopack_env = ["__turbopack", "turbopack-env"]
+__turbopack_image = ["__turbopack", "turbopack-image"]
+__turbopack_image_avif = ["turbopack-image/avif"]
+__turbopack_image_webp = ["turbopack-image/webp"]
+__turbopack_json = ["__turbopack", "turbopack-json"]
+__turbopack_mdx = ["__turbopack", "turbopack-mdx"]
+__turbopack_node = ["__turbopack", "turbopack-node"]
+__turbopack_node_dynamic_embed_contents = [
+  "turbopack-node/dynamic_embed_contents",
+]
+__turbopack_resolve = ["__turbopack", "turbopack-resolve"]
+__turbopack_static = ["__turbopack", "turbopack-static"]
+__turbopack_swc_utils = ["__turbopack", "turbopack-swc-utils"]
+__turbopack_tests = []
+__turbopack_test_utils = ["__turbopack", "turbopack-test-utils"]
+
+__features = []
+__feature_node_file_trace = ["__features", "node-file-trace/node-api"]
+__feature_node_file_trace_cli = ["node-file-trace/cli"]
+__feature_node_file_trace_custom_allocator = [
+  "node-file-trace/custom_allocator",
+]
+__feature_auto_hash_map = ["__features", "auto-hash-map"]
+__feature_tracing_signpost = ["__features", "tracing-signpost"]
+
+[lints]
+workspace = true
+
+# source https://github.com/vercel/next.js/tree/9642c49d2db3419008629fd175e5e64f108d007e/turbopack/crates/turbopack-binding
+# rev 95132244dc37fb4fccd5a3557b089d31ff7b0238 (github.com/vercel/next.js)
+[dependencies]
+auto-hash-map = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
+tracing-signpost = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
+
+node-file-trace = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
+turbo-tasks = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
+turbo-tasks-build = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
+turbo-tasks-bytes = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
+turbo-tasks-env = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
+turbo-tasks-fetch = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
+turbo-tasks-fs = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
+turbo-tasks-hash = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
+turbo-tasks-macros = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
+turbo-tasks-macros-shared = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
+turbo-tasks-malloc = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238", default-features = false }
+turbo-tasks-memory = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
+turbo-tasks-testing = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
+turbopack = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
+turbopack-bench = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
+turbopack-browser = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
+turbopack-cli-utils = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
+turbopack-core = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
+turbopack-create-test-app = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
+turbopack-css = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
+turbopack-dev-server = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
+turbopack-ecmascript = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
+turbopack-ecmascript-hmr-protocol = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
+turbopack-ecmascript-plugins = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238", default-features = false }
+turbopack-ecmascript-runtime = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
+turbopack-env = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
+turbopack-image = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
+turbopack-json = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
+turbopack-mdx = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
+turbopack-node = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
+turbopack-nodejs = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
+turbopack-resolve = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
+turbopack-static = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
+turbopack-swc-utils = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
+turbopack-test-utils = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
+turbopack-trace-server = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
+turbopack-trace-utils = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }

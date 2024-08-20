@@ -1,0 +1,5 @@
+name: "orchestrator"
+description: "PR Labeler"
+runs:
+  using: "node20"
+  main: "dist/index.js"

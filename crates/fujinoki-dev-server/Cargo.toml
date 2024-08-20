@@ -1,0 +1,52 @@
+[package]
+name = "fujinoki-dev-server"
+version = "0.1.0"
+edition = "2021"
+license = "MPL-2.0"
+
+[lib]
+bench = false
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lints]
+workspace = true
+
+[features]
+log_request_stats = []
+native-tls = ["discord-api/native-tls", "fujinoki-websocket/native-tls"]
+rustls-tls = ["discord-api/rustls-tls", "fujinoki-websocket/rustls-tls"]
+
+[dependencies]
+anyhow = { workspace = true, features = ["backtrace"] }
+futures = { workspace = true }
+indexmap = { workspace = true, features = ["serde"] }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tokio = { workspace = true }
+tokio-stream = "0.1.9"
+tokio-tungstenite = { version = "0.19" }
+tokio-util = { workspace = true }
+tracing = { workspace = true }
+
+fujinoki-cli-utils = { workspace = true }
+fujinoki-core = { workspace = true }
+fujinoki-node = { workspace = true }
+fujinoki-websocket = { workspace = true }
+
+discord-api = { workspace = true }
+
+turbopack-binding = { workspace = true, features = [
+  "__turbo_tasks",
+  "__turbo_tasks_bytes",
+  "__turbo_tasks_fs",
+  "__turbo_tasks_malloc",
+  "__turbo_tasks_memory",
+  "__turbopack_core",
+  "__turbopack_ecmascript",
+  "__turbopack_node",
+] }
+url = { workspace = true }
+
+[build-dependencies]
+turbopack-binding = { workspace = true, features = ["__turbo_tasks_build"] }

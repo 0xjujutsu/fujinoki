@@ -1,0 +1,31 @@
+[package]
+name = "fujinoki-updater"
+version = "0.1.0"
+edition = "2021"
+license = "MPL-2.0"
+
+[lib]
+bench = false
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lints]
+workspace = true
+
+[features]
+# Allows configuring a specific tls backend for reqwest.
+# See top level Cargo.toml for more details.
+native-tls = ["reqwest/native-tls"]
+rustls-tls = ["reqwest/rustls-tls"]
+
+[dependencies]
+atty = { workspace = true }
+console = { workspace = true }
+reqwest = { workspace = true, features = ["json", "blocking"] }
+semver = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+update-informer = { version = "1.0", default-features = false }
+
+fujinoki-core = { workspace = true }

@@ -1,0 +1,13 @@
+{
+  "name": "@fujinoki/cli",
+  "version": "0.0.0",
+  "description": "fujinoki-cli runtime",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^18.11.11"
+  }
+}

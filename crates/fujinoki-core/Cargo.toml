@@ -1,0 +1,42 @@
+[package]
+name = "fujinoki-core"
+version = "0.1.0"
+description = "TBD"
+license = "MPL-2.0"
+edition = "2021"
+autobenches = false
+
+[lib]
+bench = false
+
+[lints]
+workspace = true
+
+[dependencies]
+config = { version = "0.13", features = ["toml"] }
+const_format = "0.2.30"
+toml = "0.5.8"
+
+anyhow = { workspace = true, features = ["backtrace"] }
+indexmap = { workspace = true, features = ["serde"] }
+lazy-regex = { workspace = true }
+regex = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+test-case = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+
+fujinoki-node = { workspace = true }
+
+discord-api = { workspace = true }
+
+turbopack-binding = { workspace = true, features = [
+  "__turbo_tasks",
+  "__turbo_tasks_fs",
+  "__turbopack_core",
+] }
+
+[build-dependencies]
+turbopack-binding = { workspace = true, features = ["__turbo_tasks_build"] }

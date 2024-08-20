@@ -1,0 +1,17 @@
+{
+  "name": "orchestrator-action",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "build": "ncc build src/index.ts -o dist --source-map --minify",
+    "prepare": "pnpm run build"
+  },
+  "dependencies": {
+    "@probot/adapter-github-actions": "^4.0.0",
+    "probot": "^13.3.6"
+  },
+  "devDependencies": {
+    "@types/node": "18.13.0",
+    "@vercel/ncc": "^0.36.0"
+  }
+}

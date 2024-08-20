@@ -1,0 +1,23 @@
+{
+  "name": "@fujinoki/monorepo",
+  "private": true,
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "check:toml": "taplo format --check",
+    "format": "run-p format:biome format:rs format:toml",
+    "format:biome": "biome check --linter-enabled=false --organize-imports-enabled=true --write",
+    "format:rs": "cargo fmt --all",
+    "format:toml": "taplo format",
+    "lint:biome": "biome check --linter-enabled=true --diagnostic-level error"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.8.3",
+    "@taplo/cli": "^0.7.0",
+    "npm-run-all": "^4.1.5",
+    "release": "^6.3.1",
+    "turbo": "^2.0.11",
+    "typescript": "^5.5.4"
+  },
+  "packageManager": "pnpm@9.6.0"
+}

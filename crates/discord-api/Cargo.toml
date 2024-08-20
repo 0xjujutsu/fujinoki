@@ -1,0 +1,61 @@
+[package]
+name = "discord-api"
+version = "0.1.0"
+edition = "2021"
+license = "MPL-2.0"
+
+[lib]
+bench = false
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lints]
+workspace = true
+
+[features]
+# Allows configuring a specific tls backend for reqwest.
+# See top level Cargo.toml for more details.
+native-tls = [
+  "reqwest/native-tls",
+  "turbopack-binding/__turbo_tasks_fetch_native-tls",
+]
+rustls-tls = [
+  "reqwest/rustls-tls",
+  "turbopack-binding/__turbo_tasks_fetch_rustls-tls",
+]
+
+[dependencies]
+bitflags = "1.3"
+const_format = "0.2.30"
+lazy-regex = "2.5.0"
+time = { version = "0.3.6", features = [
+  "formatting",
+  "parsing",
+  "serde-well-known",
+] }
+
+anyhow = { workspace = true, features = ["backtrace"] }
+either = { workspace = true }
+futures = { workspace = true }
+indexmap = { workspace = true, features = ["serde"] }
+lazy_static = { workspace = true }
+regex = { workspace = true }
+reqwest = { workspace = true, features = ["json"] }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+url = { workspace = true }
+
+turbopack-binding = { workspace = true, features = [
+  "__turbo_tasks",
+  "__turbo_tasks_fs",
+  "__turbo_tasks_fetch",
+  "__turbopack_core",
+] }
+
+[dev-dependencies]
+serde_test = "1"
+
+[build-dependencies]
+turbopack-binding = { workspace = true, features = ["__turbo_tasks_build"] }

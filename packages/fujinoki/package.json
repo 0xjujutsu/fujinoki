@@ -1,0 +1,11 @@
+{
+  "name": "fujinoki",
+  "version": "0.1.0",
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "execa": "^9.3.0",
+    "find-up": "^7.0.0",
+    "fs-extra": "^11.2.0",
+    "semver": "^7.6.3"
+  }
+}

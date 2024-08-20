@@ -1,0 +1,56 @@
+VERSION = $(shell cat ../../version.txt | sed -n '1 p')
+TAG = $(shell cat ../../version.txt | sed -n '2 p')
+PKG_DIR = $(shell pwd)
+
+EXT :=
+ifeq ($(OS),Windows_NT)
+	UNAME := Windows
+	EXT = .exe
+else
+	UNAME := $(shell uname -s)
+endif
+
+.PHONY: stage-release
+stage-release:
+	echo "Version: $(VERSION)"
+	echo "Tag: $(TAG)"
+	cat $(PKG_DIR)/../../version.txt
+	git diff -- $(PKG_DIR)/../../version.txt
+	git status
+	@test "" = "`git cherry`" || (echo "Refusing to publish with unpushed commits" && false)
+
+	# Stop if versions are not updated.
+	@test "" != "`git diff -- $(PKG_DIR)/../../version.txt`" || (echo "Refusing to publish with unupdated version.txt" && false)
+
+	# Prepare the packages.
+	cd $(PKG_DIR) && pnpm version "$(VERSION)" --allow-same-version
+
+	git checkout -b fujinoki-$(VERSION)
+	git commit -anm "publish $(VERSION) to registry"
+	git tag "fujinoki-$(VERSION)"
+	git push origin fujinoki-$(VERSION) --tags --force
+
+.PHONY: publish
+publish:
+	echo "Version: $(VERSION)"
+	echo "Tag: $(TAG)"
+
+	# Include the patch in the log.
+	git format-patch HEAD~1 --stdout | cat
+
+	npm config set --location=project "//registry.npmjs.org/:_authToken" $(NPM_TOKEN)
+
+	# Publishes the native npm modules.
+	$(PKG_DIR)/scripts/npm-native-packages.mjs
+	# TODO actually publish
+	# $(PKG_DIR)/scripts/publish.mjs "darwin-amd64,darwin-arm64,linux-amd64,linux-arm64-windows-amd64,windows-arm64"
+
+	# Split packing from the publish step so that npm locates the correct .npmrc file.
+	cd $(PKG_DIR)/js && pnpm pack --pack-destination=$(PKG_DIR)/../../
+
+ifneq ($(SKIP_PUBLISH),--skip-publish)
+	# Publish the remaining JS packages in order to avoid race conditions.
+	cd $(PKG_DIR)/../
+	# TODO actually publish
+	# npm publish -ddd --tag $(TAG) --provenance --access public $(PKG_DIR)/../../fujinoki-$(VERSION).tgz
+endif

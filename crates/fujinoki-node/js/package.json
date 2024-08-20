@@ -1,0 +1,16 @@
+{
+  "name": "@fujinoki/node",
+  "version": "0.0.0",
+  "description": "fujinoki-node runtime",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^18.11.11"
+  },
+  "exports": {
+    "./*": "./src/*.ts"
+  }
+}
