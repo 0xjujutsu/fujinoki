@@ -49,7 +49,7 @@ labeler:
         isAnyFilePathMatch: '^(crates\/discord.*|packages\/discord.*)$'
 
     # release
-    - label: "release: heain"
+    - label: "release: fujinoki"
       when:
         isAnyFilePathMatch: '^version\.txt$'
-        isPRTitleMatch: '^release\(heain\):.*$'
+        isPRTitleMatch: '^release\(fujinoki\):.*$'
