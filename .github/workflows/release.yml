@@ -135,7 +135,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: fujinoki-${{ matrix.settings.target }}
-          path: target/${{ matrix.settings.target }}/release-fujinoki/fujinoki*
+          path: target/${{ matrix.settings.target }}/release-fujinoki/fujinoki-cli*
 
   npm-publish:
     name: "Publish To NPM"
