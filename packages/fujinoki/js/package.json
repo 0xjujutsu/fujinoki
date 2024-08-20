@@ -1,22 +1,22 @@
 {
-  "name": "heian",
+  "name": "fujinoki",
   "version": "0.0.0",
   "description": "Discord bot framework",
-  "homepage": "https://jujutsu.studio/heian",
+  "homepage": "https://jujutsu.studio/fujinoki",
   "bugs": "https://github.com/jujutsustudio/issues",
   "repository": "https://github.com/kijv/fujinoki",
   "license": "MPL-2.0",
-  "main": "./bin/heian",
+  "main": "./bin/fujinoki",
   "bin": {
-    "heian": "./bin/heian"
+    "fujinoki": "./bin/fujinoki"
   },
   "files": ["bin"],
   "optionalDependencies": {
-    "@heian/darwin-arm64": "0.0.0",
-    "@heian/darwin-64": "0.0.0",
-    "@heian/linux-arm64": "0.0.0",
-    "@heian/linux-64": "0.0.0",
-    "@heian/windows-arm64": "0.0.0",
-    "@heian/windows-64": "0.0.0"
+    "@fujinoki/darwin-arm64": "0.0.0",
+    "@fujinoki/darwin-64": "0.0.0",
+    "@fujinoki/linux-arm64": "0.0.0",
+    "@fujinoki/linux-64": "0.0.0",
+    "@fujinoki/windows-arm64": "0.0.0",
+    "@fujinoki/windows-64": "0.0.0"
   }
 }

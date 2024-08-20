@@ -31,11 +31,11 @@
 labeler:
   labels:
     # created-by
-    - label: "created-by: Heian team"
+    - label: "created-by: Fujinoki team"
       when:
         isPRAuthorMatch: "^(kijv)$"
 
-    # needs: triage when not any of the Heian team
+    # needs: triage when not any of the Fujinoki team
     - label: "needs: triage"
       when:
         isNotPRAuthorMatch: "^(kijv)$"
@@ -47,9 +47,6 @@ labeler:
     - label: "area: discord"
       when:
         isAnyFilePathMatch: '^(crates\/discord.*|packages\/discord.*)$'
-    - label: "area: heian"
-      when:
-        isAnyFilePathMatch: '^(crates\/heian.*|packages\/heian.*)$'
 
     # release
     - label: "release: heain"
