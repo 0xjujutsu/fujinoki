@@ -30,15 +30,15 @@ const file = require.resolve('../js/package.json');
 
 // TODO(kijv) use one package and both platforms target it
 const knownWindowsPackages = {
-  'win32 arm64 LE': 'heian-windows-arm64',
-  'win32 x64 LE': 'heian-windows-64',
+  'win32 arm64 LE': 'fujinoki-windows-arm64',
+  'win32 x64 LE': 'fujinoki-windows-64',
 };
 
 const knownUnixLikePackages = {
-  'darwin arm64 LE': 'heian-darwin-arm64',
-  'darwin x64 LE': 'heian-darwin-64',
-  'linux arm64 LE': 'heian-linux-arm64',
-  'linux x64 LE': 'heian-linux-64',
+  'darwin arm64 LE': 'fujinoki-darwin-arm64',
+  'darwin x64 LE': 'fujinoki-darwin-64',
+  'linux arm64 LE': 'fujinoki-linux-arm64',
+  'linux x64 LE': 'fujinoki-linux-64',
 };
 
 pkg.optionalDependencies = Object.fromEntries(

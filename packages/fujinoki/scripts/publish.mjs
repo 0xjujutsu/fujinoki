@@ -24,14 +24,14 @@ console.log('platforms:', platforms);
   const rootDirectory = await findUp(
     async (directory) => {
       const hasPkgJson = await pathExists(path.join(directory, 'package.json'));
-      if (hasPkgJson && path.basename(directory) === 'heian') return directory;
+      if (hasPkgJson && path.basename(directory) === 'fujinoki') return directory;
     },
     { type: 'directory' },
   );
 
   try {
     if (!rootDirectory)
-      throw new Error('Could not find root directory (packages/heian)');
+      throw new Error('Could not find root directory (packages/fujinoki)');
 
     const packageJson = JSON.parse(
       await readFile(path.join(rootDirectory, 'js', 'package.json'), 'utf-8'),
@@ -44,7 +44,7 @@ console.log('platforms:', platforms);
       const nativePackagesDir = path.join(rootDirectory, 'npm');
 
       try {
-        const binaryName = `heian-${os}-${humanizedArchLookup[arch]}`.concat(
+        const binaryName = `fujinoki-${os}-${humanizedArchLookup[arch]}`.concat(
           os === 'windows' ? '.exe' : '',
         );
         await copy(
@@ -53,7 +53,7 @@ console.log('platforms:', platforms);
             nativePackagesDir,
             platform,
             'bin',
-            'heian'.concat(os === 'windows' ? '.exe' : ''),
+            'fujinoki'.concat(os === 'windows' ? '.exe' : ''),
           ),
         );
         const nativePackageJson = JSON.parse(

@@ -1,4 +1,4 @@
-name: Heian Release
+name: Fujinoki Release
 
 env:
   CARGO_PROFILE_RELEASE_LTO: true
@@ -44,12 +44,12 @@ jobs:
           git config --global user.email 'release@jujutsu.studio'
       - name: Version
         run: |
-          ./packages/heian/scripts/bump-version.js ${{ inputs.increment }}
+          ./packages/fujinoki/scripts/bump-version.js ${{ inputs.increment }}
           cat version.txt
       - name: Stage Commit
         id: stage
         run: |
-          cd packages/heian
+          cd packages/fujinoki
           make stage-release
           echo "STAGE_BRANCH=$(git branch --show-current)" >> $GITHUB_OUTPUT
       - name: Show Stage Commit
@@ -129,13 +129,13 @@ jobs:
         run: ${{ matrix.settings.setup }}
 
       - name: Build
-        run: ${{ matrix.settings.rust-build-env }} cargo cargo-build --profile release-heian --target ${{ matrix.settings.target }}
+        run: ${{ matrix.settings.rust-build-env }} cargo cargo-build --profile release-fujinoki --target ${{ matrix.settings.target }}
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: heian-${{ matrix.settings.target }}
-          path: target/${{ matrix.settings.target }}/release-heian/heian*
+          name: fujinoki-${{ matrix.settings.target }}
+          path: target/${{ matrix.settings.target }}/release-fujinoki/fujinoki-cli*
 
   npm-publish:
     name: "Publish To NPM"
@@ -164,15 +164,15 @@ jobs:
 
       - name: Move Rust artifacts into place
         run: |
-          mv rust-artifacts/heian-aarch64-apple-darwin/heian packages/heian/native/heian-darwin-arm64
-          mv rust-artifacts/heian-aarch64-unknown-linux-musl/heian packages/heian/native/heian-linux-arm64
-          cp -r rust-artifacts/heian-x86_64-pc-windows-msvc/heian packages/heian/native/heian-windows-arm64
-          mv rust-artifacts/heian-x86_64-unknown-linux-musl/heian packages/heian/native/heian-linux-x64
-          mv rust-artifacts/heian-x86_64-apple-darwin/heian packages/heian/native/heian-darwin-x64
-          mv rust-artifacts/heian-x86_64-pc-windows-msvc/heian packages/heian/native/heian-winows-x64
+          mv rust-artifacts/fujinoki-aarch64-apple-darwin/fujinoki packages/fujinoki/native/fujinoki-darwin-arm64
+          mv rust-artifacts/fujinoki-aarch64-unknown-linux-musl/fujinoki packages/fujinoki/native/fujinoki-linux-arm64
+          cp -r rust-artifacts/fujinoki-x86_64-pc-windows-msvc/fujinoki packages/fujinoki/native/fujinoki-windows-arm64
+          mv rust-artifacts/fujinoki-x86_64-unknown-linux-musl/fujinoki packages/fujinoki/native/fujinoki-linux-x64
+          mv rust-artifacts/fujinoki-x86_64-apple-darwin/fujinoki packages/fujinoki/native/fujinoki-darwin-x64
+          mv rust-artifacts/fujinoki-x86_64-pc-windows-msvc/fujinoki packages/fujinoki/native/fujinoki-winows-x64
 
       - name: Perform Release
-        run: cd packages/heian && make publish SKIP_PUBLISH=${{ inputs.dry_run && '--skip-publish' || '' }}
+        run: cd packages/fujinoki && make publish SKIP_PUBLISH=${{ inputs.dry_run && '--skip-publish' || '' }}
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -180,8 +180,8 @@ jobs:
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: heian
-          path: packages/heian/native
+          name: fujinoki
+          path: packages/fujinoki/native
 
   create-release-pr:
     name: "Open Release Branch PR"
@@ -203,4 +203,4 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           head: ${{ needs.stage.outputs.stage-branch }}
           base: main
-          title: "release(heian): ${{ steps.getVersion.outputs.version }}"
+          title: "release(fujinoki): ${{ steps.getVersion.outputs.version }}"

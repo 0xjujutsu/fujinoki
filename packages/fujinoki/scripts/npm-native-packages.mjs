@@ -36,8 +36,8 @@ for (const triple of triples) {
   for (const arch of triple.arch) {
     const platform = `${triple.os}-${humanizedArchLookup[arch]}`;
     const packageJson = {
-      name: `heian-${platform}`,
-      description: `The ${platform} binary for heian`,
+      name: `fujinoki-${platform}`,
+      description: `The ${platform} binary for fujinoki`,
       version,
       os: [nodeOsLookup[triple.os]],
       cpu: [nodeArchLookup[arch]],
@@ -64,18 +64,18 @@ for (const triple of triples) {
     // I can do I think.
     if (triple.os === 'windows') {
       fs.writeFileSync(
-        path.join(outputPath, 'bin', 'heian'),
+        path.join(outputPath, 'bin', 'fujinoki'),
         `#!/usr/bin/env node
 
 const path = require('path');
-const exe = path.join(__dirname, 'heian.exe');
+const exe = path.join(__dirname, 'fujinoki.exe');
 const child_process = require('child_process');
 child_process.spawnSync(exe, process.argv.slice(2), { stdio: 'inherit' });`,
       );
     }
     fs.writeFileSync(
       path.join(outputPath, 'README.md'),
-      `# \`${packageJson.name}\`\n\nThis is a platform-specific binary for \`heian\``,
+      `# \`${packageJson.name}\`\n\nThis is a platform-specific binary for \`fujinoki\``,
     );
     fs.writeFileSync(
       path.join(outputPath, 'package.json'),
