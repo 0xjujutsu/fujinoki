@@ -43,10 +43,21 @@ labeler:
     # areas
     - label: "area: ci"
       when:
-        isAnyFilePathMatch: '^\.github\/(workflows|actions).*$'
+        isAnyFilePathMatch: '^(\.github\/(workflows|actions).*|release.js)$'
     - label: "area: discord"
       when:
         isAnyFilePathMatch: '^(crates\/discord.*|packages\/discord.*)$'
+    - label: "area: docs"
+        when:
+          isAnyFilePathMatch: '^(docs\/.*|README\.md)$'
+
+    # type
+    - label: "rust"
+      when:
+        isAnyFilePathMatch: '^((crates|xtask|.cargo)\/.*|(Cargo|deny|\.rustfmt|clippy|rust-toolchain).toml|.*\.rs)$'
+    - label: "js"
+      when:
+        isAnyFilePathMatch: '^(packages\/.*|package\.json|pnpm-workspace\.yaml|.*\.(t|j)s)$'
 
     # release
     - label: "release: fujinoki"
