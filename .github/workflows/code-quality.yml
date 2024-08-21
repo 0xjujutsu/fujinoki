@@ -62,13 +62,7 @@ jobs:
     needs: [determine_jobs]
     if: needs.determine_jobs.outputs.rust == 'true'
     name: Rust lints
-    strategy:
-      matrix:
-          os:
-            - macos-latest
-            - ubuntu-latest
-            - windows-latest
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -97,27 +91,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Setup node
-        uses: actions/setup-node@v4
+      - name: Setup Biome
+        uses: biomejs/setup-biome@v2
         with:
-          node-version: 18
-          check-latest: true
-      - run: corepack enable
+          version: latest
 
-      - id: get-store-path
-        run: echo STORE_PATH=$(pnpm store path) >> $GITHUB_OUTPUT
-
-      - uses: actions/cache@v4
-        timeout-minutes: 5
-        id: cache-pnpm-store
-        with:
-          path: ${{ steps.get-store-path.outputs.STORE_PATH }}
-          key: pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
-          restore-keys: |
-            pnpm-store-
-            pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
-
-      - run: pnpm install --no-optional
-
-      - name: Lint
-        run: pnpm run lint:biome
+      - name: Run Biome
+        run: biome ci .
