@@ -104,12 +104,25 @@ jobs:
         with:
           node-version: 18
           check-latest: true
+      - run: corepack enable
+
+      - id: get-store-path
+        run: echo STORE_PATH=$(pnpm store path) >> $GITHUB_OUTPUT
+
+      - uses: actions/cache@v4
+        timeout-minutes: 5
+        id: cache-pnpm-store
+        with:
+          path: ${{ steps.get-store-path.outputs.STORE_PATH }}
+          key: pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            pnpm-store-
+            pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
+
+      - run: pnpm install --no-optional
 
       - name: Lint
-        run: |
-          corepack enable
-          pnpm install --no-optional
-          pnpm run lint:biome
+        run: pnpm run lint:biome
 
   cleanup:
     name: Cleanup
