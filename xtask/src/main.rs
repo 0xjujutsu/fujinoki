@@ -21,6 +21,8 @@ fn cli() -> Command {
             Command::new("npm")
                 .about("Publish binaries to npm")
                 .arg(arg!(<NAME> "the package to publish"))
+                .arg(arg!(--nightly "publish nightly version"))
+                .arg(arg!(--"dry-run" "dry run all operations"))
                 .arg_required_else_help(true),
         )
         .subcommand(
@@ -43,7 +45,10 @@ fn main() {
             let name = sub_matches
                 .get_one::<String>("NAME")
                 .expect("NAME is required");
-            run_publish(name);
+            let nightly = sub_matches.get_flag("nightly");
+            let dry_run = sub_matches.get_flag("dry-run");
+
+            run_publish(name, dry_run, nightly);
         }
         Some(("workspace", sub_matches)) => {
             let is_bump = sub_matches.get_flag("bump");

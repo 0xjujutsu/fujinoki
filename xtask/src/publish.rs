@@ -38,10 +38,10 @@ const PLATFORM_WIN32_X64: NpmSupportedPlatform = NpmSupportedPlatform {
 };
 
 const NPM_PACKAGES: &[NpmPackage] = &[NpmPackage {
-    crate_name: "node-file-trace",
-    name: "@vercel/experimental-nft",
-    description: "Node.js module trace",
-    bin: "node-file-trace",
+    crate_name: "fujinoki-cli",
+    name: "fujinoki",
+    description: "Discord bot framework",
+    kind: NpmPackageKind::Bin("fujinoki"),
     platform: &[
         PLATFORM_LINUX_X64,
         PLATFORM_DARWIN_X64,
@@ -56,53 +56,94 @@ struct NpmSupportedPlatform {
     rust_target: &'static str,
 }
 
+enum NpmPackageKind {
+    Bin(&'static str),
+    Napi(Option<&'static str>),
+}
+
 struct NpmPackage {
     crate_name: &'static str,
     name: &'static str,
     description: &'static str,
-    bin: &'static str,
+    kind: NpmPackageKind,
     platform: &'static [NpmSupportedPlatform],
 }
 
-pub fn run_publish(name: &str) {
+pub fn run_publish(name: &str, nightly: bool, dry_run: bool) {
     if let Some(pkg) = NPM_PACKAGES.iter().find(|p| p.crate_name == name) {
         let mut optional_dependencies = Vec::with_capacity(pkg.platform.len());
         let mut is_alpha = false;
         let mut is_beta = false;
         let mut is_canary = false;
-        let version = if let Ok(release_version) = env::var("RELEASE_VERSION") {
-            // node-file-trace@1.0.0-alpha.1
-            let release_tag_version = release_version
-                .trim()
-                .trim_start_matches("node-file-trace@");
-            if let Ok(semver_version) = Version::parse(release_tag_version) {
-                is_alpha = semver_version.pre.contains("alpha");
-                is_beta = semver_version.pre.contains("beta");
-                is_canary = semver_version.pre.contains("canary");
-            };
-            release_tag_version.to_owned()
-        } else {
-            format!(
-                "0.0.0-{}",
-                env::var("GITHUB_SHA")
-                    .map(|mut sha| {
-                        sha.truncate(7);
-                        sha
-                    })
-                    .unwrap_or_else(|_| {
-                        if let Ok(mut o) = process::Command::new("git")
-                            .args(["rev-parse", "--short", "HEAD"])
-                            .output()
-                            .map(|o| String::from_utf8(o.stdout).expect("Invalid utf8 output"))
-                        {
-                            o.truncate(7);
-                            return o;
-                        }
-                        panic!("Unable to get git commit sha");
-                    })
-            )
+        let version = match nightly {
+            true => {
+                let now = chrono::Local::now();
+                let nightly_tag = Command::program("git")
+                    .args(["tag", "-l", "nightly-*"])
+                    .error_message("Failed to list nightly tags")
+                    .output_string();
+                dbg!(nightly_tag.clone());
+
+                let latest_nightly_tag = nightly_tag
+                    .lines()
+                    .filter(|tag| tag.starts_with("nightly-"))
+                    .max()
+                    .unwrap_or("");
+
+                let patch = if latest_nightly_tag.is_empty() {
+                    0
+                } else {
+                    latest_nightly_tag
+                        .split('.')
+                        .last()
+                        .and_then(|s| s.parse::<u64>().ok())
+                        .unwrap_or(0)
+                };
+
+                format!("0.0.0-nightly.{}.{}", now.format("%y%m%d"), patch + 1)
+            }
+            false => {
+                if let Ok(release_version) = env::var("RELEASE_VERSION") {
+                    // node-file-trace@1.0.0-alpha.1
+                    let release_tag_version = release_version
+                        .trim()
+                        .trim_start_matches(
+                            format!("{}@", pkg.name).as_str(),
+                        );
+                    if let Ok(semver_version) = Version::parse(release_tag_version) {
+                        is_alpha = semver_version.pre.contains("alpha");
+                        is_beta = semver_version.pre.contains("beta");
+                        is_canary = semver_version.pre.contains("canary");
+                    };
+                    release_tag_version.to_owned()
+                } else {
+                    format!(
+                        "0.0.0-{}",
+                        env::var("GITHUB_SHA")
+                            .map(|mut sha| {
+                                sha.truncate(7);
+                                sha
+                            })
+                            .unwrap_or_else(|_| {
+                                if let Ok(mut o) = process::Command::new("git")
+                                    .args(["rev-parse", "--short", "HEAD"])
+                                    .output()
+                                    .map(|o| {
+                                        String::from_utf8(o.stdout).expect("Invalid utf8 output")
+                                    })
+                                {
+                                    o.truncate(7);
+                                    return o;
+                                }
+                                panic!("Unable to get git commit sha");
+                            })
+                    )
+                }
+            }
         };
-        let tag = if is_alpha {
+        let tag = if version.contains("nightly") {
+            "nightly"
+        } else if is_alpha {
             "alpha"
         } else if is_beta {
             "beta"
@@ -112,53 +153,61 @@ pub fn run_publish(name: &str) {
             "latest"
         };
         let current_dir = env::current_dir().expect("Unable to get current directory");
-        let package_dir = current_dir.join("../../packages").join("node-module-trace");
+        let package_dir = current_dir.join("../../packages").join(pkg.name);
         let temp_dir = package_dir.join("npm");
         if let Ok(()) = fs::remove_dir_all(&temp_dir) {};
         fs::create_dir(&temp_dir).expect("Unable to create temporary npm directory");
         for platform in pkg.platform.iter() {
-            let bin_file_name = if platform.os == "win32" {
-                format!("{}.exe", pkg.bin)
-            } else {
-                pkg.bin.to_string()
-            };
-            let platform_package_name = format!("{}-{}-{}", pkg.name, platform.os, platform.arch);
-            optional_dependencies.push(platform_package_name.clone());
-            let pkg_json = serde_json::json!({
-              "name": platform_package_name,
-              "version": version,
-              "description": pkg.description,
-              "os": [platform.os],
-              "cpu": [platform.arch],
-              "bin": {
-                pkg.bin: bin_file_name
-              }
-            });
-            let dir_name = format!("{}-{}-{}", pkg.crate_name, platform.os, platform.arch);
-            let target_dir = package_dir.join("npm").join(dir_name);
-            fs::create_dir(&target_dir)
-                .unwrap_or_else(|e| panic!("Unable to create dir: {:?}\n{e}", &target_dir));
-            fs::write(
-                target_dir.join("../../package.json"),
-                serde_json::to_string_pretty(&pkg_json).unwrap(),
-            )
-            .expect("Unable to write package.json");
-            let artifact_path = current_dir
-                .join("artifacts")
-                .join(format!("node-file-trace-{}", platform.rust_target))
-                .join(&bin_file_name);
-            let dist_path = target_dir.join(&bin_file_name);
-            fs::copy(&artifact_path, &dist_path).unwrap_or_else(|e| {
-                panic!(
-                    "Copy file from [{:?}] to [{:?}] failed: {e}",
-                    artifact_path, dist_path
-                )
-            });
-            Command::program("npm")
-                .args(["publish", "--access", "public", "--tag", tag])
-                .error_message("Publish npm package failed")
-                .current_dir(target_dir)
-                .execute();
+            match pkg.kind {
+                NpmPackageKind::Bin(bin) => {
+                    let bin_file_name = if platform.os == "win32" {
+                        format!("{}.exe", bin)
+                    } else {
+                        bin.to_string()
+                    };
+                    let platform_package_name =
+                        format!("{}-{}-{}", pkg.name, platform.os, platform.arch);
+                    optional_dependencies.push(platform_package_name.clone());
+                    let pkg_json = serde_json::json!({
+                      "name": platform_package_name,
+                      "version": version,
+                      "description": pkg.description,
+                      "os": [platform.os],
+                      "cpu": [platform.arch],
+                      "bin": {
+                        bin: bin_file_name
+                      }
+                    });
+
+                    let dir_name = format!("{}-{}-{}", pkg.crate_name, platform.os, platform.arch);
+                    let target_dir = package_dir.join("npm").join(dir_name);
+                    fs::create_dir(&target_dir)
+                        .unwrap_or_else(|e| panic!("Unable to create dir: {:?}\n{e}", &target_dir));
+                    fs::write(
+                        target_dir.join("package.json"),
+                        serde_json::to_string_pretty(&pkg_json).unwrap(),
+                    )
+                    .expect("Unable to write package.json");
+                    let artifact_path = current_dir
+                        .join("artifacts")
+                        .join(format!("{}-{}", pkg.crate_name, platform.rust_target))
+                        .join(&bin_file_name);
+                    let dist_path = target_dir.join(&bin_file_name);
+                    fs::copy(&artifact_path, &dist_path).unwrap_or_else(|e| {
+                        panic!(
+                            "Copy file from [{:?}] to [{:?}] failed: {e}",
+                            artifact_path, dist_path
+                        )
+                    });
+                    Command::program("npm")
+                        .args(["publish", "--access", "public", "--tag", tag])
+                        .error_message("Publish npm package failed")
+                        .current_dir(target_dir)
+                        .dry_run(dry_run)
+                        .execute();
+                }
+                NpmPackageKind::Napi(napi) => todo!("napi impl")
+            }
         }
         let target_pkg_dir = temp_dir.join(pkg.name);
         fs::create_dir_all(&target_pkg_dir).unwrap_or_else(|e| {
@@ -186,15 +235,20 @@ pub fn run_publish(name: &str) {
                 target_pkg_dir.join("../../package.json")
             )
         });
+        // TODO(kijv) windows helper (for .exe)
+        // TODO(kijv) gen napi js bindings helper
         Command::program("npm")
             .args(["publish", "--access", "public", "--tag", tag])
             .error_message("Publish npm package failed")
             .current_dir(target_pkg_dir)
+            .dry_run(dry_run)
             .execute();
     }
 }
 
-const VERSION_TYPE: &[&str] = &["patch", "minor", "major", "alpha", "beta", "canary"];
+const VERSION_TYPE: &[&str] = &[
+    "patch", "minor", "major", "alpha", "beta", "canary", "nightly",
+];
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct WorkspaceProjectMeta {
@@ -280,6 +334,7 @@ pub fn run_bump(names: HashSet<String>, dry_run: bool) {
         let mut semver_version = Version::parse(&p.version).unwrap_or_else(|e| {
             panic!("Failed to parse {} in {} as semver: {e}", p.version, p.name)
         });
+
         match version_type {
             "major" => {
                 semver_version.major += 1;
