@@ -73,10 +73,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Setup Rust
+      - name: Install Rust
         uses: ./.github/actions/setup-rust
-        with:
-          github-token: "${{ secrets.GITHUB_TOKEN }}"
 
       - name: Run cargo fmt check
         run: |
@@ -123,12 +121,3 @@ jobs:
 
       - name: Lint
         run: pnpm run lint:biome
-
-  cleanup:
-    name: Cleanup
-    needs:
-      - rust_lint
-      - format_lint
-    if: always()
-    uses: ./.github/workflows/pr-clean-caches.yaml
-    secrets: inherit
