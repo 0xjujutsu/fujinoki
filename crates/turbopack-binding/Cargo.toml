@@ -88,51 +88,49 @@ __feature_node_file_trace_custom_allocator = [
   "node-file-trace/custom_allocator",
 ]
 __feature_auto_hash_map = ["__features", "auto-hash-map"]
-__feature_tracing_signpost = ["__features", "tracing-signpost"]
 
 [lints]
 workspace = true
 
 # source https://github.com/vercel/next.js/tree/9642c49d2db3419008629fd175e5e64f108d007e/turbopack/crates/turbopack-binding
-# rev 95132244dc37fb4fccd5a3557b089d31ff7b0238 (github.com/vercel/next.js)
+# rev 3ab6d1790998f0984b97c4abf8c96ffe1eaad865 (github.com/vercel/next.js)
 [dependencies]
-auto-hash-map = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
-tracing-signpost = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
+auto-hash-map = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "3ab6d1790998f0984b97c4abf8c96ffe1eaad865" }
 
-node-file-trace = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
-turbo-tasks = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
-turbo-tasks-build = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
-turbo-tasks-bytes = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
-turbo-tasks-env = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
-turbo-tasks-fetch = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
-turbo-tasks-fs = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
-turbo-tasks-hash = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
-turbo-tasks-macros = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
-turbo-tasks-macros-shared = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
-turbo-tasks-malloc = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238", default-features = false }
-turbo-tasks-memory = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
-turbo-tasks-testing = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
-turbopack = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
-turbopack-bench = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
-turbopack-browser = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
-turbopack-cli-utils = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
-turbopack-core = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
-turbopack-create-test-app = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
-turbopack-css = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
-turbopack-dev-server = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
-turbopack-ecmascript = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
-turbopack-ecmascript-hmr-protocol = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
-turbopack-ecmascript-plugins = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238", default-features = false }
-turbopack-ecmascript-runtime = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
-turbopack-env = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
-turbopack-image = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
-turbopack-json = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
-turbopack-mdx = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
-turbopack-node = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
-turbopack-nodejs = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
-turbopack-resolve = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
-turbopack-static = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
-turbopack-swc-utils = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
-turbopack-test-utils = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
-turbopack-trace-server = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
-turbopack-trace-utils = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "95132244dc37fb4fccd5a3557b089d31ff7b0238" }
+node-file-trace = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "3ab6d1790998f0984b97c4abf8c96ffe1eaad865" }
+turbo-tasks = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "3ab6d1790998f0984b97c4abf8c96ffe1eaad865" }
+turbo-tasks-build = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "3ab6d1790998f0984b97c4abf8c96ffe1eaad865" }
+turbo-tasks-bytes = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "3ab6d1790998f0984b97c4abf8c96ffe1eaad865" }
+turbo-tasks-env = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "3ab6d1790998f0984b97c4abf8c96ffe1eaad865" }
+turbo-tasks-fetch = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "3ab6d1790998f0984b97c4abf8c96ffe1eaad865" }
+turbo-tasks-fs = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "3ab6d1790998f0984b97c4abf8c96ffe1eaad865" }
+turbo-tasks-hash = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "3ab6d1790998f0984b97c4abf8c96ffe1eaad865" }
+turbo-tasks-macros = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "3ab6d1790998f0984b97c4abf8c96ffe1eaad865" }
+turbo-tasks-macros-shared = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "3ab6d1790998f0984b97c4abf8c96ffe1eaad865" }
+turbo-tasks-malloc = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "3ab6d1790998f0984b97c4abf8c96ffe1eaad865", default-features = false }
+turbo-tasks-memory = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "3ab6d1790998f0984b97c4abf8c96ffe1eaad865" }
+turbo-tasks-testing = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "3ab6d1790998f0984b97c4abf8c96ffe1eaad865" }
+turbopack = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "3ab6d1790998f0984b97c4abf8c96ffe1eaad865" }
+turbopack-bench = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "3ab6d1790998f0984b97c4abf8c96ffe1eaad865" }
+turbopack-browser = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "3ab6d1790998f0984b97c4abf8c96ffe1eaad865" }
+turbopack-cli-utils = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "3ab6d1790998f0984b97c4abf8c96ffe1eaad865" }
+turbopack-core = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "3ab6d1790998f0984b97c4abf8c96ffe1eaad865" }
+turbopack-create-test-app = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "3ab6d1790998f0984b97c4abf8c96ffe1eaad865" }
+turbopack-css = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "3ab6d1790998f0984b97c4abf8c96ffe1eaad865" }
+turbopack-dev-server = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "3ab6d1790998f0984b97c4abf8c96ffe1eaad865" }
+turbopack-ecmascript = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "3ab6d1790998f0984b97c4abf8c96ffe1eaad865" }
+turbopack-ecmascript-hmr-protocol = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "3ab6d1790998f0984b97c4abf8c96ffe1eaad865" }
+turbopack-ecmascript-plugins = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "3ab6d1790998f0984b97c4abf8c96ffe1eaad865", default-features = false }
+turbopack-ecmascript-runtime = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "3ab6d1790998f0984b97c4abf8c96ffe1eaad865" }
+turbopack-env = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "3ab6d1790998f0984b97c4abf8c96ffe1eaad865" }
+turbopack-image = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "3ab6d1790998f0984b97c4abf8c96ffe1eaad865" }
+turbopack-json = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "3ab6d1790998f0984b97c4abf8c96ffe1eaad865" }
+turbopack-mdx = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "3ab6d1790998f0984b97c4abf8c96ffe1eaad865" }
+turbopack-node = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "3ab6d1790998f0984b97c4abf8c96ffe1eaad865" }
+turbopack-nodejs = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "3ab6d1790998f0984b97c4abf8c96ffe1eaad865" }
+turbopack-resolve = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "3ab6d1790998f0984b97c4abf8c96ffe1eaad865" }
+turbopack-static = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "3ab6d1790998f0984b97c4abf8c96ffe1eaad865" }
+turbopack-swc-utils = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "3ab6d1790998f0984b97c4abf8c96ffe1eaad865" }
+turbopack-test-utils = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "3ab6d1790998f0984b97c4abf8c96ffe1eaad865" }
+turbopack-trace-server = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "3ab6d1790998f0984b97c4abf8c96ffe1eaad865" }
+turbopack-trace-utils = { optional = true, git = "https://github.com/vercel/next.js.git", rev = "3ab6d1790998f0984b97c4abf8c96ffe1eaad865" }

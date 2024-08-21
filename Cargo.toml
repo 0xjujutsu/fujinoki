@@ -34,10 +34,10 @@ strip = true
 discord-api = { path = "crates/discord-api" }
 
 fujinoki-cli-utils = { path = "crates/fujinoki-cli-utils" }
-fujinoki-interactions-server = { path = "crates/fujinoki-interactions-server" }
+fujinoki-core = { path = "crates/fujinoki-core" }
 fujinoki-dev-server = { path = "crates/fujinoki-dev-server" }
 fujinoki-ecmascript-plugins = { path = "crates/fujinoki-ecmascript-plugins" }
-fujinoki-core = { path = "crates/fujinoki-core" }
+fujinoki-interactions-server = { path = "crates/fujinoki-interactions-server" }
 fujinoki-node = { path = "crates/fujinoki-node" }
 fujinoki-updater = { path = "crates/fujinoki-updater" }
 fujinoki-websocket = { path = "crates/fujinoki-websocket" }
@@ -49,17 +49,14 @@ turborepo-ci = { git = "https://github.com/vercel/turborepo.git", tag = "v2.0.14
 turborepo-repository = { git = "https://github.com/vercel/turborepo.git", tag = "v2.0.14" }
 
 # Be careful when selecting tls backend, including change default tls backend.
-# If you changed, must verify with ALL build targets with next-swc to ensure
-# it works. next-swc have various platforms, some doesn't support native (using openssl-sys)
-# and some aren't buildable with rustls.
 reqwest = { version = "=0.11.17", default-features = false }
 
 anyhow = "1.0.69"
-async-trait = "0.1.64"
 async-compression = { version = "0.3.13", default-features = false, features = [
   "gzip",
   "tokio",
 ] }
+async-trait = "0.1.64"
 atty = "0.2.14"
 bytes = "1.1.0"
 camino = { version = "1.1.4", features = ["serde1"] }
@@ -77,8 +74,8 @@ futures-retry = "0.6.0"
 indexmap = "1.9.2"
 indoc = "2.0.0"
 itertools = "0.10.5"
-lazy_static = "1.4.0"
 lazy-regex = "2.5.0"
+lazy_static = "1.4.0"
 mime = "0.3.16"
 notify = "6.1.1"
 notify-debouncer-full = "0.3.1"
