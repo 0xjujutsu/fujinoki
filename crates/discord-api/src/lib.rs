@@ -10,7 +10,6 @@
 #![feature(new_uninit)]
 #![feature(type_alias_impl_trait)]
 #![feature(never_type)]
-// #![feature(effects)]
 #![allow(deprecated)]
 
 pub mod application;
