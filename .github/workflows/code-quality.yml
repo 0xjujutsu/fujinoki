@@ -62,10 +62,7 @@ jobs:
     needs: [determine_jobs]
     if: needs.determine_jobs.outputs.rust == 'true'
     name: Rust lints
-    runs-on:
-      - ubuntu-latest
-      - windows-latest
-      - macos-latest
+    runs-on: [ubuntu-latest, windows-latest, macos-latest]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
