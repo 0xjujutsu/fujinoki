@@ -48,8 +48,8 @@ labeler:
       when:
         isAnyFilePathMatch: '^(crates\/discord.*|packages\/discord.*)$'
     - label: "area: docs"
-        when:
-          isAnyFilePathMatch: '^(docs\/.*|README\.md)$'
+      when:
+        isAnyFilePathMatch: '^(docs\/.*|README\.md)$'
 
     # type
     - label: "rust"
