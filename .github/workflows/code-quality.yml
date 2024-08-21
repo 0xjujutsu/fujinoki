@@ -62,7 +62,7 @@ jobs:
     needs: [determine_jobs]
     if: needs.determine_jobs.outputs.rust == 'true'
     name: Rust lints
-    runs-on: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -93,14 +93,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: "Setup Node"
-        uses: ./.github/actions/setup-node
+      - name: Setup node
+        uses: actions/setup-node@v4
         with:
-          extra-flags: --no-optional
+          node-version: 18
+          check-latest: true
 
       - name: Lint
         run: |
-          npm run lint:biome
+          corepack enable
+          pnpm install --no-optional
+          pnpm run lint:biome
 
   cleanup:
     name: Cleanup
