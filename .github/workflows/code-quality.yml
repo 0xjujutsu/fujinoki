@@ -74,7 +74,6 @@ jobs:
         uses: ijjk/rust-cache@turbo-cache-v1.0.8
         with:
           save-if: 'true'
-          cache-provider: 'turbo'
           shared-key: code-quality-${{ hashFiles('.cargo/config.toml') }}
 
       - name: Run cargo fmt check
