@@ -47,33 +47,28 @@ jobs:
             !**.md
             !**.mdx
 
-      - name: Formatting related changes
-        id: format
+      - name: Biome linter related changes
+        id: biome
         uses: technote-space/get-diff-action@v6
         with:
           PATTERNS: |
-            **/*.{yml,yaml,md,mdx,js,jsx,ts,tsx,json,toml,css}
+            **/*.{js,jsx,ts,tsx,json,jsonc,css,graphql,yaml,yml,html}
 
     outputs:
       rust: ${{ steps.ci.outputs.diff != '' || steps.rust.outputs.diff != '' }}
-      format: ${{ steps.ci.outputs.diff != '' || steps.format.outputs.diff != '' }}
+      biome: ${{ steps.ci.outputs.diff != '' || steps.biome.outputs.diff != '' }}
 
   rust_lint:
     needs: [determine_jobs]
     if: needs.determine_jobs.outputs.rust == 'true'
     name: Rust lints
-    runs-on:
-      - ubuntu-latest
-      - windows-latest
-      - macos-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Setup Rust
+      - name: Install Rust
         uses: ./.github/actions/setup-rust
-        with:
-          github-token: "${{ secrets.GITHUB_TOKEN }}"
 
       - name: Run cargo fmt check
         run: |
@@ -82,34 +77,24 @@ jobs:
       - name: Check Cargo.toml formatting (taplo)
         run: npx @taplo/cli@0.5.2 format --check
 
-      - name: Check licenses
-        uses: EmbarkStudios/cargo-deny-action@v1
-        with:
-          command: check licenses
 
-  format_lint:
-    name: Formatting
+  biome_lint:
+    name: Biome Lint
     runs-on: ubuntu-latest
     needs: determine_jobs
-    if: needs.determine_jobs.outputs.format == 'true'
+    if: needs.determine_jobs.outputs.biome == 'true'
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: "Setup Node"
-        uses: ./.github/actions/setup-node
+      - name: Setup Biome
+        uses: biomejs/setup-biome@v2
         with:
-          extra-flags: --no-optional
+          version: latest
 
-      - name: Lint
-        run: |
-          npm run lint:biome
+      - name: Linter
+        run: biome ci . --reporter=github --formatter-enabled=false
 
-  cleanup:
-    name: Cleanup
-    needs:
-      - rust_lint
-      - format_lint
-    if: always()
-    uses: ./.github/workflows/pr-clean-caches.yaml
-    secrets: inherit
+      - name: Formatter
+        # keep this in sync with package.json (biome:format)
+        run: biome check --linter-enabled=false --organize-imports-enabled=true

@@ -2,7 +2,7 @@ name: Fujinoki Release
 
 env:
   CARGO_PROFILE_RELEASE_LTO: true
-  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+  NPM_TOKEN: ${{ secrets.RELEASE_BOT_PAT }}
   # Needed since we need to build on Xenial which doesn't have a new enough
   # GLIBC to use Node 20.
   ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
@@ -35,9 +35,27 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v3
-      - uses: ./.github/actions/setup-node
+
+      - name: Setup node
+        uses: actions/setup-node@v4
         with:
-          enable-corepack: false
+          node-version: 18
+          check-latest: true
+      - run: corepack enable
+
+      - id: get-store-path
+        run: echo STORE_PATH=$(pnpm store path) >> $GITHUB_OUTPUT
+      - uses: actions/cache@v4
+        timeout-minutes: 5
+        id: cache-pnpm-store
+        with:
+          path: ${{ steps.get-store-path.outputs.STORE_PATH }}
+          key: pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            pnpm-store-
+            pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
+      - run: pnpm install
+
       - name: Configure git
         run: |
           git config --global user.name 'release bot'
@@ -114,14 +132,10 @@ jobs:
           curl --proto '=https' --tlsv1.2 --retry 10 --location --silent --show-error --fail "https://sh.rustup.rs" | sh -s -- --default-toolchain none -y
           echo "${CARGO_HOME:-$HOME/.cargo}/bin" >> $GITHUB_PATH
 
-      - name: Rust Setup
-        uses: actions-rust-lang/setup-rust-toolchain@v1
+      - name: Install Rust
+        uses: ./.github/actions/setup-rust
         with:
-          target: ${{ matrix.settings.target }}
-          # needed to not make it override the defaults
-          rustflags: ""
-          # we want more specific settings
-          cache: false
+          targets: ${{ matrix.settings.target }}
 
       - name: Build Setup
         shell: bash
@@ -148,9 +162,20 @@ jobs:
         with:
           ref: "${{ needs.stage.outputs.stage-branch }}"
       - run: git fetch origin --tags
-      - uses: ./.github/actions/setup-node
+
+      - run: corepack enable
+      - id: get-store-path
+        run: echo STORE_PATH=$(pnpm store path) >> $GITHUB_OUTPUT
+      - uses: actions/cache@v4
+        timeout-minutes: 5
+        id: cache-pnpm-store
         with:
-          enable-corepack: false
+          path: ${{ steps.get-store-path.outputs.STORE_PATH }}
+          key: pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            pnpm-store-
+            pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
+      - run: pnpm install
 
       - name: Configure git
         run: |
@@ -174,7 +199,7 @@ jobs:
       - name: Perform Release
         run: cd packages/fujinoki && make publish SKIP_PUBLISH=${{ inputs.dry_run && '--skip-publish' || '' }}
         env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_TOKEN: ${{ secrets.RELEASE_BOT_PAT }}
 
       # Upload published artifacts in case they are needed for debugging later
       - name: Upload Artifacts
