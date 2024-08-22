@@ -5,8 +5,8 @@
 #![feature(arbitrary_self_types)]
 #![feature(extract_if)]
 
-pub mod transforms;
 pub mod embed_js;
+pub mod transforms;
 
 pub fn register() {
     turbopack_binding::turbo::tasks::register();
