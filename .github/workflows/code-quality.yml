@@ -70,8 +70,6 @@ jobs:
       - name: Install Rust
         uses: ./.github/actions/setup-rust
 
-      - uses: Swatinem/rust-cache@v2
-
       - name: Run cargo fmt check
         run: |
           cargo fmt --check

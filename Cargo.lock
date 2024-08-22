@@ -205,6 +205,12 @@ dependencies = [
 
 [[package]]
 name = "arrayvec"
+version = "0.5.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "23b62fc65de8e4e7f52534fb52b0f3ed04746ae267519eef2a83941e8085068b"
+
+[[package]]
+name = "arrayvec"
 version = "0.7.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7c02d123df017efcdfbd739ef81735b36c5ba83ec3c59c80a9d7ecc718f92e50"
@@ -351,7 +357,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6678909d8c5d46a42abcf571271e15fdbc0a225e3646cf23762cd415046c78bf"
 dependencies = [
  "anyhow",
- "arrayvec 0.7.4",
+ "arrayvec 0.7.6",
  "log",
  "nom",
  "num-rational",
@@ -364,7 +370,7 @@ version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "876c75a42f6364451a033496a14c44bffe41f5f4a8236f697391f11024e596d2"
 dependencies = [
- "arrayvec 0.7.4",
+ "arrayvec 0.7.6",
 ]
 
 [[package]]
@@ -1948,7 +1954,7 @@ checksum = "1a5c6c585bc94aaf2c7b51dd4c2ba22680844aba4c687be581871a6f518c5742"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.72",
+ "syn 2.0.75",
 ]
 
 [[package]]
@@ -2061,7 +2067,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "clap 4.5.16",
- "crossterm",
+ "crossterm 0.26.1",
  "owo-colors 3.5.0",
  "serde",
  "turbopack-binding",
@@ -3768,7 +3774,7 @@ version = "0.4.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a652d9771a63711fd3c3deb670acfbe5c30a4072e664d7a3bf5a9e1056ac72c3"
 dependencies = [
- "arrayvec 0.7.4",
+ "arrayvec 0.7.6",
  "itoa",
 ]
 
@@ -4583,7 +4589,7 @@ checksum = "cd87ce80a7665b1cce111f8a16c1f3929f6547ce91ade6addf4ec86a8dda5ce9"
 dependencies = [
  "arbitrary",
  "arg_enum_proc_macro",
- "arrayvec 0.7.4",
+ "arrayvec 0.7.6",
  "av1-grain",
  "bitstream-io",
  "built",
@@ -5486,7 +5492,7 @@ version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8257dd592de7614be71a2342d36ba2d527ddad3f9a0c8d09d6ceed4c371531e4"
 dependencies = [
- "arrayvec 0.7.4",
+ "arrayvec 0.7.6",
  "static-map-macro",
 ]
 
@@ -6078,7 +6084,7 @@ version = "0.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dade6e0c6e8ddb61281fee2331c3775a920c31535b91e8cace2e0c4eed6158d3"
 dependencies = [
- "arrayvec",
+ "arrayvec 0.7.6",
  "indexmap 2.4.0",
  "is-macro",
  "serde",
@@ -6298,7 +6304,7 @@ version = "0.203.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e13ee1a0975dc79d2cb23456bf45c7862b61f9a8890ade3025af8dc728e730db"
 dependencies = [
- "arrayvec",
+ "arrayvec 0.7.6",
  "indexmap 2.4.0",
  "num-bigint",
  "num_cpus",
@@ -6456,7 +6462,7 @@ version = "0.170.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4bb500b65423646da940e289ad37e7c88332d7194248c33fc63a9e768e104fe5"
 dependencies = [
- "arrayvec",
+ "arrayvec 0.7.6",
  "indexmap 2.4.0",
  "is-macro",
  "num-bigint",
@@ -7879,7 +7885,7 @@ source = "git+https://github.com/kijv/next.js.git#4c1cf26c8c7b4a0d83ba4ea4daf960
 dependencies = [
  "anyhow",
  "clap 4.5.16",
- "crossterm",
+ "crossterm 0.26.1",
  "owo-colors 3.5.0",
  "serde",
  "turbo-tasks",
@@ -9170,7 +9176,7 @@ dependencies = [
  "anyhow",
  "cargo-lock",
  "chrono",
- "clap 4.5.13",
+ "clap 4.5.16",
  "indexmap 1.9.3",
  "inquire",
  "num-format",
