@@ -26,7 +26,7 @@ turbopack-binding = { workspace = true, features = [
   "__turbo_tasks",
   "__turbo_tasks_fs",
   "__turbo_tasks_malloc",
-  "__turbo_tasks_memory"
+  "__turbo_tasks_memory",
 ] }
 serde_json = { workspace = true }
 
