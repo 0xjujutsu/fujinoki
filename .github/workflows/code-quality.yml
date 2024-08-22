@@ -72,10 +72,6 @@ jobs:
 
       - name: Cache on ${{ github.ref_name }}
         uses: ijjk/rust-cache@v1.0.8
-        with:
-          save-if: 'true'
-          cache-provider: 'github'
-          shared-key: code-quality-${{ hashFiles('.cargo/config.toml') }}
 
       - name: Run cargo fmt check
         run: |
