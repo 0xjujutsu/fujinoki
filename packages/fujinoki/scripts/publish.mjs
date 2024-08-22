@@ -24,7 +24,8 @@ console.log('platforms:', platforms);
   const rootDirectory = await findUp(
     async (directory) => {
       const hasPkgJson = await pathExists(path.join(directory, 'package.json'));
-      if (hasPkgJson && path.basename(directory) === 'fujinoki') return directory;
+      if (hasPkgJson && path.basename(directory) === 'fujinoki')
+        return directory;
     },
     { type: 'directory' },
   );
