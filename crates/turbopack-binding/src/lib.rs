@@ -85,6 +85,4 @@ pub mod features {
     pub use auto_hash_map;
     #[cfg(feature = "__feature_node_file_trace")]
     pub use node_file_trace;
-    #[cfg(feature = "__feature_tracing_signpost")]
-    pub use tracing_signpost;
 }
