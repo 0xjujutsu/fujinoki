@@ -107,9 +107,7 @@ pub fn run_publish(name: &str, nightly: bool, dry_run: bool) {
                     // node-file-trace@1.0.0-alpha.1
                     let release_tag_version = release_version
                         .trim()
-                        .trim_start_matches(
-                            format!("{}@", pkg.name).as_str(),
-                        );
+                        .trim_start_matches(format!("{}@", pkg.name).as_str());
                     if let Ok(semver_version) = Version::parse(release_tag_version) {
                         is_alpha = semver_version.pre.contains("alpha");
                         is_beta = semver_version.pre.contains("beta");
@@ -206,7 +204,7 @@ pub fn run_publish(name: &str, nightly: bool, dry_run: bool) {
                         .dry_run(dry_run)
                         .execute();
                 }
-                NpmPackageKind::Napi(napi) => todo!("napi impl")
+                NpmPackageKind::Napi(napi) => todo!("napi impl"),
             }
         }
         let target_pkg_dir = temp_dir.join(pkg.name);

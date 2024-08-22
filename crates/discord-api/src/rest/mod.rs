@@ -15,6 +15,6 @@ lazy_static! {
     pub static ref HTTP: Vc<http::Http> = http::Http::new(get_api_url().into());
 }
 
-pub const fn get_api_url() -> &'static str  {
+pub const fn get_api_url() -> &'static str {
     formatcp!("https://discord.com/api/v{VERSION}")
 }

@@ -8,10 +8,14 @@ use turbopack_binding::{
         tasks_fs::FileSystemPath,
     },
     turbopack::{
-        core::{chunk::ChunkingContext, context::AssetContext, ident::AssetIdent, issue::IssueExt, module::Module},
+        core::{
+            chunk::ChunkingContext, context::AssetContext, ident::AssetIdent, issue::IssueExt,
+            module::Module,
+        },
         node::{
             evaluate::{
-                compute, custom_evaluate, EvaluateContext, EvaluationIssue, JavaScriptEvaluation, JavaScriptStreamSender
+                compute, custom_evaluate, EvaluateContext, EvaluationIssue, JavaScriptEvaluation,
+                JavaScriptStreamSender,
             },
             NodeJsPool,
         },
