@@ -1,11 +1,22 @@
 {
   "name": "fujinoki",
-  "version": "0.1.0",
-  "devDependencies": {
-    "@types/fs-extra": "^11.0.4",
-    "execa": "^9.3.0",
-    "find-up": "^7.0.0",
-    "fs-extra": "^11.2.0",
-    "semver": "^7.6.3"
+  "version": "0.0.0",
+  "description": "Discord bot framework",
+  "homepage": "https://jujutsu.studio/fujinoki",
+  "bugs": "https://github.com/jujutsustudio/issues",
+  "repository": "https://github.com/kijv/fujinoki",
+  "license": "MPL-2.0",
+  "main": "./bin/fujinoki",
+  "bin": {
+    "fujinoki": "./bin/fujinoki"
+  },
+  "files": ["bin"],
+  "optionalDependencies": {
+    "@fujinoki/darwin-arm64": "0.0.0",
+    "@fujinoki/darwin-64": "0.0.0",
+    "@fujinoki/linux-arm64": "0.0.0",
+    "@fujinoki/linux-64": "0.0.0",
+    "@fujinoki/windows-arm64": "0.0.0",
+    "@fujinoki/windows-64": "0.0.0"
   }
 }

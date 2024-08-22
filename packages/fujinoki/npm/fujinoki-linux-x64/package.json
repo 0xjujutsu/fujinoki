@@ -1,0 +1,14 @@
+{
+  "name": "fujinoki-linux-x64",
+  "version": "0.0.0-240821.1",
+  "description": "Discord bot framework",
+  "os": [
+    "linux"
+  ],
+  "cpu": [
+    "x64"
+  ],
+  "bin": {
+    "fujinoki": "fujinoki"
+  }
+}

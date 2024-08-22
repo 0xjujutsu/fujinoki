@@ -25,10 +25,11 @@ stage-release:
 	# Prepare the packages.
 	cd $(PKG_DIR) && pnpm version "$(VERSION)" --allow-same-version
 
-	git checkout -b fujinoki-$(VERSION)
-	git commit -anm "publish $(VERSION) to registry"
-	git tag "fujinoki-$(VERSION)"
-	git push origin fujinoki-$(VERSION) --tags --force
+	# TODO(kijv) uncommment
+	# git checkout -b $(VERSION)
+	# git commit -anm "publish $(VERSION) to registry"
+	# git tag "$(VERSION)"
+	# git push origin $(VERSION) --tags --force
 
 .PHONY: publish
 publish:
@@ -40,17 +41,7 @@ publish:
 
 	npm config set --location=project "//registry.npmjs.org/:_authToken" $(NPM_TOKEN)
 
-	# Publishes the native npm modules.
-	$(PKG_DIR)/scripts/npm-native-packages.mjs
-	# TODO actually publish
-	# $(PKG_DIR)/scripts/publish.mjs "darwin-amd64,darwin-arm64,linux-amd64,linux-arm64-windows-amd64,windows-arm64"
-
-	# Split packing from the publish step so that npm locates the correct .npmrc file.
-	cd $(PKG_DIR)/js && pnpm pack --pack-destination=$(PKG_DIR)/../../
-
 ifneq ($(SKIP_PUBLISH),--skip-publish)
-	# Publish the remaining JS packages in order to avoid race conditions.
-	cd $(PKG_DIR)/../
-	# TODO actually publish
-	# npm publish -ddd --tag $(TAG) --provenance --access public $(PKG_DIR)/../../fujinoki-$(VERSION).tgz
+	# TODO(kijv) actually publish
+	# cargo xtask npm publish --dry-run fujinoki-cli
 endif

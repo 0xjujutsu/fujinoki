@@ -82,7 +82,6 @@ pub fn run_publish(name: &str, nightly: bool, dry_run: bool) {
                     .args(["tag", "-l", "nightly-*"])
                     .error_message("Failed to list nightly tags")
                     .output_string();
-                dbg!(nightly_tag.clone());
 
                 let latest_nightly_tag = nightly_tag
                     .lines()
@@ -100,16 +99,14 @@ pub fn run_publish(name: &str, nightly: bool, dry_run: bool) {
                         .unwrap_or(0)
                 };
 
-                format!("0.0.0-nightly.{}.{}", now.format("%y%m%d"), patch + 1)
+                format!("0.0.0-{}.{}", now.format("%y%m%d"), patch + 1)
             }
             false => {
                 if let Ok(release_version) = env::var("RELEASE_VERSION") {
                     // node-file-trace@1.0.0-alpha.1
                     let release_tag_version = release_version
                         .trim()
-                        .trim_start_matches(
-                            format!("{}@", pkg.name).as_str(),
-                        );
+                        .trim_start_matches(format!("{}@", pkg.name).as_str());
                     if let Ok(semver_version) = Version::parse(release_tag_version) {
                         is_alpha = semver_version.pre.contains("alpha");
                         is_beta = semver_version.pre.contains("beta");
@@ -179,7 +176,7 @@ pub fn run_publish(name: &str, nightly: bool, dry_run: bool) {
                       }
                     });
 
-                    let dir_name = format!("{}-{}-{}", pkg.crate_name, platform.os, platform.arch);
+                    let dir_name = format!("{}-{}-{}", pkg.name, platform.os, platform.arch);
                     let target_dir = package_dir.join("npm").join(dir_name);
                     fs::create_dir(&target_dir)
                         .unwrap_or_else(|e| panic!("Unable to create dir: {:?}\n{e}", &target_dir));
@@ -200,13 +197,14 @@ pub fn run_publish(name: &str, nightly: bool, dry_run: bool) {
                         )
                     });
                     Command::program("npm")
+                        // TODO --provenance
                         .args(["publish", "--access", "public", "--tag", tag])
                         .error_message("Publish npm package failed")
                         .current_dir(target_dir)
                         .dry_run(dry_run)
                         .execute();
                 }
-                NpmPackageKind::Napi(napi) => todo!("napi impl")
+                NpmPackageKind::Napi(napi) => todo!(),
             }
         }
         let target_pkg_dir = temp_dir.join(pkg.name);
