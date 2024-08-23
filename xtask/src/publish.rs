@@ -4,19 +4,30 @@ use std::{
     path::PathBuf,
     process,
     str::FromStr,
+    sync::Arc,
 };
 
 use owo_colors::OwoColorize;
 use semver::{Prerelease, Version};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use turbopack_binding::swc::core::{
+    base::{config::JsMinifyOptions, try_with_handler, BoolOrDataConfig, Compiler as SwcCompiler},
+    common::{FileName, SourceMap, GLOBALS},
+};
 
 use crate::command::Command;
 
-const PLATFORM_LINUX_X64: NpmSupportedPlatform = NpmSupportedPlatform {
+const PLATFORM_LINUX_MUSL_X64: NpmSupportedPlatform = NpmSupportedPlatform {
     os: "linux",
     arch: "x64",
     rust_target: "x86_64-unknown-linux-musl",
+};
+
+const PLATFORM_LINUX_GNU_X64: NpmSupportedPlatform = NpmSupportedPlatform {
+    os: "linux",
+    arch: "x64",
+    rust_target: "x86_64-unknown-linux-gnu",
 };
 
 const PLATFORM_DARWIN_X64: NpmSupportedPlatform = NpmSupportedPlatform {
@@ -37,18 +48,32 @@ const PLATFORM_WIN32_X64: NpmSupportedPlatform = NpmSupportedPlatform {
     rust_target: "x86_64-pc-windows-msvc",
 };
 
-const NPM_PACKAGES: &[NpmPackage] = &[NpmPackage {
-    crate_name: "fujinoki-cli",
-    name: "fujinoki",
-    description: "Discord bot framework",
-    kind: NpmPackageKind::Bin("fujinoki"),
-    platform: &[
-        PLATFORM_LINUX_X64,
-        PLATFORM_DARWIN_X64,
-        PLATFORM_DARWIN_ARM64,
-        PLATFORM_WIN32_X64,
-    ],
-}];
+const NPM_PACKAGES: &[NpmPackage] = &[
+    NpmPackage {
+        crate_name: "fujinoki-cli",
+        name: "fujinoki",
+        description: "Discord bot framework",
+        kind: NpmPackageKind::Bin("fujinoki"),
+        platform: &[
+            PLATFORM_LINUX_MUSL_X64,
+            PLATFORM_DARWIN_X64,
+            PLATFORM_DARWIN_ARM64,
+            PLATFORM_WIN32_X64,
+        ],
+    },
+    NpmPackage {
+        crate_name: "discord-api-napi",
+        name: "@fujinoki/discord-api",
+        description: "Discord API bindings",
+        kind: NpmPackageKind::Napi,
+        platform: &[
+            PLATFORM_LINUX_GNU_X64,
+            PLATFORM_DARWIN_X64,
+            PLATFORM_DARWIN_ARM64,
+            PLATFORM_WIN32_X64,
+        ],
+    },
+];
 
 struct NpmSupportedPlatform {
     os: &'static str,
@@ -58,7 +83,7 @@ struct NpmSupportedPlatform {
 
 enum NpmPackageKind {
     Bin(&'static str),
-    Napi(Option<&'static str>),
+    Napi,
 }
 
 struct NpmPackage {
@@ -149,63 +174,81 @@ pub fn run_publish(name: &str, nightly: bool, dry_run: bool) {
         } else {
             "latest"
         };
+        let pkg_name_in_path = if pkg.name.starts_with("@fujinoki") {
+            // @fujinoki/pkg -> pkg
+            &pkg.name.replace("@fujinoki/", "")
+        } else if pkg.name.starts_with("@") {
+            // @scope/pkg -> scope-pkg
+            &pkg.name.replace("@", "").replace("/", "-")
+        } else {
+            &pkg.name.to_string()
+        };
         let current_dir = env::current_dir().expect("Unable to get current directory");
-        let package_dir = current_dir.join("../../packages").join(pkg.name);
+        let package_dir = current_dir.join("../../packages").join(pkg_name_in_path);
         let temp_dir = package_dir.join("npm");
         if let Ok(()) = fs::remove_dir_all(&temp_dir) {};
+        dbg!(&temp_dir);
         fs::create_dir(&temp_dir).expect("Unable to create temporary npm directory");
         for platform in pkg.platform.iter() {
-            match pkg.kind {
+            let bin_or_napi_file_name = match pkg.kind {
                 NpmPackageKind::Bin(bin) => {
-                    let bin_file_name = if platform.os == "win32" {
+                    if platform.os == "win32" {
                         format!("{}.exe", bin)
                     } else {
                         bin.to_string()
-                    };
-                    let platform_package_name =
-                        format!("{}-{}-{}", pkg.name, platform.os, platform.arch);
-                    optional_dependencies.push(platform_package_name.clone());
-                    let pkg_json = serde_json::json!({
-                      "name": platform_package_name,
-                      "version": version,
-                      "description": pkg.description,
-                      "os": [platform.os],
-                      "cpu": [platform.arch],
-                      "bin": {
-                        bin: bin_file_name
-                      }
-                    });
-
-                    let dir_name = format!("{}-{}-{}", pkg.name, platform.os, platform.arch);
-                    let target_dir = package_dir.join("npm").join(dir_name);
-                    fs::create_dir(&target_dir)
-                        .unwrap_or_else(|e| panic!("Unable to create dir: {:?}\n{e}", &target_dir));
-                    fs::write(
-                        target_dir.join("package.json"),
-                        serde_json::to_string_pretty(&pkg_json).unwrap(),
-                    )
-                    .expect("Unable to write package.json");
-                    let artifact_path = current_dir
-                        .join("artifacts")
-                        .join(format!("{}-{}", pkg.crate_name, platform.rust_target))
-                        .join(&bin_file_name);
-                    let dist_path = target_dir.join(&bin_file_name);
-                    fs::copy(&artifact_path, &dist_path).unwrap_or_else(|e| {
-                        panic!(
-                            "Copy file from [{:?}] to [{:?}] failed: {e}",
-                            artifact_path, dist_path
-                        )
-                    });
-                    Command::program("npm")
-                        // TODO --provenance
-                        .args(["publish", "--access", "public", "--tag", tag])
-                        .error_message("Publish npm package failed")
-                        .current_dir(target_dir)
-                        .dry_run(dry_run)
-                        .execute();
+                    }
                 }
-                NpmPackageKind::Napi(napi) => todo!(),
-            }
+                NpmPackageKind::Napi => {
+                    format!("lib{}.dylib", pkg.crate_name.replace("-", "_"))
+                }
+            };
+            let platform_package_name = format!("{}-{}-{}", pkg.name, platform.os, platform.arch);
+            optional_dependencies.push(platform_package_name.clone());
+            let mut pkg_json = serde_json::json!({
+              "name": platform_package_name,
+              "version": version,
+              "description": pkg.description,
+              "os": [platform.os],
+              "cpu": [platform.arch],
+            });
+
+            match pkg.kind {
+                NpmPackageKind::Bin(bin) => {
+                    pkg_json[bin] = bin_or_napi_file_name.clone().into();
+                }
+                NpmPackageKind::Napi => {
+                    pkg_json["main"] = "index.js".into();
+                    pkg_json["types"] = "index.d.ts".into();
+                }
+            };
+
+            let dir_name = format!("{}-{}-{}", pkg_name_in_path, platform.os, platform.arch);
+            let target_dir = package_dir.join("npm").join(dir_name);
+            fs::create_dir(&target_dir)
+                .unwrap_or_else(|e| panic!("Unable to create dir: {:?}\n{e}", &target_dir));
+            fs::write(
+                target_dir.join("package.json"),
+                serde_json::to_string_pretty(&pkg_json).unwrap(),
+            )
+            .expect("Unable to write package.json");
+            let artifact_path = current_dir
+                .join("artifacts")
+                .join(format!("{}-{}", pkg.crate_name, platform.rust_target))
+                .join(&bin_or_napi_file_name);
+            let dist_path = target_dir.join(&bin_or_napi_file_name);
+            fs::copy(&artifact_path, &dist_path).unwrap_or_else(|e| {
+                panic!(
+                    "Copy file from [{:?}] to [{:?}] failed: {e}",
+                    artifact_path, dist_path
+                )
+            });
+            Command::program("npm")
+                // TODO --provenance
+                .args(["publish", "--access", "public", "--tag", tag])
+                .error_message("Publish npm package failed")
+                .current_dir(target_dir)
+                .dry_run(dry_run)
+                .execute();
         }
         let target_pkg_dir = temp_dir.join(pkg.name);
         fs::create_dir_all(&target_pkg_dir).unwrap_or_else(|e| {
@@ -233,8 +276,42 @@ pub fn run_publish(name: &str, nightly: bool, dry_run: bool) {
                 target_pkg_dir.join("../../package.json")
             )
         });
-        // TODO(kijv) windows helper (for .exe)
-        // TODO(kijv) gen napi js bindings helper
+
+        match pkg.kind {
+            NpmPackageKind::Bin(bin) => {
+                // minifying bin helper so it's smaller
+                let cm = Arc::<SourceMap>::default();
+
+                let c = SwcCompiler::new(cm.clone());
+                let output = GLOBALS
+                    .set(&Default::default(), || {
+                        try_with_handler(cm.clone(), Default::default(), |handler| {
+                            let fm = cm.new_source_file(
+                                FileName::Anon.into(),
+                                include_str!("./bin.js").to_string(),
+                            );
+
+                            Ok(c.minify(
+                                fm,
+                                handler,
+                                &JsMinifyOptions {
+                                    compress: BoolOrDataConfig::from_bool(true),
+                                    mangle: BoolOrDataConfig::from_bool(true),
+                                    ..Default::default()
+                                },
+                            )
+                            .expect("failed to minify"))
+                        })
+                    })
+                    .unwrap();
+                dbg!(output.code.clone());
+
+                fs::write(target_pkg_dir.join(format!("../../{}", bin)), output.code)
+                    .expect("Unable to write bin helper");
+            }
+            NpmPackageKind::Napi => {}
+        };
+
         Command::program("npm")
             .args(["publish", "--access", "public", "--tag", tag])
             .error_message("Publish npm package failed")

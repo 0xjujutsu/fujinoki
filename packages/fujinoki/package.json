@@ -2,15 +2,14 @@
   "name": "fujinoki",
   "version": "0.0.0",
   "description": "Discord bot framework",
-  "homepage": "https://jujutsu.studio/fujinoki",
-  "bugs": "https://github.com/jujutsustudio/issues",
-  "repository": "https://github.com/kijv/fujinoki",
   "license": "MPL-2.0",
+  "homepage": "https://jujutsu.studio/fujinoki",
+  "bugs": "https://github.com/kijv/fujinoki/issues",
+  "repository": "https://github.com/kijv/fujinoki",
   "main": "./bin/fujinoki",
   "bin": {
     "fujinoki": "./bin/fujinoki"
   },
-  "files": ["bin"],
   "optionalDependencies": {
     "@fujinoki/darwin-arm64": "0.0.0",
     "@fujinoki/darwin-64": "0.0.0",

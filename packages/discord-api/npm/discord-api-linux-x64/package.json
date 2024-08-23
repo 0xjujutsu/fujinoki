@@ -1,0 +1,13 @@
+{
+  "name": "@fujinoki/discord-api-linux-x64",
+  "version": "0.0.0-240822.1",
+  "description": "Discord API bindings",
+  "os": [
+    "linux"
+  ],
+  "cpu": [
+    "x64"
+  ],
+  "main": "index.js",
+  "types": "index.d.ts"
+}

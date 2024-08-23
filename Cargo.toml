@@ -5,14 +5,13 @@ members = [
   "crates/fujinoki*",
   "crates/discord*",
   "crates/turbopack*",
-  "packages/discord*/rust",
   "xtask"
 ]
 
 [workspace.metadata.groups]
 turbopack = ["path:crates/turbopack*"]
 fujinoki = ["path:crates/fujinoki*"]
-discord = ["path:crates/discord*", "path:packages/discord*/rust"]
+discord = ["path:crates/discord*"]
 
 [workspace.lints.clippy]
 too_many_arguments = "allow"

@@ -521,9 +521,7 @@ impl Routes {
     /// Route for:
     /// - PATCH `/guilds/{guild.id}/members/@me/nick`
     #[turbo_tasks::function]
-    pub fn guild_current_member_nickname(guild_id: GuildId) -> Vc<Route> {
-        format!("/guilds/{guild_id}/members/@me/nick");
-
+    pub fn guild_current_member_nickname(_guild_id: GuildId) -> Vc<Route> {
         // This is not used as a attribute because
         // turbopack_binding::turbo::tasks::value_impl throws an error when
         // there are deprecated attributes added, so we just manual place a
