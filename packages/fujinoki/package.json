@@ -9,13 +9,5 @@
   "main": "./bin/fujinoki",
   "bin": {
     "fujinoki": "./bin/fujinoki"
-  },
-  "optionalDependencies": {
-    "@fujinoki/darwin-arm64": "0.0.0",
-    "@fujinoki/darwin-64": "0.0.0",
-    "@fujinoki/linux-arm64": "0.0.0",
-    "@fujinoki/linux-64": "0.0.0",
-    "@fujinoki/windows-arm64": "0.0.0",
-    "@fujinoki/windows-64": "0.0.0"
   }
 }

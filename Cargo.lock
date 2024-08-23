@@ -10641,6 +10641,7 @@ dependencies = [
  "clap 4.5.16",
  "indexmap 1.9.3",
  "inquire",
+ "itertools 0.10.5",
  "num-format",
  "owo-colors 3.5.0",
  "plotters",

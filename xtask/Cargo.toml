@@ -31,5 +31,6 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0.85"
 tabled = { version = "0.10.0", features = ["color"] }
 walkdir = "2.3.2"
+itertools = "0.10.5"
 
 turbopack-binding = { workspace = true, features = ["__swc_core"] }

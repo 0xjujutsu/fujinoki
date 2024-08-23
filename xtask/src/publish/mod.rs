@@ -16,6 +16,9 @@ use turbopack_binding::swc::core::{
     common::{FileName, SourceMap, GLOBALS},
 };
 
+mod napi;
+
+use self::napi::{typegen::process_type_def, write_js_binding};
 use crate::command::Command;
 
 const PLATFORM_LINUX_MUSL_X64: NpmSupportedPlatform = NpmSupportedPlatform {
@@ -100,77 +103,75 @@ pub fn run_publish(name: &str, nightly: bool, dry_run: bool) {
         let mut is_alpha = false;
         let mut is_beta = false;
         let mut is_canary = false;
-        let version = match nightly {
-            true => {
-                let now = chrono::Local::now();
-                let nightly_tag = Command::program("git")
-                    .args(["tag", "-l", "nightly-*"])
-                    .error_message("Failed to list nightly tags")
-                    .output_string();
+        let version = if nightly {
+            let now = chrono::Local::now();
+            let nightly_tag = Command::program("git")
+                .args(["tag", "-l", "nightly-*"])
+                .error_message("Failed to list nightly tags")
+                .output_string();
 
-                let latest_nightly_tag = nightly_tag
-                    .lines()
-                    .filter(|tag| tag.starts_with("nightly-"))
-                    .max()
-                    .unwrap_or("");
+            let latest_nightly_tag = nightly_tag
+                .lines()
+                .filter(|tag| tag.starts_with("nightly-"))
+                .max()
+                .unwrap_or("");
 
-                let patch = if latest_nightly_tag.is_empty() {
-                    0
-                } else {
-                    latest_nightly_tag
-                        .split('.')
-                        .last()
-                        .and_then(|s| s.parse::<u64>().ok())
-                        .unwrap_or(0)
+            let patch = if latest_nightly_tag.is_empty() {
+                None
+            } else {
+                latest_nightly_tag
+                    .split('.')
+                    .last()
+                    .and_then(|s| s.parse::<u64>().ok())
+            };
+
+            format!(
+                "0.0.0-{}.{}",
+                now.format("%y%m%d"),
+                patch.map(|p| p + 1).unwrap_or(0)
+            )
+        } else {
+            if let Ok(release_version) = env::var("RELEASE_VERSION") {
+                // node-file-trace@1.0.0-alpha.1
+                let release_tag_version = release_version
+                    .trim()
+                    .trim_start_matches(format!("{}@", pkg.name).as_str());
+                if let Ok(semver_version) = Version::parse(release_tag_version) {
+                    is_alpha = semver_version.pre.contains("alpha");
+                    is_beta = semver_version.pre.contains("beta");
+                    is_canary = semver_version.pre.contains("canary");
                 };
-
-                format!("0.0.0-{}.{}", now.format("%y%m%d"), patch + 1)
-            }
-            false => {
-                if let Ok(release_version) = env::var("RELEASE_VERSION") {
-                    // node-file-trace@1.0.0-alpha.1
-                    let release_tag_version = release_version
-                        .trim()
-                        .trim_start_matches(format!("{}@", pkg.name).as_str());
-                    if let Ok(semver_version) = Version::parse(release_tag_version) {
-                        is_alpha = semver_version.pre.contains("alpha");
-                        is_beta = semver_version.pre.contains("beta");
-                        is_canary = semver_version.pre.contains("canary");
-                    };
-                    release_tag_version.to_owned()
-                } else {
-                    format!(
-                        "0.0.0-{}",
-                        env::var("GITHUB_SHA")
-                            .map(|mut sha| {
-                                sha.truncate(7);
-                                sha
-                            })
-                            .unwrap_or_else(|_| {
-                                if let Ok(mut o) = process::Command::new("git")
-                                    .args(["rev-parse", "--short", "HEAD"])
-                                    .output()
-                                    .map(|o| {
-                                        String::from_utf8(o.stdout).expect("Invalid utf8 output")
-                                    })
-                                {
-                                    o.truncate(7);
-                                    return o;
-                                }
-                                panic!("Unable to get git commit sha");
-                            })
-                    )
-                }
+                release_tag_version.to_owned()
+            } else {
+                format!(
+                    "0.0.0-{}",
+                    env::var("GITHUB_SHA")
+                        .map(|mut sha| {
+                            sha.truncate(7);
+                            sha
+                        })
+                        .unwrap_or_else(|_| {
+                            if let Ok(mut o) = process::Command::new("git")
+                                .args(["rev-parse", "--short", "HEAD"])
+                                .output()
+                                .map(|o| String::from_utf8(o.stdout).expect("Invalid utf8 output"))
+                            {
+                                o.truncate(7);
+                                return o;
+                            }
+                            panic!("Unable to get git commit sha");
+                        })
+                )
             }
         };
-        let tag = if version.contains("nightly") {
-            "nightly"
-        } else if is_alpha {
+        let tag = if is_alpha {
             "alpha"
         } else if is_beta {
             "beta"
         } else if is_canary {
             "canary"
+        } else if nightly {
+            "nightly"
         } else {
             "latest"
         };
@@ -187,7 +188,6 @@ pub fn run_publish(name: &str, nightly: bool, dry_run: bool) {
         let package_dir = current_dir.join("../../packages").join(pkg_name_in_path);
         let temp_dir = package_dir.join("npm");
         if let Ok(()) = fs::remove_dir_all(&temp_dir) {};
-        dbg!(&temp_dir);
         fs::create_dir(&temp_dir).expect("Unable to create temporary npm directory");
         for platform in pkg.platform.iter() {
             let bin_or_napi_file_name = match pkg.kind {
@@ -309,7 +309,24 @@ pub fn run_publish(name: &str, nightly: bool, dry_run: bool) {
                 fs::write(target_pkg_dir.join(format!("../../{}", bin)), output.code)
                     .expect("Unable to write bin helper");
             }
-            NpmPackageKind::Napi => {}
+            NpmPackageKind::Napi => {
+                // TODO when building with napi use TYPE_DEF_TMP_PATH to generate types
+                // TODO add tests
+                let intermediate_type_file = current_dir
+                    .join("artifacts")
+                    .join(pkg.crate_name)
+                    .join("napi_typedefs.tmp");
+                let (dts, exports) = process_type_def(intermediate_type_file, false, None).unwrap();
+                fs::write(target_pkg_dir.join("index.d.ts"), dts)
+                    .expect("Unable to write index.d.ts");
+                write_js_binding(
+                    &exports,
+                    pkg.name,
+                    pkg.crate_name,
+                    target_pkg_dir.join("index.js"),
+                )
+                .expect("Unable to write index.js");
+            }
         };
 
         Command::program("npm")
@@ -464,6 +481,59 @@ pub fn run_bump(names: HashSet<String>, dry_run: bool) {
                     }
                 }
             }
+            "nightly" => {
+                let now = chrono::Local::now();
+
+                semver_version.major = 0;
+                semver_version.minor = 0;
+                semver_version.patch = 0;
+
+                if semver_version.pre.is_empty() {
+                    semver_version.pre =
+                        Prerelease::new(format!("{}.{}", now.format("%y%m%d"), 0).as_str())
+                            .unwrap();
+                } else {
+                    let mut prerelease_version = semver_version.pre.split('.');
+                    let prerelease_type = prerelease_version
+                        .next()
+                        .expect("prerelease type should exist");
+                    let prerelease_version = prerelease_version
+                        .next()
+                        .expect("prerelease version number should exist");
+                    let mut version_number = prerelease_version
+                        .parse::<u32>()
+                        .expect("prerelease version number should be u32");
+
+                    // Check if the current version is in nightly format (YYMMDD.N)
+                    if prerelease_type.len() == 6 && prerelease_type.chars().all(char::is_numeric) {
+                        let current_date = now.format("%y%m%d").to_string();
+                        if prerelease_type == current_date {
+                            // Same day, increment the version number
+                            version_number += 1;
+                        } else {
+                            // New day, reset version number
+                            version_number = 0;
+                        }
+                        semver_version.pre = Prerelease::new(
+                            format!("{}.{}", current_date, version_number).as_str(),
+                        )
+                        .unwrap();
+                    } else {
+                        // eg. current version is 1.0.0-beta.12, bump to 1.0.0-canary.0
+                        if Prerelease::from_str(version_type).unwrap()
+                            > Prerelease::from_str(prerelease_type).unwrap()
+                        {
+                            semver_version.pre =
+                                Prerelease::new(format!("{}.0", version_type).as_str()).unwrap();
+                        } else {
+                            panic!(
+                                "Previous version is {prerelease_type}, so you can't bump to \
+                                 {version_type}",
+                            );
+                        }
+                    }
+                }
+            }
             _ => unreachable!(),
         }
         let semver_version_string = semver_version.to_string();
@@ -525,23 +595,26 @@ pub fn publish_workspace(dry_run: bool) {
         .args(["log", "-1", "--pretty=%B"])
         .error_message("Get commit hash failed")
         .output_string();
-    for (pkg_name_without_scope, version) in commit_message
+    for (pkg_name_without_scope, scope, version) in commit_message
         .trim()
         .split('\n')
         // Skip commit title
         .skip(1)
         .map(|s| s.trim().trim_start_matches('-').trim())
-        // Only publish tags match `@vercel/xxx@x.y.z-alpha.n`
-        .filter(|m| m.starts_with("@vercel/"))
         .map(|m| {
-            let m = m.trim_start_matches("@vercel/");
+            let scope = if m.starts_with("@fujinoki/") {
+                Some("@fujinoki/")
+            } else {
+                None
+            };
+            let m = m.trim_start_matches("@fujinoki/");
             let mut full_tag = m.split('@');
             let pkg_name_without_scope = full_tag.next().unwrap().to_string();
             let version = full_tag.next().unwrap().to_string();
-            (pkg_name_without_scope, version)
+            (pkg_name_without_scope, scope, version)
         })
     {
-        let pkg_name = format!("@vercel/{pkg_name_without_scope}");
+        let pkg_name = format!("{}{pkg_name_without_scope}", scope.unwrap_or_default());
         let semver_version = Version::from_str(version.as_str())
             .unwrap_or_else(|e| panic!("Parse semver version failed {version} {e}"));
         let is_alpha = semver_version.pre.contains("alpha");
@@ -554,6 +627,8 @@ pub fn publish_workspace(dry_run: bool) {
                 "beta"
             } else if is_canary {
                 "canary"
+            } else if version.matches(r"^0\.0\.0-\d{6}\.\d+$").next().is_some() {
+                "nightly"
             } else {
                 "latest"
             }

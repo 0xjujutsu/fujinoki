@@ -48,7 +48,7 @@ fn main() {
             let nightly = sub_matches.get_flag("nightly");
             let dry_run = sub_matches.get_flag("dry-run");
 
-            run_publish(name, dry_run, nightly);
+            run_publish(name, nightly, dry_run);
         }
         Some(("workspace", sub_matches)) => {
             let is_bump = sub_matches.get_flag("bump");

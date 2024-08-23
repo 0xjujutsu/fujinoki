@@ -1,4 +1,6 @@
-fn main() {
+use turbopack_binding::turbo::tasks_build::generate_register;
+
+pub fn main() {
     napi_build::setup();
-    turbopack_binding::turbo::tasks_build::generate_register();
+    generate_register()
 }
