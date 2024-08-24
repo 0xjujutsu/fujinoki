@@ -10,7 +10,7 @@ use clap::{arg, Command};
 mod command;
 mod publish;
 
-use publish::{publish_workspace, run_bump, run_publish};
+use publish::{run_bump, run_publish};
 
 fn cli() -> Command {
     Command::new("xtask")
@@ -19,7 +19,7 @@ fn cli() -> Command {
         .allow_external_subcommands(true)
         .subcommand(
             Command::new("npm")
-                .about("Publish binaries to npm")
+                .about("Publish binaries/bindings to npm")
                 .arg(arg!(<NAME> "the package to publish"))
                 .arg(arg!(--nightly "publish nightly version"))
                 .arg(arg!(--"dry-run" "dry run all operations"))
@@ -27,11 +27,13 @@ fn cli() -> Command {
         )
         .subcommand(
             Command::new("workspace")
-                .arg(arg!(--publish "publish npm packages in pnpm workspace"))
-                .arg(arg!(--bump "bump new version for npm package in pnpm workspace"))
+                .about("Manage packages in pnpm workspaces")
+                .arg(
+                    arg!(--bump <VERSION_TYPE> "bump new version for packages in pnpm workspace")
+                )
                 .arg(arg!(--"dry-run" "dry run all operations"))
-                .arg(arg!([NAME] "the package to bump"))
-                .about("Manage packages in pnpm workspaces"),
+                .arg(arg!([NAME]... "the package to bump").required(true))
+                .arg_required_else_help(true)
         )
         .subcommand(
             Command::new("upgrade-swc").about("Upgrade all SWC dependencies to the latest version"),
@@ -51,19 +53,15 @@ fn main() {
             run_publish(name, nightly, dry_run);
         }
         Some(("workspace", sub_matches)) => {
-            let is_bump = sub_matches.get_flag("bump");
-            let is_publish = sub_matches.get_flag("publish");
             let dry_run = sub_matches.get_flag("dry-run");
-            if is_bump {
-                let names = sub_matches
-                    .get_many::<String>("NAME")
-                    .map(|names| names.cloned().collect::<HashSet<_>>())
-                    .unwrap_or_default();
-                run_bump(names, dry_run);
-            }
-            if is_publish {
-                publish_workspace(dry_run);
-            }
+            let version_type = sub_matches
+                .get_one::<String>("bump");
+
+            let names = sub_matches
+                .get_many::<String>("NAME")
+                .map(|names| names.cloned().collect::<HashSet<_>>())
+                .unwrap_or_default();
+            run_bump(names, version_type, dry_run);
         }
         Some(("upgrade-swc", _)) => {
             let workspace_dir = var_os("CARGO_WORKSPACE_DIR")

@@ -12,58 +12,16 @@ bench = false
 __swc = []
 __swc_core = ["__swc", "swc_core"]
 __swc_core_serde = ["swc_core/ecma_ast_serde"]
-__swc_core_next_core = [
+__swc_core_xtask = [
   "__swc_core",
-  "swc_core/common_concurrent",
-  "swc_core/ecma_ast",
-  "swc_core/ecma_visit",
-  "swc_core/ecma_loader_node",
-  "swc_core/ecma_loader_lru",
-  "swc_core/ecma_utils",
-  "swc_core/ecma_minifier",
-  "swc_core/ecma_preset_env",
-  "swc_core/ecma_transforms",
-  "swc_core/ecma_transforms_react",
-  "swc_core/ecma_transforms_typescript",
-  "swc_core/ecma_transforms_optimization",
-  "swc_core/ecma_parser",
-  "swc_core/ecma_parser_typescript",
-  "swc_core/cached",
   "swc_core/base",
-]
-
-__swc_core_binding_napi = [
-  "__swc_core",
-  "swc_core/base_concurrent",
-  "swc_core/base_node",
+  "swc_core/common",
   "swc_core/common_concurrent",
   "swc_core/ecma_ast",
+  "swc_core/ecma_visit",
   "swc_core/ecma_loader_node",
   "swc_core/ecma_loader_lru",
-  "swc_core/bundler",
-  "swc_core/bundler_concurrent",
-  "swc_core/ecma_codegen",
-  "swc_core/ecma_minifier",
-  "swc_core/ecma_parser",
-  "swc_core/ecma_parser_typescript",
-  "swc_core/ecma_transforms",
-  "swc_core/ecma_transforms_optimization",
-  "swc_core/ecma_transforms_react",
-  "swc_core/ecma_transforms_typescript",
-  "swc_core/ecma_utils",
-  "swc_core/ecma_visit",
 ]
-__swc_core_binding_napi_plugin = [
-  "swc_core/plugin_transform_host_native",
-  "turbopack-ecmascript-plugins/swc_ecma_transform_plugin",
-]
-__swc_core_binding_napi_plugin_filesystem_cache = [
-  "swc_core/plugin_transform_host_native_filesystem_cache",
-]
-__swc_core_binding_napi_plugin_shared_runtime = [
-  "swc_core/plugin_transform_host_native_shared_runtime",
-]
-__swc_core_binding_napi_allocator = ["swc_core/allocator_node"]
 
 __swc_core_binding_wasm = [
   "__swc_core",

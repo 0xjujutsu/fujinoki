@@ -1,0 +1,6 @@
+name: 'Build Discord API Bindings'
+
+runs:
+  using: 'composite'
+  steps:
+    - run: echo "Building Discord API Bindings"

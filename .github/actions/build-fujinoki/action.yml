@@ -1,0 +1,6 @@
+name: 'Build Fujinoki'
+
+runs:
+  using: 'composite'
+  steps:
+    - run: echo "Building Fujinoki"
