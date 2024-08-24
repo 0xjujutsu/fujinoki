@@ -28,12 +28,10 @@ fn cli() -> Command {
         .subcommand(
             Command::new("workspace")
                 .about("Manage packages in pnpm workspaces")
-                .arg(
-                    arg!(--bump <VERSION_TYPE> "bump new version for packages in pnpm workspace")
-                )
+                .arg(arg!(--bump <VERSION_TYPE> "bump new version for packages in pnpm workspace"))
                 .arg(arg!(--"dry-run" "dry run all operations"))
                 .arg(arg!([NAME]... "the package to bump").required(true))
-                .arg_required_else_help(true)
+                .arg_required_else_help(true),
         )
         .subcommand(
             Command::new("upgrade-swc").about("Upgrade all SWC dependencies to the latest version"),
@@ -54,8 +52,7 @@ fn main() {
         }
         Some(("workspace", sub_matches)) => {
             let dry_run = sub_matches.get_flag("dry-run");
-            let version_type = sub_matches
-                .get_one::<String>("bump");
+            let version_type = sub_matches.get_one::<String>("bump");
 
             let names = sub_matches
                 .get_many::<String>("NAME")

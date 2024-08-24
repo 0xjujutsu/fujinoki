@@ -20,7 +20,7 @@ mod napi;
 mod util;
 
 use self::{
-    napi::{typegen::process_type_def, write_js_binding},
+    napi::{create_cjs_binding, typegen::process_typedef},
     util::{default_empty_string, get_nightly_version},
 };
 use crate::command::Command;
@@ -101,13 +101,13 @@ struct NpmPackage {
     platform: &'static [NpmSupportedPlatform],
 }
 
-pub fn run_publish(name: &str, nightly: bool, dry_run: bool) {
+pub fn run_publish(name: &str, is_nightly: bool, dry_run: bool) {
     if let Some(pkg) = NPM_PACKAGES.iter().find(|p| p.crate_name == name) {
         let mut optional_dependencies = Vec::with_capacity(pkg.platform.len());
         let mut is_alpha = false;
         let mut is_beta = false;
         let mut is_canary = false;
-        let version = if nightly {
+        let version = if is_nightly {
             get_nightly_version()
         } else {
             if let Ok(release_version) = env::var("RELEASE_VERSION") {
@@ -143,14 +143,14 @@ pub fn run_publish(name: &str, nightly: bool, dry_run: bool) {
                 )
             }
         };
-        let tag = if is_alpha {
+        let tag = if is_nightly {
+            "nightly"
+        } else if is_alpha {
             "alpha"
         } else if is_beta {
             "beta"
         } else if is_canary {
             "canary"
-        } else if nightly {
-            "nightly"
         } else {
             "latest"
         };
@@ -168,7 +168,7 @@ pub fn run_publish(name: &str, nightly: bool, dry_run: bool) {
         let temp_dir = package_dir.join("npm");
         if let Ok(()) = fs::remove_dir_all(&temp_dir) {};
         fs::create_dir(&temp_dir).expect("Unable to create temporary npm directory");
-        for platform in pkg.platform.iter() {
+        for platform in Vec::<NpmSupportedPlatform>::new().iter() {
             let bin_or_napi_file_name = match pkg.kind {
                 NpmPackageKind::Bin(bin) => {
                     if platform.os == "win32" {
@@ -181,9 +181,9 @@ pub fn run_publish(name: &str, nightly: bool, dry_run: bool) {
                     format!("lib{}.dylib", pkg.crate_name.replace("-", "_"))
                 }
             };
-            let platform_package_name = format!("{}-{}-{}", pkg.name, platform.os, platform.arch);
-            optional_dependencies.push(platform_package_name.clone());
-            let mut pkg_json = serde_json::json!({
+            let platform_package_name = format!("{}-{}-{}", pkg.name, platform.os,
+        platform.arch);     optional_dependencies.push(platform_package_name.
+        clone());     let mut pkg_json = serde_json::json!({
               "name": platform_package_name,
               "version": version,
               "description": pkg.description,
@@ -201,11 +201,11 @@ pub fn run_publish(name: &str, nightly: bool, dry_run: bool) {
                 }
             };
 
-            let dir_name = format!("{}-{}-{}", pkg_name_in_path, platform.os, platform.arch);
-            let target_dir = package_dir.join("npm").join(dir_name);
-            fs::create_dir(&target_dir)
-                .unwrap_or_else(|e| panic!("Unable to create dir: {:?}\n{e}", &target_dir));
-            fs::write(
+            let dir_name = format!("{}-{}-{}", pkg_name_in_path, platform.os,
+        platform.arch);     let target_dir =
+        package_dir.join("npm").join(dir_name);     fs::create_dir(&
+        target_dir)         .unwrap_or_else(|e| panic!("Unable to create dir:
+        {:?}\n{e}", &target_dir));     fs::write(
                 target_dir.join("package.json"),
                 serde_json::to_string_pretty(&pkg_json).unwrap(),
             )
@@ -229,7 +229,8 @@ pub fn run_publish(name: &str, nightly: bool, dry_run: bool) {
                 .dry_run(dry_run)
                 .execute();
         }
-        let target_pkg_dir = temp_dir.join(pkg.name);
+
+        let target_pkg_dir = temp_dir.join(pkg_name_in_path);
         fs::create_dir_all(&target_pkg_dir).unwrap_or_else(|e| {
             panic!(
                 "Unable to create target npm directory [{:?}]: {e}",
@@ -241,70 +242,73 @@ pub fn run_publish(name: &str, nightly: bool, dry_run: bool) {
             .map(|name| (name, version.clone()))
             .collect::<HashMap<String, String>>();
         let pkg_json_content =
-            fs::read(package_dir.join("../../package.json")).expect("Unable to read package.json");
+            fs::read(package_dir.join("package.json")).expect("Unable to read package.json");
         let mut pkg_json: Value = serde_json::from_slice(&pkg_json_content).unwrap();
         pkg_json["optionalDependencies"] =
             serde_json::to_value(optional_dependencies_with_version).unwrap();
         fs::write(
-            target_pkg_dir.join("../../package.json"),
+            target_pkg_dir.join("package.json"),
             serde_json::to_string_pretty(&pkg_json).unwrap(),
         )
         .unwrap_or_else(|e| {
             panic!(
                 "Write [{:?}] failed: {e}",
-                target_pkg_dir.join("../../package.json")
+                target_pkg_dir.join("package.json")
             )
         });
 
+        let cm = Arc::<SourceMap>::default();
+        let c = SwcCompiler::new(cm.clone());
+
+        let minify_js = |src: &str| -> String {
+            let output = GLOBALS
+                .set(&Default::default(), || {
+                    try_with_handler(cm.clone(), Default::default(), |handler| {
+                        let fm = cm.new_source_file(FileName::Anon.into(), src.to_string());
+
+                        Ok(c.minify(
+                            fm,
+                            handler,
+                            &JsMinifyOptions {
+                                compress: BoolOrDataConfig::from_bool(true),
+                                mangle: BoolOrDataConfig::from_bool(true),
+                                ..Default::default()
+                            },
+                        )
+                        .expect("failed to minify"))
+                    })
+                })
+                .unwrap();
+
+            output.code
+        };
+
         match pkg.kind {
             NpmPackageKind::Bin(bin) => {
-                // minifying bin helper so it's smaller
-                let cm = Arc::<SourceMap>::default();
-
-                let c = SwcCompiler::new(cm.clone());
-                let output = GLOBALS
-                    .set(&Default::default(), || {
-                        try_with_handler(cm.clone(), Default::default(), |handler| {
-                            let fm = cm.new_source_file(
-                                FileName::Anon.into(),
-                                include_str!("./bin.js").to_string(),
-                            );
-
-                            Ok(c.minify(
-                                fm,
-                                handler,
-                                &JsMinifyOptions {
-                                    compress: BoolOrDataConfig::from_bool(true),
-                                    mangle: BoolOrDataConfig::from_bool(true),
-                                    ..Default::default()
-                                },
-                            )
-                            .expect("failed to minify"))
-                        })
-                    })
-                    .unwrap();
-                dbg!(output.code.clone());
-
-                fs::write(target_pkg_dir.join(format!("../../{}", bin)), output.code)
-                    .expect("Unable to write bin helper");
+                fs::write(
+                    target_pkg_dir.join(bin),
+                    minify_js(include_str!("./bin.js")),
+                )
+                .expect("Unable to write bin helper");
             }
             NpmPackageKind::Napi => {
-                // TODO when building with napi use TYPE_DEF_TMP_PATH to generate types
-                // TODO add tests
                 let intermediate_type_file = current_dir
                     .join("artifacts")
                     .join(pkg.crate_name)
                     .join(format!("lib{}.typedef", pkg.crate_name.replace("-", "_")));
-                let (dts, exports) = process_type_def(intermediate_type_file, false, None).unwrap();
+                let (dts, exports) = process_typedef(intermediate_type_file, false, None)
+                    .expect("unable to process typedef");
+
                 fs::write(target_pkg_dir.join("index.d.ts"), dts)
                     .expect("Unable to write index.d.ts");
-                write_js_binding(
-                    &exports,
-                    pkg.name,
-                    pkg.crate_name,
-                    target_pkg_dir.join("index.js"),
-                )
-                .expect("Unable to write index.js");
+
+                if !exports.is_empty() {
+                    let cjs =
+                        create_cjs_binding(&pkg.crate_name.replace("-", "_"), pkg.name, &exports);
+
+                    fs::write(target_pkg_dir.join("index.js"), minify_js(&cjs))
+                        .expect("Unable to write index.js");
+                }
             }
         };
 

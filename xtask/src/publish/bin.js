@@ -29,13 +29,15 @@ function installUsingNPM() {
 
   child_process.execSync(
     'npm install --loglevel=error --prefer-offline --no-audit --progress=false',
-    { cwd: packageDir, stdio: "pipe", env }
+    { cwd: packageDir, stdio: 'pipe', env },
   );
 }
 
 // npm has multiple places that we need to look for a package name.
 function hasPackage(sourceObject, packageName) {
-  return !!sourceObject[packageName] || !!sourceObject[`node_modules/${packageName}`];
+  return (
+    !!sourceObject[packageName] || !!sourceObject[`node_modules/${packageName}`]
+  );
 }
 
 // This provides logging messages as it progresses towards calculating the binary path.
@@ -44,25 +46,22 @@ function getBinaryPath() {
   const FUJINOKI_BINARY_PATH = process.env.FUJINOKI_BINARY_PATH;
   if (FUJINOKI_BINARY_PATH) {
     if (!fs.existsSync(FUJINOKI_BINARY_PATH)) {
-      console.error(`Fujinoki was unable to find the executable specified by FUJINOKI_BINARY_PATH:\n${FUJINOKI_BINARY_PATH}`);
+      console.error(
+        `Fujinoki was unable to find the executable specified by FUJINOKI_BINARY_PATH:\n${FUJINOKI_BINARY_PATH}`,
+      );
       console.error();
-      console.error('FUJINOKI_BINARY_PATH is intended for development use-cases. You likely want to unset the environment variable.');
+      console.error(
+        'FUJINOKI_BINARY_PATH is intended for development use-cases. You likely want to unset the environment variable.',
+      );
       process.exit(1);
     } else {
       return FUJINOKI_BINARY_PATH;
     }
   }
 
-  const availablePlatforms = [
-    'darwin',
-    'linux',
-    'windows',
-  ];
+  const availablePlatforms = ['darwin', 'linux', 'windows'];
 
-  const availableArchs = [
-    '64',
-    'arm64',
-  ];
+  const availableArchs = ['64', 'arm64'];
 
   // We need to figure out which binary to hand the user.
   // The only place where the binary can be at this point is `require.resolve`-able
@@ -74,7 +73,10 @@ function getBinaryPath() {
   // Try all places in order until we get a hit.
 
   // 1. The package which contains the binary we _should_ be running.
-  const correctBinary = availablePlatforms.includes(platform) && availableArchs.includes(arch) ? `fujinoki-${platform}-${arch}/fujinoki${ext}` : null;
+  const correctBinary =
+    availablePlatforms.includes(platform) && availableArchs.includes(arch)
+      ? `fujinoki-${platform}-${arch}/fujinoki${ext}`
+      : null;
   if (correctBinary !== null) {
     try {
       return require.resolve(`${correctBinary}`);
@@ -97,13 +99,20 @@ function getBinaryPath() {
   }
 
   // 3. Both Windows and macOS ARM boxes can run x64 binaries. Attempt to run under emulation.
-  const alternateBinary = (arch === "arm64" && ['darwin', 'windows'].includes(platform)) ? `fujinoki-${platform}-x64/fujinoki${ext}` : null;
+  const alternateBinary =
+    arch === 'arm64' && ['darwin', 'windows'].includes(platform)
+      ? `fujinoki-${platform}-x64/fujinoki${ext}`
+      : null;
   if (SHOULD_ATTEMPT_EMULATED && alternateBinary !== null) {
     try {
       const resolvedPath = require.resolve(`${alternateBinary}`);
-      console.warn(`Fujinoki detected that you're running:\n${platform} ${resolvedArch}.`);
+      console.warn(
+        `Fujinoki detected that you're running:\n${platform} ${resolvedArch}.`,
+      );
       console.warn(`We were not able to find the binary at:\n${correctBinary}`);
-      console.warn(`We found a possibly-compatible binary at:\n${alternateBinary}`);
+      console.warn(
+        `We found a possibly-compatible binary at:\n${alternateBinary}`,
+      );
       console.warn('We will attempt to run that binary.');
       return resolvedPath;
     } catch (e) {}
@@ -123,7 +132,9 @@ function getBinaryPath() {
   console.error();
   console.error('Fujinoki failed to start.');
   console.error();
-  console.error(`Fujinoki detected that you are running:\n${platform} ${resolvedArch}`);
+  console.error(
+    `Fujinoki detected that you are running:\n${platform} ${resolvedArch}`,
+  );
 
   // Tell them if we support their platform at all.
   if (!availablePlatforms.includes(platform)) {
@@ -133,11 +144,15 @@ function getBinaryPath() {
   } else if (!availableArchs.includes(resolvedArch)) {
     if (availablePlatforms.includes(platform)) {
       console.error();
-      console.error('Fujinoki supports your platform, but does not support your processor architecture.');
+      console.error(
+        'Fujinoki supports your platform, but does not support your processor architecture.',
+      );
       process.exit(1);
     } else {
       console.error();
-      console.error('Fujinoki does not either of your platform or processor architecture.');
+      console.error(
+        'Fujinoki does not either of your platform or processor architecture.',
+      );
       process.exit(1);
     }
   }
@@ -155,8 +170,12 @@ function getBinaryPath() {
     console.error();
     console.error('***');
     console.error();
-    console.error(`Your platform (${platform}) can sometimes run x86 under emulation.`);
-    console.error(`We did not find a possibly-compatible binary at:\n${alternateBinary}`);
+    console.error(
+      `Your platform (${platform}) can sometimes run x86 under emulation.`,
+    );
+    console.error(
+      `We did not find a possibly-compatible binary at:\n${alternateBinary}`,
+    );
     console.error();
     console.error('We looked for it at:');
     console.error(require.resolve.paths(alternateBinary).join('\n'));
@@ -165,9 +184,16 @@ function getBinaryPath() {
   // Investigate other failure modes.
 
   // Has the wrong platform's binaries available.
-  const availableBinaries = availablePlatforms.flatMap(platform => availableArchs.map(arch => `fujinoki-${platform}-${arch}/fujinoki${platform === 'windows' ? '.exe' : ''}`));
-  const definitelyWrongBinaries = availableBinaries.filter(binary => binary !== correctBinary || binary !== correctBinary);;
-  const otherInstalled = definitelyWrongBinaries.filter(binaryPath => {
+  const availableBinaries = availablePlatforms.flatMap((platform) =>
+    availableArchs.map(
+      (arch) =>
+        `fujinoki-${platform}-${arch}/fujinoki${platform === 'windows' ? '.exe' : ''}`,
+    ),
+  );
+  const definitelyWrongBinaries = availableBinaries.filter(
+    (binary) => binary !== correctBinary || binary !== correctBinary,
+  );
+  const otherInstalled = definitelyWrongBinaries.filter((binaryPath) => {
     try {
       return require.resolve(binaryPath);
     } catch (e) {}
@@ -178,20 +204,28 @@ function getBinaryPath() {
   console.error();
 
   if (otherInstalled.length > 0) {
-    console.error('Fujinoki checked to see if binaries for another platform are installed.');
-    console.error('This typically indicates an error in sharing of pre-resolved node_modules across platforms.');
+    console.error(
+      'Fujinoki checked to see if binaries for another platform are installed.',
+    );
+    console.error(
+      'This typically indicates an error in sharing of pre-resolved node_modules across platforms.',
+    );
     console.error('One common reason for this is copying files to Docker.');
     console.error();
     console.error('We found these unnecessary binaries:');
     console.error(otherInstalled.join('\n'));
   } else {
     console.error('We did not find any binaries on this system.');
-    console.error('This can happen if you run installation with the --no-optional flag.');
+    console.error(
+      'This can happen if you run installation with the --no-optional flag.',
+    );
   }
 
   // Check to see if we have partially-populated dependencies in the npm lockfile.
   const MAX_LOOKUPS = 10;
-  const availablePackages = availablePlatforms.flatMap(platform => availableArchs.map(arch => `fujinoki-${platform}-${arch}`));
+  const availablePackages = availablePlatforms.flatMap((platform) =>
+    availableArchs.map((arch) => `fujinoki-${platform}-${arch}`),
+  );
 
   try {
     // Attempt to find project root.
@@ -205,36 +239,49 @@ function getBinaryPath() {
         const lockfile = fs.readFileSync(current);
         const parsedLockfile = JSON.parse(lockfile);
 
-        const sourceObject = parsedLockfile?.dependencies ?? parsedLockfile?.packages ?? {};
+        const sourceObject =
+          parsedLockfile?.dependencies ?? parsedLockfile?.packages ?? {};
 
         // If we don't show up in the lockfile it's the wrong lockfile.
         if (hasPackage(sourceObject, 'fujinoki')) {
           // Check to see if all of `fujinoki-<PLATFORM>-<ARCH>` is included.
-          const hasAllPackages = availablePackages.every(pkg => hasPackage(sourceObject, pkg));
+          const hasAllPackages = availablePackages.every((pkg) =>
+            hasPackage(sourceObject, pkg),
+          );
           if (!hasAllPackages) {
             console.error();
             console.error('***');
             console.error();
-            console.error(`Fujinoki detected that your lockfile (${current}) does not enumerate all available platforms.`);
-            console.error('This is likely a consequence of an npm issue: https://github.com/npm/cli/issues/4828.');
+            console.error(
+              `Fujinoki detected that your lockfile (${current}) does not enumerate all available platforms.`,
+            );
+            console.error(
+              'This is likely a consequence of an npm issue: https://github.com/npm/cli/issues/4828.',
+            );
 
             // Let's build their repair command:
             let version = '';
             let environment = '';
-            if (parsedLockfile?.packages[""]?.dependencies?.fujinoki) {
-              version = `@${parsedLockfile.packages[""].dependencies.fujinoki}`;
+            if (parsedLockfile?.packages['']?.dependencies?.fujinoki) {
+              version = `@${parsedLockfile.packages[''].dependencies.fujinoki}`;
               environment = ' --save-prod';
-            } else if (parsedLockfile?.packages[""]?.devDependencies?.fujinoki) {
-              version = `@${parsedLockfile.packages[""].devDependencies.fujinoki}`;
+            } else if (
+              parsedLockfile?.packages['']?.devDependencies?.fujinoki
+            ) {
+              version = `@${parsedLockfile.packages[''].devDependencies.fujinoki}`;
               environment = ' --save-dev';
-            } else if (parsedLockfile?.packages[""]?.optionalDependencies?.fujinoki) {
-              version = `@${parsedLockfile.packages[""].optionalDependencies.fujinoki}`;
+            } else if (
+              parsedLockfile?.packages['']?.optionalDependencies?.fujinoki
+            ) {
+              version = `@${parsedLockfile.packages[''].optionalDependencies.fujinoki}`;
               environment = ' --save-optional';
             }
 
             console.error();
             console.error('To resolve this issue for your repository, run:');
-            console.error(`npm install fujinoki${version} --package-lock-only${environment} && npm install`);
+            console.error(
+              `npm install fujinoki${version} --package-lock-only${environment} && npm install`,
+            );
             console.error();
             console.error('You will need to commit the updated lockfile.');
           }
@@ -252,18 +299,18 @@ function getBinaryPath() {
   console.error();
   console.error('***');
   console.error();
-  console.error('If you believe this is an error, please include this message in your report.');
+  console.error(
+    'If you believe this is an error, please include this message in your report.',
+  );
 
   process.exit(1);
 }
 
 // Run the binary we got.
 try {
-  child_process.execFileSync(
-    getBinaryPath(),
-    process.argv.slice(2),
-    { stdio: "inherit" }
-  );
+  child_process.execFileSync(getBinaryPath(), process.argv.slice(2), {
+    stdio: 'inherit',
+  });
 } catch (e) {
   if (e?.status) process.exit(e.status);
   throw e;

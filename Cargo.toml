@@ -1,12 +1,7 @@
 [workspace]
 resolver = "2"
 
-members = [
-  "crates/fujinoki*",
-  "crates/discord*",
-  "crates/turbopack*",
-  "xtask"
-]
+members = ["crates/fujinoki*", "crates/discord*", "crates/turbopack*", "xtask"]
 
 [workspace.metadata.groups]
 turbopack = ["path:crates/turbopack*"]

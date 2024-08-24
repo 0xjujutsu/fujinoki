@@ -130,12 +130,12 @@ workspace = true
 # source https://github.com/vercel/next.js/tree/9642c49d2db3419008629fd175e5e64f108d007e/turbopack/crates/turbopack-binding
 # last rev = 3ab6d1790998f0984b97c4abf8c96ffe1eaad865
 [dependencies]
-# SWC crates
-swc_core = { optional = true, version = "0.101.3", features = [
+# Keep consistent with https://github.com/kijv/next.js/blob/canary/Cargo.toml#L87
+swc_core = { version = "0.101.3", features = [
   "ecma_loader_lru",
   "ecma_loader_parking_lot",
 ] }
-testing = { optional = true, version = "0.39.0" }
+testing = { version = "0.39.0" }
 
 auto-hash-map = { optional = true, git = "https://github.com/kijv/next.js.git" }
 

@@ -1,3 +1,4 @@
+# TODO(kijv) move this to workflow
 VERSION = $(shell cat ../../version.txt | sed -n '1 p')
 TAG = $(shell cat ../../version.txt | sed -n '2 p')
 PKG_DIR = $(shell pwd)

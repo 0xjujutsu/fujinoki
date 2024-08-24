@@ -13,8 +13,8 @@ pub fn main() {
     println!("cargo:rerun-if-changed={}", cargo_pkg_name.clone());
     println!("cargo:rerun-if-changed={}", profile.clone());
 
-    let typedef_path = PathBuf::from(target_dir)
-        .join(format!("lib{}.typedef", cargo_pkg_name.replace("-", "_")));
+    let typedef_path =
+        PathBuf::from(target_dir).join(format!("lib{}.typedef", cargo_pkg_name.replace("-", "_")));
 
     println!(
         "cargo:rustc-env=TYPE_DEF_TMP_PATH={}",

@@ -106,14 +106,14 @@ fn export_declare(ambient: bool) -> &'static str {
     }
 }
 
-pub fn process_type_def(
+pub fn process_typedef(
     intermediate_type_file: PathBuf,
     const_enum: bool,
     header: Option<&str>,
 ) -> Result<(String, Vec<String>)> {
     let mut exports = Vec::new();
     let defs = read_intermediate_type_file(intermediate_type_file)?;
-    let grouped_defs = preprocess_type_def(defs);
+    let grouped_defs = preprocess_typedef(defs);
 
     let header = header.unwrap_or(DEFAULT_TYPE_DEF_HEADER);
     let mut dts = String::new();
@@ -223,7 +223,7 @@ fn read_intermediate_type_file(file: PathBuf) -> Result<Vec<TypeDefLine>> {
     Ok(defs)
 }
 
-fn preprocess_type_def(defs: Vec<TypeDefLine>) -> HashMap<String, Vec<TypeDefLine>> {
+fn preprocess_typedef(defs: Vec<TypeDefLine>) -> HashMap<String, Vec<TypeDefLine>> {
     let mut namespace_grouped = HashMap::new();
     let mut class_defs = HashMap::new();
 
@@ -291,4 +291,3 @@ pub fn correct_string_ident(src: &str, ident: usize) -> String {
         .collect::<Vec<_>>()
         .join("\n")
 }
-
