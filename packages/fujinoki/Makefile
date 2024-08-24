@@ -11,27 +11,6 @@ else
 	UNAME := $(shell uname -s)
 endif
 
-.PHONY: stage-release
-stage-release:
-	echo "Version: $(VERSION)"
-	echo "Tag: $(TAG)"
-	cat $(PKG_DIR)/../../version.txt
-	git diff -- $(PKG_DIR)/../../version.txt
-	git status
-	@test "" = "`git cherry`" || (echo "Refusing to publish with unpushed commits" && false)
-
-	# Stop if versions are not updated.
-	@test "" != "`git diff -- $(PKG_DIR)/../../version.txt`" || (echo "Refusing to publish with unupdated version.txt" && false)
-
-	# Prepare the packages.
-	cd $(PKG_DIR) && pnpm version "$(VERSION)" --allow-same-version
-
-	# TODO(kijv) uncommment
-	# git checkout -b $(VERSION)
-	# git commit -anm "publish $(VERSION) to registry"
-	# git tag "$(VERSION)"
-	# git push origin $(VERSION) --tags --force
-
 .PHONY: publish
 publish:
 	echo "Version: $(VERSION)"

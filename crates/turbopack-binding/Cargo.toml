@@ -131,11 +131,11 @@ workspace = true
 # last rev = 3ab6d1790998f0984b97c4abf8c96ffe1eaad865
 [dependencies]
 # Keep consistent with https://github.com/kijv/next.js/blob/canary/Cargo.toml#L87
-swc_core = { version = "0.101.3", features = [
+swc_core = { optional = true, version = "0.101.3", features = [
   "ecma_loader_lru",
   "ecma_loader_parking_lot",
 ] }
-testing = { version = "0.39.0" }
+testing = { optional = true, version = "0.39.0" }
 
 auto-hash-map = { optional = true, git = "https://github.com/kijv/next.js.git" }
 
