@@ -15,7 +15,7 @@ use std::{
     net::{SocketAddr, TcpListener},
     pin::Pin,
     sync::Arc,
-    time::{Duration, Instant},
+    time::Instant,
 };
 
 use anyhow::{Context, Result};
@@ -145,12 +145,12 @@ impl InteractionsServerBuilder {
                             method: request.method().clone(),
                             uri: request.uri().clone(),
                         };
-                        let side_effects_reason = ServerRequestSideEffects {
-                            method: request.method().clone(),
-                            uri: request.uri().clone(),
-                        };
+                        // let side_effects_reason = ServerRequestSideEffects {
+                        //     method: request.method().clone(),
+                        //     uri: request.uri().clone(),
+                        // };
                         run_once_with_reason(tt.clone(), reason, async move {
-                            let issue_reporter = get_issue_reporter();
+                            // let issue_reporter = get_issue_reporter();
 
                             // if hyper_tungstenite::is_upgrade_request(&
                             // request) {

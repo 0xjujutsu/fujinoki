@@ -1,6 +1,7 @@
 use anyhow::Result;
 use async_trait::async_trait;
-use serde::{Deserialize, Serialize, Value as JsonValue};
+use serde::{Deserialize, Serialize};
+use serde_json::Value as JsonValue;
 use turbopack_binding::{
     turbo::{
         tasks::{self as turbo_tasks, Completion, RcStr, TaskInput, Vc},
@@ -13,10 +14,12 @@ use turbopack_binding::{
             module::Module,
         },
         node::{
+            debug::should_debug,
             evaluate::{
-                compute, custom_evaluate, EvaluateContext, EvaluationIssue, JavaScriptEvaluation,
-                JavaScriptStreamSender,
+                compute, custom_evaluate, get_evaluate_pool, EvaluateContext, EvaluationIssue,
+                JavaScriptEvaluation, JavaScriptStreamSender,
             },
+            source_map::StructuredError,
             NodeJsPool,
         },
         resolve::resolve_options_context::ResolveOptionsContext,
@@ -72,7 +75,6 @@ impl EvaluateContext for ExportsContext {
             None,
             self.additional_invalidation,
             should_debug("exports_loader"),
-            self.export_names.clone(),
         )
     }
 

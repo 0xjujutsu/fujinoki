@@ -6,8 +6,7 @@ use fujinoki_ecmascript_plugins::after_resolve::external_cjs_modules::{
 };
 use turbopack_binding::{
     turbo::{
-        tasks as turbo_tasks,
-        tasks::Vc,
+        tasks::{self as turbo_tasks, Vc},
         tasks_fs::{FileSystem, FileSystemPath},
     },
     turbopack::{
@@ -23,7 +22,7 @@ use turbopack_binding::{
         turbopack::{
             condition::ContextCondition,
             evaluate_context::node_build_environment,
-            module_options::{JsxTransformOptions, ModuleOptionsContext},
+            module_options::{EcmascriptOptionsContext, JsxTransformOptions, ModuleOptionsContext},
             resolve_options_context::ResolveOptionsContext,
             ModuleAssetContext,
         },
@@ -114,7 +113,10 @@ async fn get_module_options_context(
         preset_env_versions: Some(env),
         execution_context: Some(execution_context),
         tree_shaking_mode: Some(TreeShakingMode::ReexportsOnly),
-        import_externals: true,
+        ecmascript: EcmascriptOptionsContext {
+            import_externals: true,
+            ..Default::default()
+        },
         ..Default::default()
     };
 
@@ -148,10 +150,13 @@ async fn get_module_options_context(
     );
 
     let module_options_context = ModuleOptionsContext {
-        enable_jsx,
-        enable_postcss_transform: None,
-        enable_typescript_transform: Some(Default::default()),
-        import_externals: true,
+        ecmascript: EcmascriptOptionsContext {
+            enable_jsx,
+            enable_types: true,
+            enable_typescript_transform: Some(Default::default()),
+            import_externals: true,
+            ..Default::default()
+        },
         rules: vec![(
             foreign_code_context_condition().await?,
             module_options_context.clone().cell(),

@@ -41,9 +41,9 @@ fujinoki-websocket = { path = "crates/fujinoki-websocket" }
 
 turbopack-binding = { path = "crates/turbopack-binding" }
 
-turbopath = { git = "https://github.com/vercel/turborepo.git", tag = "v2.0.14" }
-turborepo-ci = { git = "https://github.com/vercel/turborepo.git", tag = "v2.0.14" }
-turborepo-repository = { git = "https://github.com/vercel/turborepo.git", tag = "v2.0.14" }
+turbopath = { git = "https://github.com/kijv/turborepo.git" }
+turborepo-ci = { git = "https://github.com/kijv/turborepo.git" }
+turborepo-repository = { git = "https://github.com/kijv/turborepo.git" }
 
 # Be careful when selecting tls backend, including change default tls backend.
 reqwest = { version = "=0.11.17", default-features = false }

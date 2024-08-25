@@ -1,4 +1,3 @@
-#![feature(panic_info_message)]
 #![feature(future_join)]
 #![feature(min_specialization)]
 #![feature(arbitrary_self_types)]
