@@ -22,7 +22,6 @@ inputs:
     required: false
   artifact-name:
     description: 'Name of the artifact to upload'
-    default: ${{ inputs.crate }}-${{ inputs.target }}
     required: false
   build-output-files:
     description: 'Files to upload as the artifact (ex. libdiscord_api_napi* or fujinoki-cli*)'
@@ -33,7 +32,7 @@ runs:
   steps:
     - name: Setup Container
       shell: bash
-      if: ${{ inputs.container-setup | ne('') }}
+      if: ${{ inputs.container-setup != null }}
       run: ${{ inputs.container-setup }}
 
     - uses: actions/checkout@v4
@@ -51,14 +50,14 @@ runs:
     - name: Setup toolchain
       shell: bash
       run: ${{ inputs.setup }}
-      if: ${{ inputs.setup | ne('') }}
+      if: ${{ inputs.setup != null }}
 
     - name: Build
       shell: bash
-      run: ${{ inputs.rust-build-env | default('') }} cargo build ${{ inputs.profile && format('--profile {0}', inputs.profile) | default('') }} ${{ inputs.crate && format('-p {0}', inputs.crate) }} --target ${{ inputs.target }}
+      run: ${{ inputs.rust-build-env || '' }} cargo build ${{ inputs.profile && format('--profile {0}', inputs.profile) || '' }} ${{ inputs.crate && format('-p {0}', inputs.crate) || '' }} --target ${{ inputs.target }}
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ inputs.artifact-name }}
+        name: ${{ inputs.artifact-name || format('{0}-{1}', inputs.crate, inputs.target) }}
         path: target/${{ inputs.target }}/${{ inputs.profile && format('{0}/', inputs.profile) }}${{ inputs.build-output-files }}
