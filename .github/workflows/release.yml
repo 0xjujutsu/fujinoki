@@ -86,52 +86,55 @@ jobs:
             pnpm-store-
             pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
 
-  bump-version:
-    name: Bump version
-    needs: [changed]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Setup node
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_LTS_VERSION }}
-          check-latest: true
+  # TODO uncomment
+  # stage-bump-version:
+  #   name: Stage and bump version
+  #   needs: [changed]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Setup node
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: ${{ env.NODE_LTS_VERSION }}
+  #         check-latest: true
 
-      - uses: actions/checkout@v4
+  #     - uses: actions/checkout@v4
 
-      - name: Install Rust
-        uses: ./.github/actions/setup-rust
+  #     - name: Install Rust
+  #       uses: ./.github/actions/setup-rust
 
-      - uses: Swatinem/rust-cache@v2
-        with:
-          shared-key: release-${{ hashFiles('.cargo/config.toml') }}
+  #     - uses: Swatinem/rust-cache@v2
+  #       with:
+  #         shared-key: xtask-${{ hashFiles('xtask/**/*') }}
+  #         cache-targets: "false"
 
-      - run: corepack enable && pnpm --version
+  #     - run: corepack enable && pnpm --version
 
-      - name: Configure git
-        run: |
-          git config --global user.name 'release bot'
-          git config --global user.email 'release@jujutsu.studio'
+  #     - name: Configure git
+  #       run: |
+  #         git config --global user.name 'release bot'
+  #         git config --global user.email 'release@jujutsu.studio'
 
-      - name: Version
-        id: version
-        run: |
-          cargo xtask workspace --bump ${{ github.event.inputs.semverType }} ${{ github.event.inputs.package }}
-          echo "RELEASE_VERSION=$(pnpm list -r --depth -1 fujinoki --long --filter fujinoki --parseable | sed 's/.*:fujinoki@//')" >> $GITHUB_OUTPUT
-      - run: echo "${{ steps.version.outputs.RELEASE_VERSION }}"
-      - name: Stage Commit
-        id: stage
-        run: echo ""
+  #     - name: Version
+  #       id: version
+  #       # cargo xtask workspace --bump ${{ github.event.inputs.semverType }} ${{ github.event.inputs.package }}
+  #       run: |
+  #         echo "RELEASE_VERSION=$(pnpm list -r --depth -1 fujinoki --long --filter fujinoki --parseable | sed 's/.*:fujinoki@//')" >> $GITHUB_OUTPUT
+  #     - run: echo "${{ steps.version.outputs.RELEASE_VERSION }}"
+  #     - name: Stage Commit
+  #       id: stage
+  #       run: echo ""
 
-      - name: Show Stage Commit
-        run: echo "${{ steps.stage.outputs.STAGE_BRANCH }}"
-    outputs:
-      stage-branch: "${{ steps.stage.outputs.STAGE_BRANCH }}"
-      release-version: "${{ steps.version.outputs.RELEASE_VERSION }}"
+  #     - name: Show Stage Commit
+  #       run: echo "${{ steps.stage.outputs.STAGE_BRANCH }}"
+  #   outputs:
+  #     stage-branch: "${{ steps.stage.outputs.STAGE_BRANCH }}"
+  #     release-version: "${{ steps.version.outputs.RELEASE_VERSION }}"
 
   build:
     name: Build
-    needs: [changed, bump-version]
+    # needs: [changed, stage-bump-version]
+    needs: [changed]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -155,6 +158,7 @@ jobs:
             pnpm-store-
             pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
       - run: pnpm install
+
       - name: Configure git
         run: |
           git config --global user.name 'release bot'
@@ -168,73 +172,75 @@ jobs:
         if: ${{ github.event.inputs.package == '@fujinoki/discord-api' }}
         uses: ./.github/actions/build-discord-api
 
-  npm-publish:
-    name: Publish to NPM
-    needs: [changed, bump-version, build]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Setup node
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_LTS_VERSION }}
-          check-latest: true
+  # TODO uncomment
+  # npm-publish:
+  #   name: Publish to NPM
+  #   needs: [changed, stage-bump-version, build]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Setup node
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: ${{ env.NODE_LTS_VERSION }}
+  #         check-latest: true
 
-      - uses: actions/checkout@v4
+  #     - uses: actions/checkout@v4
 
-      - name: Install Rust
-        uses: ./.github/actions/setup-rust
+  #     - name: Install Rust
+  #       uses: ./.github/actions/setup-rust
 
-      - uses: Swatinem/rust-cache@v2
-        with:
-          shared-key: release-${{ hashFiles('.cargo/config.toml') }}
+  #     - uses: Swatinem/rust-cache@v2
+  #       with:
+  #         shared-key: xtask-${{ hashFiles('xtask/**/*') }}
+  #         cache-targets: "false"
 
-      - run: corepack enable && pnpm --version
+  #     - run: corepack enable && pnpm --version
 
-      - id: get-store-path
-        run: echo STORE_PATH=$(pnpm store path) >> $GITHUB_OUTPUT
+  #     - id: get-store-path
+  #       run: echo STORE_PATH=$(pnpm store path) >> $GITHUB_OUTPUT
 
-      - uses: actions/cache@v4
-        timeout-minutes: 5
-        id: cache-pnpm-store
-        with:
-          path: ${{ steps.get-store-path.outputs.STORE_PATH }}
-          key: pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
-          restore-keys: |
-            pnpm-store-
-            pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
+  #     - uses: actions/cache@v4
+  #       timeout-minutes: 5
+  #       id: cache-pnpm-store
+  #       with:
+  #         path: ${{ steps.get-store-path.outputs.STORE_PATH }}
+  #         key: pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
+  #         restore-keys: |
+  #           pnpm-store-
+  #           pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
 
-      - name: Download Rust artifacts
-        uses: actions/download-artifact@v3
-        with:
-          path: artifacts
+  #     - name: Download Rust artifacts
+  #       uses: actions/download-artifact@v3
+  #       with:
+  #         path: artifacts
 
-      # - name: Publish
-      #   run: |
-      #     if [[ "${{ github.event.inputs.package }}" == "fujinoki" ]]; then
-      #       if [[ "${{ inputs.dry-run }}" == "true" ]]; then
-      #         cargo xtask npm --dry-run fujinoki-cli
-      #       else
-      #         cargo xtask npm fujinoki-cli
-      #       fi
-      #     elif [[ "${{ github.event.inputs.package }}" == "@fujinoki/discord-api" ]]; then
-      #       if [[ "${{ inputs.dry-run }}" == "true" ]]; then
-      #         cargo xtask npm --dry-run discord-api-napi
-      #       else
-      #         cargo xtask npm discord-api-napi
-      #       fi
-      #     else
-      #       echo "Invalid package specified"
-      #       exit 1
-      #     fi
-      #   env:
-      #     NPM_TOKEN: ${{ secrets.RELEASE_BOT_PAT }}
+  #     # - name: Publish
+  #     #   run: |
+  #     #     if [[ "${{ github.event.inputs.package }}" == "fujinoki" ]]; then
+  #     #       if [[ "${{ inputs.dry-run }}" == "true" ]]; then
+  #     #         cargo xtask npm --dry-run fujinoki-cli
+  #     #       else
+  #     #         cargo xtask npm fujinoki-cli
+  #     #       fi
+  #     #     elif [[ "${{ github.event.inputs.package }}" == "@fujinoki/discord-api" ]]; then
+  #     #       if [[ "${{ inputs.dry-run }}" == "true" ]]; then
+  #     #         cargo xtask npm --dry-run discord-api-napi
+  #     #       else
+  #     #         cargo xtask npm discord-api-napi
+  #     #       fi
+  #     #     else
+  #     #       echo "Invalid package specified"
+  #     #       exit 1
+  #     #     fi
+  #     #   env:
+  #     #     NPM_TOKEN: ${{ secrets.RELEASE_BOT_PAT }}
 
-      # Upload published artifacts in case they are needed for debugging later
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: debug-artifacts
-          path: artifacts
+  #     # Upload published artifacts in case they are needed for debugging later
+  #     - name: Upload Artifacts
+  #       uses: actions/upload-artifact@v3
+  #       with:
+  #         name: debug-artifacts
+  #         path: artifacts
 
   # open-release-pr:
   #   name: Open Release PR
