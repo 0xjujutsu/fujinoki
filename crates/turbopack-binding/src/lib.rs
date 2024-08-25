@@ -1,3 +1,11 @@
+#[cfg(feature = "__swc")]
+pub mod swc {
+    #[cfg(feature = "__swc_core")]
+    pub use swc_core as core;
+    #[cfg(feature = "__swc_testing")]
+    pub use testing;
+}
+
 #[cfg(feature = "__turbo")]
 pub mod turbo {
     #[cfg(feature = "__turbo_tasks")]
@@ -85,6 +93,4 @@ pub mod features {
     pub use auto_hash_map;
     #[cfg(feature = "__feature_node_file_trace")]
     pub use node_file_trace;
-    #[cfg(feature = "__feature_tracing_signpost")]
-    pub use tracing_signpost;
 }
