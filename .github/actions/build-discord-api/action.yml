@@ -2,5 +2,45 @@ name: 'Build Discord API Bindings'
 
 runs:
   using: 'composite'
+  strategy:
+    fail-fast: false
+    matrix:
+      # xtask/src/publish/mod.rs:76
+      settings:
+        - host: macos-latest
+          target: "x86_64-apple-darwin"
+
+        - host: macos-latest
+          target: "aarch64-apple-darwin"
+
+        - host: ubuntu-latest
+          target: "x86_64-unknown-linux-gnu"
+
+        - host: windows-latest
+          target: x86_64-pc-windows-msvc
+  runs-on: ${{ matrix.settings.host }}
+  timeout-minutes: 45
   steps:
-    - run: echo "Building Discord API Bindings"
+    - name: Setup Container
+      if: ${{ matrix.settings.container-setup }}
+      run: ${{ matrix.settings.container-setup }}
+
+    - uses: actions/checkout@v4
+
+    - name: Install Rust
+        uses: ./.github/actions/setup-rust
+        with:
+          targets: ${{ matrix.settings.target }}
+
+    - name: Setup toolchain
+      run: ${{ matrix.settings.setup }}
+      if: ${{ matrix.settings.setup }}
+
+    - name: Build
+      run: ${{ matrix.settings.rust-build-env }} cargo build --profile release-discord-api -p discord-api-napi --target ${{ matrix.settings.target }}
+
+    - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: discord-api-napi/${{ matrix.settings.target }}
+          path: target/${{ matrix.settings.target }}/release-discord-api/libdiscord_api_napi*
