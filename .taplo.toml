@@ -5,4 +5,4 @@ keys = ["dependencies", "*-dependencies", "workspace.dependencies"]
 
 [rule.formatting]
 reorder_keys = true
-indent_tables = true
+indent_tables = false

@@ -15,6 +15,7 @@ linker = "rust-lld"
 linker = "rust-lld"
 
 [alias]
+xtask = "run --bin xtask"
 fn-build = "build --bin fujinoki-cli"
 fn-run = "run --bin fujinoki-cli"
 # Builds all test code to check for compiler errors before running
