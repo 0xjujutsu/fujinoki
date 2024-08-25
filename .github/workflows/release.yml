@@ -37,10 +37,10 @@ env:
   NODE_LTS_VERSION: 20
 
 # run: |
-        #   git checkout -b release-${{ inputs.package }}-${{ steps.version.outputs.RELEASE_VERSION }}
-        #   cargo xtask workspace --bump ${{ github.event.inputs.semverType }} ${{ github.event.inputs.package }}
-        #   git push origin release-${{ inputs.package }}-${{ steps.version.outputs.RELEASE_VERSION }} --tags --force
-        #   echo "STAGE_BRANCH=$(git branch --show-current)" >> $GITHUB_OUTPUT
+#   git checkout -b release-${{ inputs.package }}-${{ steps.version.outputs.RELEASE_VERSION }}
+#   cargo xtask workspace --bump ${{ github.event.inputs.semverType }} ${{ github.event.inputs.package }}
+#   git push origin release-${{ inputs.package }}-${{ steps.version.outputs.RELEASE_VERSION }} --tags --force
+#   echo "STAGE_BRANCH=$(git branch --show-current)" >> $GITHUB_OUTPUT
 
 permissions:
   id-token: write
@@ -131,46 +131,76 @@ jobs:
   #     stage-branch: "${{ steps.stage.outputs.STAGE_BRANCH }}"
   #     release-version: "${{ steps.version.outputs.RELEASE_VERSION }}"
 
-  build:
-    name: Build
-    # needs: [changed, stage-bump-version]
+
+  build-discord-api:
+    name: Build Discord API Bindings
     needs: [changed]
-    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.package == '@fujinoki/discord-api' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # xtask/src/publish/mod.rs:64
+        settings:
+          - host: macos-latest
+            target: "x86_64-apple-darwin"
+
+          - host: macos-latest
+            target: "aarch64-apple-darwin"
+            setup: "apt-get install -y build-essential clang-5.0 lldb-5.0 llvm-5.0-dev libclang-5.0-dev"
+
+          - host: ubuntu-latest
+            target: "x86_64-unknown-linux-musl"
+            setup: "apt-get install -y build-essential clang-5.0 lldb-5.0 llvm-5.0-dev libclang-5.0-dev"
+
+          - host: windows-latest
+            target: "x86_64-pc-windows-msvc"
+    runs-on: ${{ matrix.settings.host }}
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v3
 
-      - name: Setup node
-        uses: actions/setup-node@v4
+      - uses: ./.github/actions/build-rust
         with:
-          node-version: ${{ env.NODE_LTS_VERSION }}
-          check-latest: true
-      - run: corepack enable
+          target: ${{ matrix.settings.target }}
+          setup: ${{ matrix.settings.setup }}
+          profile: release-discord-api
+          crate: discord-api-napi
+          build-output-files: libdiscord_api_napi*
 
-      - id: get-store-path
-        run: echo STORE_PATH=$(pnpm store path) >> $GITHUB_OUTPUT
-      - uses: actions/cache@v4
-        timeout-minutes: 5
-        id: cache-pnpm-store
+  build-fujinoki:
+    name: Build Fujinoki
+    needs: [changed]
+    if: ${{ github.event.inputs.package == 'fujinoki' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # xtask/src/publish/mod.rs:64
+        settings:
+          - host: macos-latest
+            target: "x86_64-apple-darwin"
+
+          - host: macos-latest
+            target: "aarch64-apple-darwin"
+            setup: "apt-get install -y build-essential clang-5.0 lldb-5.0 llvm-5.0-dev libclang-5.0-dev"
+
+          - host: ubuntu-latest
+            target: "x86_64-unknown-linux-musl"
+            setup: "apt-get install -y build-essential clang-5.0 lldb-5.0 llvm-5.0-dev libclang-5.0-dev"
+
+          - host: windows-latest
+            target: "x86_64-pc-windows-msvc"
+    runs-on: ${{ matrix.settings.host }}
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: ./.github/actions/build-rust
         with:
-          path: ${{ steps.get-store-path.outputs.STORE_PATH }}
-          key: pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
-          restore-keys: |
-            pnpm-store-
-            pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
-      - run: pnpm install
-
-      - name: Configure git
-        run: |
-          git config --global user.name 'release bot'
-          git config --global user.email 'release@jujutsu.studio'
-
-      - name: Build Fujinoki
-        if: ${{ github.event.inputs.package == 'fujinoki' }}
-        uses: ./.github/actions/build-fujinoki
-
-      - name: Build Discord API Bindings
-        if: ${{ github.event.inputs.package == '@fujinoki/discord-api' }}
-        uses: ./.github/actions/build-discord-api
+          target: ${{ matrix.settings.target }}
+          setup: ${{ matrix.settings.setup }}
+          profile: release-fujinoki
+          crate: fujinoki-cli
+          build-output-files: fujinoki-cli*
 
   # TODO uncomment
   # npm-publish:

@@ -1,0 +1,54 @@
+name: "Build Discord API Bindings"
+
+inputs:
+  container-setup:
+    description: Container setup command to run
+  setup:
+    description: Setup command to run
+  rust-build-env:
+    description: Rust build environment variables
+  target:
+    description: Rust target to build for
+    required: true
+  profile:
+    description: Cargo profile to build with
+  crate:
+    description: Specific crate to build
+  artifact-name:
+    description: Name of the artifact to upload
+    default: ${{ inputs.crate }}-${{ inputs.target }}
+  build-output-files:
+    description: Files to upload as the artifact (ex. libdiscord_api_napi* or fujinoki-cli*)
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Container
+      if: ${{ inputs.container-setup | ne('') }}
+      run: ${{ inputs.container-setup }}
+
+    - uses: actions/checkout@v4
+
+    - name: Install Rust
+      uses: ./.github/actions/setup-rust
+      with:
+        targets: ${{ inputs.target }}
+
+    - uses: Swatinem/rust-cache@v2
+      with:
+        shared-key: build-rust-${{ hashFiles('.cargo/config.toml') }}
+        cache-targets: "false"
+
+    - name: Setup toolchain
+      run: ${{ inputs.setup }}
+      if: ${{ inputs.setup | ne('') }}
+
+    - name: Build
+      run: ${{ inputs.rust-build-env | default('') }} cargo build ${{ inputs.profile && format('--profile {0}', inputs.profile) | default('') }} ${{ inputs.crate && format('-p {0}', inputs.crate) }} --target ${{ inputs.target }}
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: target/${{ inputs.target }}/${{ inputs.profile && format('{0}/', inputs.profile) }}${{ inputs.build-output-files }}
