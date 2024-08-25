@@ -1,6 +1,7 @@
 [workspace]
 resolver = "2"
 
+<<<<<<< HEAD
 members = [
   "crates/fujinoki*",
   "crates/discord*",
@@ -8,11 +9,14 @@ members = [
   "packages/discord*/rust",
   "xtask"
 ]
+=======
+members = ["crates/fujinoki*", "crates/discord*", "crates/turbopack*", "xtask"]
+>>>>>>> 9f27a5b (feat(xtask): ci utils (#5))
 
 [workspace.metadata.groups]
 turbopack = ["path:crates/turbopack*"]
 fujinoki = ["path:crates/fujinoki*"]
-discord = ["path:crates/discord*", "path:packages/discord*/rust"]
+discord = ["path:crates/discord*"]
 
 [workspace.lints.clippy]
 too_many_arguments = "allow"
@@ -28,6 +32,9 @@ lto = "off"
 [profile.release-fujinoki]
 inherits = "release"
 strip = true
+
+[profile.release-discord-api]
+inherits = "release-fujinoki"
 
 # Declare dependencies used across workspace packages requires single version bump.
 # ref: https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html#inheriting-a-dependency-from-a-workspace
@@ -74,7 +81,6 @@ futures = "0.3.26"
 futures-retry = "0.6.0"
 indexmap = "1.9.2"
 indoc = "2.0.0"
-itertools = "0.10.5"
 lazy-regex = "2.5.0"
 lazy_static = "1.4.0"
 mime = "0.3.16"

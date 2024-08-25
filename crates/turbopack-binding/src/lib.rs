@@ -1,3 +1,11 @@
+#[cfg(feature = "__swc")]
+pub mod swc {
+    #[cfg(feature = "__swc_core")]
+    pub use swc_core as core;
+    #[cfg(feature = "__swc_testing")]
+    pub use testing;
+}
+
 #[cfg(feature = "__turbo")]
 pub mod turbo {
     #[cfg(feature = "__turbo_tasks")]
