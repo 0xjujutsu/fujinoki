@@ -1,4 +1,4 @@
-use std::{panic::PanicInfo, process};
+use std::{panic::PanicHookInfo, process};
 
 use const_format::formatcp;
 use fujinoki_core::{get_version, DISPLAY_NAME, GITHUB_REPO, NPM_PACKAGE};
@@ -7,9 +7,9 @@ use human_panic::report::{Method, Report};
 const OPEN_ISSUE_MESSAGE: &str =
     formatcp!("Please open an issue at https://github.com/{GITHUB_REPO}/issues/new/choose");
 
-pub fn panic_handler(panic_info: &PanicInfo) {
+pub fn panic_handler(panic_info: &PanicHookInfo) {
     let cause = panic_info
-        .message()
+        .payload_as_str()
         .map(ToString::to_string)
         .unwrap_or_else(|| "Unknown".to_string());
 

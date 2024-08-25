@@ -2,7 +2,7 @@
 #![feature(future_join)]
 #![feature(min_specialization)]
 #![feature(arbitrary_self_types)]
-#![feature(panic_info_message)]
+#![feature(panic_payload_as_str)]
 #![feature(panic_can_unwind)]
 #![feature(pattern)]
 

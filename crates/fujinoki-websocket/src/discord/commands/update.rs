@@ -4,21 +4,20 @@ use fujinoki_core::{
     config::FujinokiConfig,
     structures::commands::{CommandMetadata, CommandsMetadata},
 };
-use fujinoki_node::{custom_evaluate::exports::ExportsEvaluateContext, evaluate::custom_evaluate};
+use fujinoki_node::transforms::exports::ExportsContext;
 use serde_json::{json, Value as JsonValue};
 use turbopack_binding::{
     turbo::{
-        tasks as turbo_tasks,
-        tasks::{Completion, ValueToString, Vc},
+        tasks::{self as turbo_tasks, Completion, ValueToString, Vc},
         tasks_bytes::stream::SingleValue,
         tasks_fs::json::parse_json_with_source_context,
     },
-    turbopack::core::{
+    turbopack::{core::{
         file_source::FileSource,
         issue::{handle_issues, IssueReporter, IssueSeverity},
         module::Module,
         source::Source,
-    },
+    }, node::evaluate::custom_evaluate},
 };
 
 use super::util::merge_json;
@@ -161,10 +160,10 @@ impl DiscordApplicationCommandsUpdater {
             let asset_context = resolved_source.clone().await?.executor.await?.asset_context;
             let env = resolved_source.clone().await?.executor.await?.env;
 
-            let initial_val = custom_evaluate(ExportsEvaluateContext {
+            let initial_val = custom_evaluate(ExportsContext {
                 // TODO(kijv) use individual exported values AND the data object which contains
                 // EVERY key (to be merged with individual exports having precedence)
-                export_names: vec!["data".to_string().into()],
+                args: vec![Vc::cell("data".into())],
                 module_asset: entry,
                 cwd: project_path,
                 env,
