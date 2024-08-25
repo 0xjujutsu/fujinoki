@@ -48,21 +48,18 @@ fn main() {
             let nightly = sub_matches.get_flag("nightly");
             let dry_run = sub_matches.get_flag("dry-run");
 
-<<<<<<< HEAD
-            run_publish(name, dry_run, nightly);
-=======
             run_publish(name, nightly, dry_run);
->>>>>>> 9f27a5b (feat(xtask): ci utils (#5))
         }
         Some(("workspace", sub_matches)) => {
             let dry_run = sub_matches.get_flag("dry-run");
-            let version_type = sub_matches.get_one::<String>("bump");
 
-            let names = sub_matches
-                .get_many::<String>("NAME")
-                .map(|names| names.cloned().collect::<HashSet<_>>())
-                .unwrap_or_default();
-            run_bump(names, version_type, dry_run);
+            if let Some(version_type) = sub_matches.get_one::<String>("bump") {
+                let names = sub_matches
+                    .get_many::<String>("NAME")
+                    .map(|names| names.cloned().collect::<HashSet<_>>())
+                    .unwrap_or_default();
+                run_bump(names, version_type, dry_run);
+            }
         }
         Some(("upgrade-swc", _)) => {
             let workspace_dir = var_os("CARGO_WORKSPACE_DIR")

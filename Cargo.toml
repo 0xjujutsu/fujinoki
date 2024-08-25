@@ -1,20 +1,9 @@
 [workspace]
 resolver = "2"
 
-<<<<<<< HEAD
-members = [
-  "crates/fujinoki*",
-  "crates/discord*",
-  "crates/turbopack*",
-  "packages/discord*/rust",
-  "xtask"
-]
-=======
 members = ["crates/fujinoki*", "crates/discord*", "crates/turbopack*", "xtask"]
->>>>>>> 9f27a5b (feat(xtask): ci utils (#5))
 
 [workspace.metadata.groups]
-turbopack = ["path:crates/turbopack*"]
 fujinoki = ["path:crates/fujinoki*"]
 discord = ["path:crates/discord*"]
 
