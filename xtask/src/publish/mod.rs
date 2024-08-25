@@ -181,9 +181,9 @@ pub fn run_publish(name: &str, is_nightly: bool, dry_run: bool) {
                     format!("lib{}.dylib", pkg.crate_name.replace("-", "_"))
                 }
             };
-            let platform_package_name = format!("{}-{}-{}", pkg.name, platform.os,
-        platform.arch);     optional_dependencies.push(platform_package_name.
-        clone());     let mut pkg_json = serde_json::json!({
+            let platform_package_name = format!("{}-{}-{}", pkg.name, platform.os, platform.arch);
+            optional_dependencies.push(platform_package_name.clone());
+            let mut pkg_json = serde_json::json!({
               "name": platform_package_name,
               "version": version,
               "description": pkg.description,
@@ -201,11 +201,16 @@ pub fn run_publish(name: &str, is_nightly: bool, dry_run: bool) {
                 }
             };
 
-            let dir_name = format!("{}-{}-{}", pkg_name_in_path, platform.os,
-        platform.arch);     let target_dir =
-        package_dir.join("npm").join(dir_name);     fs::create_dir(&
-        target_dir)         .unwrap_or_else(|e| panic!("Unable to create dir:
-        {:?}\n{e}", &target_dir));     fs::write(
+            let dir_name = format!("{}-{}-{}", pkg_name_in_path, platform.os, platform.arch);
+            let target_dir = package_dir.join("npm").join(dir_name);
+            fs::create_dir(&target_dir).unwrap_or_else(|e| {
+                panic!(
+                    "Unable to create dir:
+        {:?}\n{e}",
+                    &target_dir
+                )
+            });
+            fs::write(
                 target_dir.join("package.json"),
                 serde_json::to_string_pretty(&pkg_json).unwrap(),
             )
@@ -223,7 +228,14 @@ pub fn run_publish(name: &str, is_nightly: bool, dry_run: bool) {
             });
             Command::program("npm")
                 // TODO --provenance
-                .args(["publish", "--access", "public", "--tag", tag])
+                .args([
+                    "publish",
+                    "--provenance",
+                    "--access",
+                    "public",
+                    "--tag",
+                    tag,
+                ])
                 .error_message("Publish npm package failed")
                 .current_dir(target_dir)
                 .dry_run(dry_run)
@@ -573,9 +585,9 @@ pub fn publish_workspace(is_nightly: bool, dry_run: bool) {
                 "latest"
             }
         };
-        // TODO provenance
         let mut args = vec![
             "publish",
+            "--provenance",
             "--tag",
             tag,
             "--no-git-checks",
