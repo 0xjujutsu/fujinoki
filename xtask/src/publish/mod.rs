@@ -227,7 +227,6 @@ pub fn run_publish(name: &str, is_nightly: bool, dry_run: bool) {
                 )
             });
             Command::program("npm")
-                // TODO --provenance
                 .args([
                     "publish",
                     "--provenance",

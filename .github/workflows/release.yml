@@ -1,4 +1,4 @@
-name: Trigger Release
+name: Release
 
 on:
   workflow_dispatch:
@@ -72,7 +72,9 @@ jobs:
       - run: corepack enable && pnpm --version
 
       - id: get-store-path
-        run: echo STORE_PATH=$(pnpm store path) >> $GITHUB_OUTPUT
+        run: |
+          pnpm store path
+          echo STORE_PATH=$(pnpm store path) >> $GITHUB_OUTPUT
 
       - uses: actions/cache@v4
         timeout-minutes: 5
@@ -84,7 +86,8 @@ jobs:
             pnpm-store-
             pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
 
-  stage:
+  bump-version:
+    name: Bump version
     needs: [changed]
     runs-on: ubuntu-latest
     steps:
@@ -98,6 +101,10 @@ jobs:
 
       - name: Install Rust
         uses: ./.github/actions/setup-rust
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: release-${{ hashFiles('.cargo/config.toml') }}
 
       - run: corepack enable && pnpm --version
 
@@ -124,7 +131,7 @@ jobs:
 
   build:
     name: Build
-    needs: [changed, stage]
+    needs: [changed, bump-version]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -163,7 +170,7 @@ jobs:
 
   npm-publish:
     name: Publish to NPM
-    needs: [changed, stage, build]
+    needs: [changed, bump-version, build]
     runs-on: ubuntu-latest
     steps:
       - name: Setup node
@@ -176,6 +183,10 @@ jobs:
 
       - name: Install Rust
         uses: ./.github/actions/setup-rust
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: release-${{ hashFiles('.cargo/config.toml') }}
 
       - run: corepack enable && pnpm --version
 
