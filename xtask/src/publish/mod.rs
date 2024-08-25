@@ -55,20 +55,6 @@ const PLATFORM_WIN32_X64: NpmSupportedPlatform = NpmSupportedPlatform {
     rust_target: "x86_64-pc-windows-msvc",
 };
 
-<<<<<<< HEAD:xtask/src/publish.rs
-const NPM_PACKAGES: &[NpmPackage] = &[NpmPackage {
-    crate_name: "fujinoki-cli",
-    name: "fujinoki",
-    description: "Discord bot framework",
-    kind: NpmPackageKind::Bin("fujinoki"),
-    platform: &[
-        PLATFORM_LINUX_X64,
-        PLATFORM_DARWIN_X64,
-        PLATFORM_DARWIN_ARM64,
-        PLATFORM_WIN32_X64,
-    ],
-}];
-=======
 const NPM_PACKAGES: &[NpmPackage] = &[
     NpmPackage {
         crate_name: "fujinoki-cli",
@@ -95,7 +81,6 @@ const NPM_PACKAGES: &[NpmPackage] = &[
         ],
     },
 ];
->>>>>>> 9f27a5b (feat(xtask): ci utils (#5)):xtask/src/publish/mod.rs
 
 struct NpmSupportedPlatform {
     os: &'static str,
@@ -105,11 +90,7 @@ struct NpmSupportedPlatform {
 
 enum NpmPackageKind {
     Bin(&'static str),
-<<<<<<< HEAD:xtask/src/publish.rs
-    Napi(Option<&'static str>),
-=======
     Napi,
->>>>>>> 9f27a5b (feat(xtask): ci utils (#5)):xtask/src/publish/mod.rs
 }
 
 struct NpmPackage {
@@ -120,83 +101,12 @@ struct NpmPackage {
     platform: &'static [NpmSupportedPlatform],
 }
 
-<<<<<<< HEAD:xtask/src/publish.rs
-pub fn run_publish(name: &str, nightly: bool, dry_run: bool) {
-=======
 pub fn run_publish(name: &str, is_nightly: bool, dry_run: bool) {
->>>>>>> 9f27a5b (feat(xtask): ci utils (#5)):xtask/src/publish/mod.rs
     if let Some(pkg) = NPM_PACKAGES.iter().find(|p| p.crate_name == name) {
         let mut optional_dependencies = Vec::with_capacity(pkg.platform.len());
         let mut is_alpha = false;
         let mut is_beta = false;
         let mut is_canary = false;
-<<<<<<< HEAD:xtask/src/publish.rs
-        let version = match nightly {
-            true => {
-                let now = chrono::Local::now();
-                let nightly_tag = Command::program("git")
-                    .args(["tag", "-l", "nightly-*"])
-                    .error_message("Failed to list nightly tags")
-                    .output_string();
-                dbg!(nightly_tag.clone());
-
-                let latest_nightly_tag = nightly_tag
-                    .lines()
-                    .filter(|tag| tag.starts_with("nightly-"))
-                    .max()
-                    .unwrap_or("");
-
-                let patch = if latest_nightly_tag.is_empty() {
-                    0
-                } else {
-                    latest_nightly_tag
-                        .split('.')
-                        .last()
-                        .and_then(|s| s.parse::<u64>().ok())
-                        .unwrap_or(0)
-                };
-
-                format!("0.0.0-nightly.{}.{}", now.format("%y%m%d"), patch + 1)
-            }
-            false => {
-                if let Ok(release_version) = env::var("RELEASE_VERSION") {
-                    // node-file-trace@1.0.0-alpha.1
-                    let release_tag_version = release_version
-                        .trim()
-                        .trim_start_matches(format!("{}@", pkg.name).as_str());
-                    if let Ok(semver_version) = Version::parse(release_tag_version) {
-                        is_alpha = semver_version.pre.contains("alpha");
-                        is_beta = semver_version.pre.contains("beta");
-                        is_canary = semver_version.pre.contains("canary");
-                    };
-                    release_tag_version.to_owned()
-                } else {
-                    format!(
-                        "0.0.0-{}",
-                        env::var("GITHUB_SHA")
-                            .map(|mut sha| {
-                                sha.truncate(7);
-                                sha
-                            })
-                            .unwrap_or_else(|_| {
-                                if let Ok(mut o) = process::Command::new("git")
-                                    .args(["rev-parse", "--short", "HEAD"])
-                                    .output()
-                                    .map(|o| {
-                                        String::from_utf8(o.stdout).expect("Invalid utf8 output")
-                                    })
-                                {
-                                    o.truncate(7);
-                                    return o;
-                                }
-                                panic!("Unable to get git commit sha");
-                            })
-                    )
-                }
-            }
-        };
-        let tag = if version.contains("nightly") {
-=======
         let version = if is_nightly {
             get_nightly_version()
         } else {
@@ -234,7 +144,6 @@ pub fn run_publish(name: &str, is_nightly: bool, dry_run: bool) {
             }
         };
         let tag = if is_nightly {
->>>>>>> 9f27a5b (feat(xtask): ci utils (#5)):xtask/src/publish/mod.rs
             "nightly"
         } else if is_alpha {
             "alpha"
@@ -255,7 +164,6 @@ pub fn run_publish(name: &str, is_nightly: bool, dry_run: bool) {
             &pkg.name.to_string()
         };
         let current_dir = env::current_dir().expect("Unable to get current directory");
-<<<<<<< HEAD:xtask/src/publish.rs
         let package_dir = current_dir.join("../../packages").join(pkg.name);
         let temp_dir = package_dir.join("npm");
         if let Ok(()) = fs::remove_dir_all(&temp_dir) {};
@@ -311,7 +219,6 @@ pub fn run_publish(name: &str, is_nightly: bool, dry_run: bool) {
                 }
                 NpmPackageKind::Napi(napi) => todo!("napi impl"),
             }
-=======
         let package_dir = current_dir.join("../../packages").join(pkg_name_in_path);
         let temp_dir = package_dir.join("npm");
         if let Ok(()) = fs::remove_dir_all(&temp_dir) {};
@@ -375,7 +282,6 @@ pub fn run_publish(name: &str, is_nightly: bool, dry_run: bool) {
                 )
             });
             Command::program("npm")
-                // TODO --provenance
                 .args([
                     "publish",
                     "--provenance",
@@ -388,7 +294,6 @@ pub fn run_publish(name: &str, is_nightly: bool, dry_run: bool) {
                 .current_dir(target_dir)
                 .dry_run(dry_run)
                 .execute();
->>>>>>> 9f27a5b (feat(xtask): ci utils (#5)):xtask/src/publish/mod.rs
         }
 
         let target_pkg_dir = temp_dir.join(pkg_name_in_path);
@@ -417,10 +322,6 @@ pub fn run_publish(name: &str, is_nightly: bool, dry_run: bool) {
                 target_pkg_dir.join("package.json")
             )
         });
-<<<<<<< HEAD:xtask/src/publish.rs
-        // TODO(kijv) windows helper (for .exe)
-        // TODO(kijv) gen napi js bindings helper
-=======
 
         let cm = Arc::<SourceMap>::default();
         let c = SwcCompiler::new(cm.clone());
@@ -477,7 +378,6 @@ pub fn run_publish(name: &str, is_nightly: bool, dry_run: bool) {
             }
         };
 
->>>>>>> 9f27a5b (feat(xtask): ci utils (#5)):xtask/src/publish/mod.rs
         Command::program("npm")
             .args(["publish", "--access", "public", "--tag", tag])
             .error_message("Publish npm package failed")
@@ -487,15 +387,9 @@ pub fn run_publish(name: &str, is_nightly: bool, dry_run: bool) {
     }
 }
 
-<<<<<<< HEAD:xtask/src/publish.rs
-const VERSION_TYPE: &[&str] = &[
-    "patch", "minor", "major", "alpha", "beta", "canary", "nightly",
-];
-=======
 // nightly is just a temporary state when publishing, it's not a real release
 // that would contribute to semver
 const VERSION_TYPE: &[&str] = &["patch", "minor", "major", "alpha", "beta", "canary"];
->>>>>>> 9f27a5b (feat(xtask): ci utils (#5)):xtask/src/publish/mod.rs
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct WorkspaceProjectMeta {
