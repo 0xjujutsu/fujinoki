@@ -1,30 +1,38 @@
-name: "Build Discord API Bindings"
+name: 'Build Rust'
+description: 'Builds a Rust crate for a given target'
 
 inputs:
   container-setup:
-    description: Container setup command to run
+    description: 'Container setup command to run'
+    required: false
   setup:
-    description: Setup command to run
+    description: 'Setup command to run'
+    required: false
   rust-build-env:
-    description: Rust build environment variables
+    description: 'Rust build environment variables'
+    required: false
   target:
-    description: Rust target to build for
+    description: 'Rust target to build for'
     required: true
   profile:
-    description: Cargo profile to build with
+    description: 'Cargo profile to build with'
+    required: false
   crate:
-    description: Specific crate to build
+    description: 'Specific crate to build'
+    required: false
   artifact-name:
-    description: Name of the artifact to upload
+    description: 'Name of the artifact to upload'
     default: ${{ inputs.crate }}-${{ inputs.target }}
+    required: false
   build-output-files:
-    description: Files to upload as the artifact (ex. libdiscord_api_napi* or fujinoki-cli*)
+    description: 'Files to upload as the artifact (ex. libdiscord_api_napi* or fujinoki-cli*)'
     required: true
 
 runs:
-  using: "composite"
+  using: 'composite'
   steps:
     - name: Setup Container
+      shell: bash
       if: ${{ inputs.container-setup | ne('') }}
       run: ${{ inputs.container-setup }}
 
@@ -41,10 +49,12 @@ runs:
         cache-targets: "false"
 
     - name: Setup toolchain
+      shell: bash
       run: ${{ inputs.setup }}
       if: ${{ inputs.setup | ne('') }}
 
     - name: Build
+      shell: bash
       run: ${{ inputs.rust-build-env | default('') }} cargo build ${{ inputs.profile && format('--profile {0}', inputs.profile) | default('') }} ${{ inputs.crate && format('-p {0}', inputs.crate) }} --target ${{ inputs.target }}
 
     - name: Upload artifact
