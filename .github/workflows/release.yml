@@ -149,7 +149,7 @@ jobs:
             # setup: "apt-get install -y build-essential clang-5.0 lldb-5.0 llvm-5.0-dev libclang-5.0-dev"
 
           - host: ubuntu-latest
-            target: "x86_64-unknown-linux-musl"
+            target: "x86_64-unknown-linux-gnu"
             # setup: "apt-get install -y build-essential clang-5.0 lldb-5.0 llvm-5.0-dev libclang-5.0-dev"
 
           - host: windows-latest
@@ -181,11 +181,11 @@ jobs:
 
           - host: macos-latest
             target: "aarch64-apple-darwin"
-            setup: "apt-get install -y build-essential clang-5.0 lldb-5.0 llvm-5.0-dev libclang-5.0-dev"
+            # setup: "apt-get install -y build-essential clang-5.0 lldb-5.0 llvm-5.0-dev libclang-5.0-dev"
 
           - host: ubuntu-latest
             target: "x86_64-unknown-linux-musl"
-            setup: "apt-get install -y build-essential clang-5.0 lldb-5.0 llvm-5.0-dev libclang-5.0-dev"
+            # setup: "apt-get install -y build-essential clang-5.0 lldb-5.0 llvm-5.0-dev libclang-5.0-dev"
 
           - host: windows-latest
             target: "x86_64-pc-windows-msvc"
