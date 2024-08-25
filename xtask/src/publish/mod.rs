@@ -164,61 +164,6 @@ pub fn run_publish(name: &str, is_nightly: bool, dry_run: bool) {
             &pkg.name.to_string()
         };
         let current_dir = env::current_dir().expect("Unable to get current directory");
-        let package_dir = current_dir.join("../../packages").join(pkg.name);
-        let temp_dir = package_dir.join("npm");
-        if let Ok(()) = fs::remove_dir_all(&temp_dir) {};
-        fs::create_dir(&temp_dir).expect("Unable to create temporary npm directory");
-        for platform in pkg.platform.iter() {
-            match pkg.kind {
-                NpmPackageKind::Bin(bin) => {
-                    let bin_file_name = if platform.os == "win32" {
-                        format!("{}.exe", bin)
-                    } else {
-                        bin.to_string()
-                    };
-                    let platform_package_name =
-                        format!("{}-{}-{}", pkg.name, platform.os, platform.arch);
-                    optional_dependencies.push(platform_package_name.clone());
-                    let pkg_json = serde_json::json!({
-                      "name": platform_package_name,
-                      "version": version,
-                      "description": pkg.description,
-                      "os": [platform.os],
-                      "cpu": [platform.arch],
-                      "bin": {
-                        bin: bin_file_name
-                      }
-                    });
-
-                    let dir_name = format!("{}-{}-{}", pkg.crate_name, platform.os, platform.arch);
-                    let target_dir = package_dir.join("npm").join(dir_name);
-                    fs::create_dir(&target_dir)
-                        .unwrap_or_else(|e| panic!("Unable to create dir: {:?}\n{e}", &target_dir));
-                    fs::write(
-                        target_dir.join("package.json"),
-                        serde_json::to_string_pretty(&pkg_json).unwrap(),
-                    )
-                    .expect("Unable to write package.json");
-                    let artifact_path = current_dir
-                        .join("artifacts")
-                        .join(format!("{}-{}", pkg.crate_name, platform.rust_target))
-                        .join(&bin_file_name);
-                    let dist_path = target_dir.join(&bin_file_name);
-                    fs::copy(&artifact_path, &dist_path).unwrap_or_else(|e| {
-                        panic!(
-                            "Copy file from [{:?}] to [{:?}] failed: {e}",
-                            artifact_path, dist_path
-                        )
-                    });
-                    Command::program("npm")
-                        .args(["publish", "--access", "public", "--tag", tag])
-                        .error_message("Publish npm package failed")
-                        .current_dir(target_dir)
-                        .dry_run(dry_run)
-                        .execute();
-                }
-                NpmPackageKind::Napi(napi) => todo!("napi impl"),
-            }
         let package_dir = current_dir.join("../../packages").join(pkg_name_in_path);
         let temp_dir = package_dir.join("npm");
         if let Ok(()) = fs::remove_dir_all(&temp_dir) {};
@@ -282,6 +227,7 @@ pub fn run_publish(name: &str, is_nightly: bool, dry_run: bool) {
                 )
             });
             Command::program("npm")
+                // TODO --provenance
                 .args([
                     "publish",
                     "--provenance",
