@@ -4,19 +4,37 @@ use std::{
     path::PathBuf,
     process,
     str::FromStr,
+    sync::Arc,
 };
 
 use owo_colors::OwoColorize;
 use semver::{Prerelease, Version};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use turbopack_binding::swc::core::{
+    base::{config::JsMinifyOptions, try_with_handler, BoolOrDataConfig, Compiler as SwcCompiler},
+    common::{FileName, SourceMap, GLOBALS},
+};
 
+mod napi;
+mod util;
+
+use self::{
+    napi::{create_cjs_binding, typegen::process_typedef},
+    util::{default_empty_string, get_nightly_version},
+};
 use crate::command::Command;
 
-const PLATFORM_LINUX_X64: NpmSupportedPlatform = NpmSupportedPlatform {
+const PLATFORM_LINUX_MUSL_X64: NpmSupportedPlatform = NpmSupportedPlatform {
     os: "linux",
     arch: "x64",
     rust_target: "x86_64-unknown-linux-musl",
+};
+
+const PLATFORM_LINUX_GNU_X64: NpmSupportedPlatform = NpmSupportedPlatform {
+    os: "linux",
+    arch: "x64",
+    rust_target: "x86_64-unknown-linux-gnu",
 };
 
 const PLATFORM_DARWIN_X64: NpmSupportedPlatform = NpmSupportedPlatform {
@@ -37,18 +55,32 @@ const PLATFORM_WIN32_X64: NpmSupportedPlatform = NpmSupportedPlatform {
     rust_target: "x86_64-pc-windows-msvc",
 };
 
-const NPM_PACKAGES: &[NpmPackage] = &[NpmPackage {
-    crate_name: "node-file-trace",
-    name: "@vercel/experimental-nft",
-    description: "Node.js module trace",
-    bin: "node-file-trace",
-    platform: &[
-        PLATFORM_LINUX_X64,
-        PLATFORM_DARWIN_X64,
-        PLATFORM_DARWIN_ARM64,
-        PLATFORM_WIN32_X64,
-    ],
-}];
+const NPM_PACKAGES: &[NpmPackage] = &[
+    NpmPackage {
+        crate_name: "fujinoki-cli",
+        name: "fujinoki",
+        description: "Discord bot framework",
+        kind: NpmPackageKind::Bin("fujinoki"),
+        platform: &[
+            PLATFORM_LINUX_MUSL_X64,
+            PLATFORM_DARWIN_X64,
+            PLATFORM_DARWIN_ARM64,
+            PLATFORM_WIN32_X64,
+        ],
+    },
+    NpmPackage {
+        crate_name: "discord-api-napi",
+        name: "@fujinoki/discord-api",
+        description: "Discord API bindings",
+        kind: NpmPackageKind::Napi,
+        platform: &[
+            PLATFORM_LINUX_GNU_X64,
+            PLATFORM_DARWIN_X64,
+            PLATFORM_DARWIN_ARM64,
+            PLATFORM_WIN32_X64,
+        ],
+    },
+];
 
 struct NpmSupportedPlatform {
     os: &'static str,
@@ -56,53 +88,64 @@ struct NpmSupportedPlatform {
     rust_target: &'static str,
 }
 
+enum NpmPackageKind {
+    Bin(&'static str),
+    Napi,
+}
+
 struct NpmPackage {
     crate_name: &'static str,
     name: &'static str,
     description: &'static str,
-    bin: &'static str,
+    kind: NpmPackageKind,
     platform: &'static [NpmSupportedPlatform],
 }
 
-pub fn run_publish(name: &str) {
+pub fn run_publish(name: &str, is_nightly: bool, dry_run: bool) {
     if let Some(pkg) = NPM_PACKAGES.iter().find(|p| p.crate_name == name) {
         let mut optional_dependencies = Vec::with_capacity(pkg.platform.len());
         let mut is_alpha = false;
         let mut is_beta = false;
         let mut is_canary = false;
-        let version = if let Ok(release_version) = env::var("RELEASE_VERSION") {
-            // node-file-trace@1.0.0-alpha.1
-            let release_tag_version = release_version
-                .trim()
-                .trim_start_matches("node-file-trace@");
-            if let Ok(semver_version) = Version::parse(release_tag_version) {
-                is_alpha = semver_version.pre.contains("alpha");
-                is_beta = semver_version.pre.contains("beta");
-                is_canary = semver_version.pre.contains("canary");
-            };
-            release_tag_version.to_owned()
+        let version = if is_nightly {
+            get_nightly_version()
         } else {
-            format!(
-                "0.0.0-{}",
-                env::var("GITHUB_SHA")
-                    .map(|mut sha| {
-                        sha.truncate(7);
-                        sha
-                    })
-                    .unwrap_or_else(|_| {
-                        if let Ok(mut o) = process::Command::new("git")
-                            .args(["rev-parse", "--short", "HEAD"])
-                            .output()
-                            .map(|o| String::from_utf8(o.stdout).expect("Invalid utf8 output"))
-                        {
-                            o.truncate(7);
-                            return o;
-                        }
-                        panic!("Unable to get git commit sha");
-                    })
-            )
+            if let Ok(release_version) = env::var("RELEASE_VERSION") {
+                // node-file-trace@1.0.0-alpha.1
+                let release_tag_version = release_version
+                    .trim()
+                    .trim_start_matches(format!("{}@", pkg.name).as_str());
+                if let Ok(semver_version) = Version::parse(release_tag_version) {
+                    is_alpha = semver_version.pre.contains("alpha");
+                    is_beta = semver_version.pre.contains("beta");
+                    is_canary = semver_version.pre.contains("canary");
+                };
+                release_tag_version.to_owned()
+            } else {
+                format!(
+                    "0.0.0-{}",
+                    env::var("GITHUB_SHA")
+                        .map(|mut sha| {
+                            sha.truncate(7);
+                            sha
+                        })
+                        .unwrap_or_else(|_| {
+                            if let Ok(mut o) = process::Command::new("git")
+                                .args(["rev-parse", "--short", "HEAD"])
+                                .output()
+                                .map(|o| String::from_utf8(o.stdout).expect("Invalid utf8 output"))
+                            {
+                                o.truncate(7);
+                                return o;
+                            }
+                            panic!("Unable to get git commit sha");
+                        })
+                )
+            }
         };
-        let tag = if is_alpha {
+        let tag = if is_nightly {
+            "nightly"
+        } else if is_alpha {
             "alpha"
         } else if is_beta {
             "beta"
@@ -111,43 +154,72 @@ pub fn run_publish(name: &str) {
         } else {
             "latest"
         };
+        let pkg_name_in_path = if pkg.name.starts_with("@fujinoki") {
+            // @fujinoki/pkg -> pkg
+            &pkg.name.replace("@fujinoki/", "")
+        } else if pkg.name.starts_with("@") {
+            // @scope/pkg -> scope-pkg
+            &pkg.name.replace("@", "").replace("/", "-")
+        } else {
+            &pkg.name.to_string()
+        };
         let current_dir = env::current_dir().expect("Unable to get current directory");
-        let package_dir = current_dir.join("../../packages").join("node-module-trace");
+        let package_dir = current_dir.join("../../packages").join(pkg_name_in_path);
         let temp_dir = package_dir.join("npm");
         if let Ok(()) = fs::remove_dir_all(&temp_dir) {};
         fs::create_dir(&temp_dir).expect("Unable to create temporary npm directory");
-        for platform in pkg.platform.iter() {
-            let bin_file_name = if platform.os == "win32" {
-                format!("{}.exe", pkg.bin)
-            } else {
-                pkg.bin.to_string()
+        for platform in Vec::<NpmSupportedPlatform>::new().iter() {
+            let bin_or_napi_file_name = match pkg.kind {
+                NpmPackageKind::Bin(bin) => {
+                    if platform.os == "win32" {
+                        format!("{}.exe", bin)
+                    } else {
+                        bin.to_string()
+                    }
+                }
+                NpmPackageKind::Napi => {
+                    format!("lib{}.dylib", pkg.crate_name.replace("-", "_"))
+                }
             };
             let platform_package_name = format!("{}-{}-{}", pkg.name, platform.os, platform.arch);
             optional_dependencies.push(platform_package_name.clone());
-            let pkg_json = serde_json::json!({
+            let mut pkg_json = serde_json::json!({
               "name": platform_package_name,
               "version": version,
               "description": pkg.description,
               "os": [platform.os],
               "cpu": [platform.arch],
-              "bin": {
-                pkg.bin: bin_file_name
-              }
             });
-            let dir_name = format!("{}-{}-{}", pkg.crate_name, platform.os, platform.arch);
+
+            match pkg.kind {
+                NpmPackageKind::Bin(bin) => {
+                    pkg_json[bin] = bin_or_napi_file_name.clone().into();
+                }
+                NpmPackageKind::Napi => {
+                    pkg_json["main"] = "index.js".into();
+                    pkg_json["types"] = "index.d.ts".into();
+                }
+            };
+
+            let dir_name = format!("{}-{}-{}", pkg_name_in_path, platform.os, platform.arch);
             let target_dir = package_dir.join("npm").join(dir_name);
-            fs::create_dir(&target_dir)
-                .unwrap_or_else(|e| panic!("Unable to create dir: {:?}\n{e}", &target_dir));
+            fs::create_dir(&target_dir).unwrap_or_else(|e| {
+                panic!(
+                    "Unable to create dir:
+        {:?}\n{e}",
+                    &target_dir
+                )
+            });
             fs::write(
-                target_dir.join("../../package.json"),
+                target_dir.join("package.json"),
                 serde_json::to_string_pretty(&pkg_json).unwrap(),
             )
             .expect("Unable to write package.json");
             let artifact_path = current_dir
                 .join("artifacts")
-                .join(format!("node-file-trace-{}", platform.rust_target))
-                .join(&bin_file_name);
-            let dist_path = target_dir.join(&bin_file_name);
+                .join(format!("{}-{}", pkg.crate_name, platform.rust_target))
+                .join(&bin_or_napi_file_name);
+            let dist_path = target_dir.join(&bin_or_napi_file_name);
             fs::copy(&artifact_path, &dist_path).unwrap_or_else(|e| {
                 panic!(
                     "Copy file from [{:?}] to [{:?}] failed: {e}",
@@ -155,12 +227,22 @@ pub fn run_publish(name: &str) {
                 )
             });
             Command::program("npm")
-                .args(["publish", "--access", "public", "--tag", tag])
+                // TODO --provenance
+                .args([
+                    "publish",
+                    "--provenance",
+                    "--access",
+                    "public",
+                    "--tag",
+                    tag,
+                ])
                 .error_message("Publish npm package failed")
                 .current_dir(target_dir)
+                .dry_run(dry_run)
                 .execute();
         }
-        let target_pkg_dir = temp_dir.join(pkg.name);
+
+        let target_pkg_dir = temp_dir.join(pkg_name_in_path);
         fs::create_dir_all(&target_pkg_dir).unwrap_or_else(|e| {
             panic!(
                 "Unable to create target npm directory [{:?}]: {e}",
@@ -172,28 +254,87 @@ pub fn run_publish(name: &str) {
             .map(|name| (name, version.clone()))
             .collect::<HashMap<String, String>>();
         let pkg_json_content =
-            fs::read(package_dir.join("../../package.json")).expect("Unable to read package.json");
+            fs::read(package_dir.join("package.json")).expect("Unable to read package.json");
         let mut pkg_json: Value = serde_json::from_slice(&pkg_json_content).unwrap();
         pkg_json["optionalDependencies"] =
             serde_json::to_value(optional_dependencies_with_version).unwrap();
         fs::write(
-            target_pkg_dir.join("../../package.json"),
+            target_pkg_dir.join("package.json"),
             serde_json::to_string_pretty(&pkg_json).unwrap(),
         )
         .unwrap_or_else(|e| {
             panic!(
                 "Write [{:?}] failed: {e}",
-                target_pkg_dir.join("../../package.json")
+                target_pkg_dir.join("package.json")
             )
         });
+
+        let cm = Arc::<SourceMap>::default();
+        let c = SwcCompiler::new(cm.clone());
+
+        let minify_js = |src: &str| -> String {
+            let output = GLOBALS
+                .set(&Default::default(), || {
+                    try_with_handler(cm.clone(), Default::default(), |handler| {
+                        let fm = cm.new_source_file(FileName::Anon.into(), src.to_string());
+
+                        Ok(c.minify(
+                            fm,
+                            handler,
+                            &JsMinifyOptions {
+                                compress: BoolOrDataConfig::from_bool(true),
+                                mangle: BoolOrDataConfig::from_bool(true),
+                                ..Default::default()
+                            },
+                        )
+                        .expect("failed to minify"))
+                    })
+                })
+                .unwrap();
+
+            output.code
+        };
+
+        match pkg.kind {
+            NpmPackageKind::Bin(bin) => {
+                fs::write(
+                    target_pkg_dir.join(bin),
+                    minify_js(include_str!("./bin.js")),
+                )
+                .expect("Unable to write bin helper");
+            }
+            NpmPackageKind::Napi => {
+                let intermediate_type_file = current_dir
+                    .join("artifacts")
+                    .join(pkg.crate_name)
+                    .join(format!("lib{}.typedef", pkg.crate_name.replace("-", "_")));
+                let (dts, exports) = process_typedef(intermediate_type_file, false, None)
+                    .expect("unable to process typedef");
+
+                fs::write(target_pkg_dir.join("index.d.ts"), dts)
+                    .expect("Unable to write index.d.ts");
+
+                if !exports.is_empty() {
+                    let cjs =
+                        create_cjs_binding(&pkg.crate_name.replace("-", "_"), pkg.name, &exports);
+
+                    fs::write(target_pkg_dir.join("index.js"), minify_js(&cjs))
+                        .expect("Unable to write index.js");
+                }
+            }
+        };
+
         Command::program("npm")
             .args(["publish", "--access", "public", "--tag", tag])
             .error_message("Publish npm package failed")
             .current_dir(target_pkg_dir)
+            .dry_run(dry_run)
             .execute();
     }
 }
 
+// nightly is just a temporary state when publishing, it's not a real release
+// that would contribute to semver
 const VERSION_TYPE: &[&str] = &["patch", "minor", "major", "alpha", "beta", "canary"];
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -202,10 +343,6 @@ struct WorkspaceProjectMeta {
     name: String,
     path: String,
     private: bool,
-}
-
-fn default_empty_string() -> String {
-    String::new()
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -221,7 +358,7 @@ struct PackageJson {
     path: String,
 }
 
-pub fn run_bump(names: HashSet<String>, dry_run: bool) {
+pub fn run_bump(names: HashSet<String>, version_type: Option<&String>, dry_run: bool) {
     let workspaces_list_text = Command::program("pnpm")
         .args(["ls", "-r", "--depth", "-1", "--json"])
         .error_message("List workspaces failed")
@@ -274,12 +411,17 @@ pub fn run_bump(names: HashSet<String>, dry_run: bool) {
     }
     let mut tags_to_apply = Vec::new();
     workspaces_to_bump.iter().for_each(|p| {
-        let title = format!("Version for {}", &p.name);
-        let selector = inquire::Select::new(title.as_str(), VERSION_TYPE.to_owned());
-        let version_type = selector.prompt().expect("Get version type failed");
+        let version_type = if let Some(version_type) = version_type {
+            version_type.as_str()
+        } else {
+            let title = format!("Version for {}", &p.name);
+            let selector = inquire::Select::new(title.as_str(), VERSION_TYPE.to_owned());
+            selector.prompt().expect("Get version type failed")
+        };
         let mut semver_version = Version::parse(&p.version).unwrap_or_else(|e| {
             panic!("Failed to parse {} in {} as semver: {e}", p.version, p.name)
         });
+
         match version_type {
             "major" => {
                 semver_version.major += 1;
@@ -374,7 +516,11 @@ pub fn run_bump(names: HashSet<String>, dry_run: bool) {
         .args([
             "commit",
             "-m",
-            "chore: release npm packages",
+            format!(
+                "chore: release npm package{}",
+                if tags_to_apply.len() > 1 { "s" } else { "" }
+            )
+            .as_str(),
             "-m",
             tags_message.as_str(),
         ])
@@ -390,35 +536,46 @@ pub fn run_bump(names: HashSet<String>, dry_run: bool) {
     }
 }
 
-pub fn publish_workspace(dry_run: bool) {
+// TODO do we even keep this?
+#[allow(dead_code)]
+pub fn publish_workspace(is_nightly: bool, dry_run: bool) {
     let commit_message = Command::program("git")
         .args(["log", "-1", "--pretty=%B"])
         .error_message("Get commit hash failed")
         .output_string();
-    for (pkg_name_without_scope, version) in commit_message
+    for (pkg_name_without_scope, scope, version) in commit_message
         .trim()
         .split('\n')
         // Skip commit title
         .skip(1)
         .map(|s| s.trim().trim_start_matches('-').trim())
-        // Only publish tags match `@vercel/xxx@x.y.z-alpha.n`
-        .filter(|m| m.starts_with("@vercel/"))
         .map(|m| {
-            let m = m.trim_start_matches("@vercel/");
+            let scope = if m.starts_with("@fujinoki/") {
+                Some("@fujinoki/")
+            } else {
+                None
+            };
+            let m = m.trim_start_matches("@fujinoki/");
             let mut full_tag = m.split('@');
             let pkg_name_without_scope = full_tag.next().unwrap().to_string();
-            let version = full_tag.next().unwrap().to_string();
-            (pkg_name_without_scope, version)
+            let version = if is_nightly {
+                get_nightly_version()
+            } else {
+                full_tag.next().unwrap().to_string()
+            };
+            (pkg_name_without_scope, scope, version)
         })
     {
-        let pkg_name = format!("@vercel/{pkg_name_without_scope}");
+        let pkg_name = format!("{}{pkg_name_without_scope}", scope.unwrap_or_default());
         let semver_version = Version::from_str(version.as_str())
             .unwrap_or_else(|e| panic!("Parse semver version failed {version} {e}"));
         let is_alpha = semver_version.pre.contains("alpha");
         let is_beta = semver_version.pre.contains("beta");
         let is_canary = semver_version.pre.contains("canary");
         let tag = {
-            if is_alpha {
+            if is_nightly {
+                "nightly"
+            } else if is_alpha {
                 "alpha"
             } else if is_beta {
                 "beta"
@@ -430,6 +587,7 @@ pub fn publish_workspace(dry_run: bool) {
         };
         let mut args = vec![
             "publish",
+            "--provenance",
             "--tag",
             tag,
             "--no-git-checks",

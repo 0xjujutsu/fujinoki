@@ -1,0 +1,63 @@
+name: 'Stage Release'
+description: 'Prepare and stage a release'
+inputs:
+  version:
+    description: 'Version to release'
+    required: true
+  tag:
+    description: 'Tag for the release'
+    required: true
+  pkg-dir:
+    description: 'Package directory'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Display version and tag
+      shell: bash
+      run: |
+        echo "Version: ${{ inputs.version }}"
+        echo "Tag: ${{ inputs.tag }}"
+
+    - name: Check version.txt
+      shell: bash
+      run: cat ${{ inputs.pkg-dir }}/../../version.txt
+
+    - name: Check for changes in version.txt
+      shell: bash
+      run: git diff -- ${{ inputs.pkg-dir }}/../../version.txt
+
+    - name: Check git status
+      shell: bash
+      run: git status
+
+    - name: Check for unpushed commits
+      shell: bash
+      run: |
+        if [ -n "$(git cherry)" ]; then
+          echo "Refusing to publish with unpushed commits"
+          exit 1
+        fi
+
+    - name: Ensure version.txt is updated
+      shell: bash
+      run: |
+        if [ -z "$(git diff -- ${{ inputs.pkg-dir }}/../../version.txt)" ]; then
+          echo "Refusing to publish with unupdated version.txt"
+          exit 1
+        fi
+
+    - name: Prepare packages
+      shell: bash
+      run: |
+        cd ${{ inputs.pkg-dir }}
+        pnpm version "${{ inputs.version }}" --allow-same-version
+
+    - name: Create and push branch, commit, and tag
+      shell: bash
+      run: |
+        git checkout -b ${{ inputs.version }}
+        git commit -anm "publish ${{ inputs.version }} to registry"
+        git tag "${{ inputs.version }}"
+        git push origin ${{ inputs.version }} --tags --force
