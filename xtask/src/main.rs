@@ -45,10 +45,7 @@ fn main() {
             let name = sub_matches
                 .get_one::<String>("NAME")
                 .expect("NAME is required");
-            let nightly = sub_matches.get_flag("nightly");
-            let dry_run = sub_matches.get_flag("dry-run");
-
-            run_publish(name, nightly, dry_run);
+            run_publish(name);
         }
         Some(("workspace", sub_matches)) => {
             let dry_run = sub_matches.get_flag("dry-run");
