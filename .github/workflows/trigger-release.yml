@@ -1,4 +1,4 @@
-name: Discord API Release
+name: Trigger Release
 
 on:
   workflow_dispatch:
