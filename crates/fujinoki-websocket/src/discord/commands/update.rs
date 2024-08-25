@@ -12,12 +12,15 @@ use turbopack_binding::{
         tasks_bytes::stream::SingleValue,
         tasks_fs::json::parse_json_with_source_context,
     },
-    turbopack::{core::{
-        file_source::FileSource,
-        issue::{handle_issues, IssueReporter, IssueSeverity},
-        module::Module,
-        source::Source,
-    }, node::evaluate::custom_evaluate},
+    turbopack::{
+        core::{
+            file_source::FileSource,
+            issue::{handle_issues, IssueReporter, IssueSeverity},
+            module::Module,
+            source::Source,
+        },
+        node::evaluate::custom_evaluate,
+    },
 };
 
 use super::util::merge_json;

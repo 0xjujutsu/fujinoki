@@ -14,9 +14,13 @@ use turbopack_binding::{
             module::Module,
         },
         node::{
-            debug::should_debug, evaluate::{
-                compute, custom_evaluate, get_evaluate_pool, EvaluateContext, EvaluationIssue, JavaScriptEvaluation, JavaScriptStreamSender
-            }, source_map::StructuredError, NodeJsPool
+            debug::should_debug,
+            evaluate::{
+                compute, custom_evaluate, get_evaluate_pool, EvaluateContext, EvaluationIssue,
+                JavaScriptEvaluation, JavaScriptStreamSender,
+            },
+            source_map::StructuredError,
+            NodeJsPool,
         },
         resolve::resolve_options_context::ResolveOptionsContext,
     },

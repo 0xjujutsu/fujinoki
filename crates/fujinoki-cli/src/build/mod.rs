@@ -17,7 +17,10 @@ use fujinoki_core::{
 };
 use turbopack_binding::{
     turbo::{
-        tasks::{self as turbo_tasks, RcStr, ReadConsistency, TransientInstance, TryJoinIterExt, TurboTasks, Value, Vc},
+        tasks::{
+            self as turbo_tasks, RcStr, ReadConsistency, TransientInstance, TryJoinIterExt,
+            TurboTasks, Value, Vc,
+        },
         tasks_fs::FileSystem,
         tasks_memory::MemoryBackend,
     },
@@ -152,7 +155,9 @@ impl FujinokiBuildBuilder {
             Ok(Default::default())
         });
 
-        self.turbo_tasks.wait_task_completion(task, ReadConsistency::Strong).await?;
+        self.turbo_tasks
+            .wait_task_completion(task, ReadConsistency::Strong)
+            .await?;
 
         Ok(())
     }
