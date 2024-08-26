@@ -79,9 +79,11 @@ fujinoki-interactions-server = { workspace = true }
 fujinoki-updater = { workspace = true }
 fujinoki-websocket = { workspace = true }
 
-turbopath = { workspace = true }
-turborepo-ci = { workspace = true }
-turborepo-repository = { workspace = true }
+turborepo-binding = { workspace = true, features = [
+  "__turborepo_path",
+  "__turborepo_ci",
+  "__turborepo_repository",
+] }
 
 turbopack-binding = { workspace = true, features = [
   "__turbo_tasks",

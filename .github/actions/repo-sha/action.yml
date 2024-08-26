@@ -1,0 +1,32 @@
+name: 'Get Latest Repo SHA'
+description: 'Retrieves the latest git rev-parse HEAD SHA of the specified repository'
+
+inputs:
+  repo:
+    description: 'The repository to get the SHA from (e.g., "owner/repo")'
+    required: true
+  branch:
+    description: 'The branch to get the SHA from'
+    required: true
+
+outputs:
+  sha:
+    description: 'The latest SHA of the repository'
+    value: ${{ steps.get-sha.outputs.sha }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        repository: ${{ inputs.repo }}
+        fetch-depth: 0
+        ref: ${{ inputs.branch }}
+
+    - name: Get latest SHA
+      id: get-sha
+      shell: bash
+      run: |
+        SHA=$(git rev-parse HEAD)
+        echo "sha=$SHA" >> $GITHUB_OUTPUT

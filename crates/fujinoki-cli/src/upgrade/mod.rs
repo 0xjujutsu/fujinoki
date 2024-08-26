@@ -4,8 +4,10 @@
 use anyhow::Result;
 use console::style;
 use fujinoki_core::{get_version, DISPLAY_NAME, GITHUB_REPO, NPM_PACKAGE};
-use turbopath::AbsoluteSystemPath;
-use turborepo_repository::{package_json::PackageJson, package_manager::PackageManager};
+use turborepo_binding::turborepo::{
+    path::AbsoluteSystemPath,
+    repository::{package_json::PackageJson, package_manager::PackageManager},
+};
 
 use crate::{arguments::UpgradeArguments, util::normalize_dirs};
 

@@ -202,6 +202,7 @@ jobs:
           profile: release-fujinoki
           crate: fujinoki-cli
           build-output-files: fujinoki-cli*
+          additional-rust-cache-key: ${{ hashFiles('crates/turborepo-binding/Cargo.toml') }}
 
   # TODO uncomment
   # npm-publish:

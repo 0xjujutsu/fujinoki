@@ -14,6 +14,9 @@ inputs:
   target:
     description: 'Rust target to build for'
     required: true
+  additional-rust-cache-key:
+    description: 'Additional key to add to the Rust cache'
+    required: false
   profile:
     description: 'Cargo profile to build with'
     required: false
@@ -44,7 +47,7 @@ runs:
 
     - uses: Swatinem/rust-cache@v2
       with:
-        shared-key: build-rust-${{ hashFiles('.cargo/config.toml') }}
+        shared-key: build-rust-${{ hashFiles('.cargo/config.toml') }}-${{ hashFiles('crates/turbopack-binding/Cargo.toml') }}-${{ inputs.additional-rust-cache-key || '' }}
         cache-targets: "false"
 
     - name: Setup toolchain
