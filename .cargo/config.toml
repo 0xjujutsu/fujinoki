@@ -33,3 +33,9 @@ rustflags = [
   "-Csymbol-mangling-version=v0",
 ]
 
+[unstable.gitoxide]
+fetch = true
+shallow_index = true
+shallow_deps = true
+checkout = true
+internal_use_git2 = false

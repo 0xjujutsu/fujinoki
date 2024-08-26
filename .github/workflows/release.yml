@@ -37,10 +37,10 @@ env:
   NODE_LTS_VERSION: 20
 
 # run: |
-        #   git checkout -b release-${{ inputs.package }}-${{ steps.version.outputs.RELEASE_VERSION }}
-        #   cargo xtask workspace --bump ${{ github.event.inputs.semverType }} ${{ github.event.inputs.package }}
-        #   git push origin release-${{ inputs.package }}-${{ steps.version.outputs.RELEASE_VERSION }} --tags --force
-        #   echo "STAGE_BRANCH=$(git branch --show-current)" >> $GITHUB_OUTPUT
+#   git checkout -b release-${{ inputs.package }}-${{ steps.version.outputs.RELEASE_VERSION }}
+#   cargo xtask workspace --bump ${{ github.event.inputs.semverType }} ${{ github.event.inputs.package }}
+#   git push origin release-${{ inputs.package }}-${{ steps.version.outputs.RELEASE_VERSION }} --tags --force
+#   echo "STAGE_BRANCH=$(git branch --show-current)" >> $GITHUB_OUTPUT
 
 permissions:
   id-token: write
@@ -86,155 +86,193 @@ jobs:
             pnpm-store-
             pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
 
-  bump-version:
-    name: Bump version
+  # TODO uncomment
+  # stage-bump-version:
+  #   name: Stage and bump version
+  #   needs: [changed]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Setup node
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: ${{ env.NODE_LTS_VERSION }}
+  #         check-latest: true
+
+  #     - uses: actions/checkout@v4
+
+  #     - name: Install Rust
+  #       uses: ./.github/actions/setup-rust
+
+  #     - uses: Swatinem/rust-cache@v2
+  #       with:
+  #         shared-key: xtask-${{ hashFiles('xtask/**/*') }}
+  #         cache-targets: "false"
+
+  #     - run: corepack enable && pnpm --version
+
+  #     - name: Configure git
+  #       run: |
+  #         git config --global user.name 'release bot'
+  #         git config --global user.email 'release@jujutsu.studio'
+
+  #     - name: Version
+  #       id: version
+  #       # cargo xtask workspace --bump ${{ github.event.inputs.semverType }} ${{ github.event.inputs.package }}
+  #       run: |
+  #         echo "RELEASE_VERSION=$(pnpm list -r --depth -1 fujinoki --long --filter fujinoki --parseable | sed 's/.*:fujinoki@//')" >> $GITHUB_OUTPUT
+  #     - run: echo "${{ steps.version.outputs.RELEASE_VERSION }}"
+  #     - name: Stage Commit
+  #       id: stage
+  #       run: echo ""
+
+  #     - name: Show Stage Commit
+  #       run: echo "${{ steps.stage.outputs.STAGE_BRANCH }}"
+  #   outputs:
+  #     stage-branch: "${{ steps.stage.outputs.STAGE_BRANCH }}"
+  #     release-version: "${{ steps.version.outputs.RELEASE_VERSION }}"
+
+
+  build-discord-api:
+    name: Build Discord API Bindings
     needs: [changed]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Setup node
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_LTS_VERSION }}
-          check-latest: true
+    if: ${{ github.event.inputs.package == '@fujinoki/discord-api' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # xtask/src/publish/mod.rs:64
+        settings:
+          - host: macos-latest
+            target: "x86_64-apple-darwin"
 
-      - uses: actions/checkout@v4
+          - host: macos-latest
+            target: "aarch64-apple-darwin"
+            # setup: "apt-get install -y build-essential clang-5.0 lldb-5.0 llvm-5.0-dev libclang-5.0-dev"
 
-      - name: Install Rust
-        uses: ./.github/actions/setup-rust
+          - host: ubuntu-latest
+            target: "x86_64-unknown-linux-gnu"
+            # setup: "apt-get install -y build-essential clang-5.0 lldb-5.0 llvm-5.0-dev libclang-5.0-dev"
 
-      - uses: Swatinem/rust-cache@v2
-        with:
-          shared-key: release-${{ hashFiles('.cargo/config.toml') }}
-
-      - run: corepack enable && pnpm --version
-
-      - name: Configure git
-        run: |
-          git config --global user.name 'release bot'
-          git config --global user.email 'release@jujutsu.studio'
-
-      - name: Version
-        id: version
-        run: |
-          cargo xtask workspace --bump ${{ github.event.inputs.semverType }} ${{ github.event.inputs.package }}
-          echo "RELEASE_VERSION=$(pnpm list -r --depth -1 fujinoki --long --filter fujinoki --parseable | sed 's/.*:fujinoki@//')" >> $GITHUB_OUTPUT
-      - run: echo "${{ steps.version.outputs.RELEASE_VERSION }}"
-      - name: Stage Commit
-        id: stage
-        run: echo ""
-
-      - name: Show Stage Commit
-        run: echo "${{ steps.stage.outputs.STAGE_BRANCH }}"
-    outputs:
-      stage-branch: "${{ steps.stage.outputs.STAGE_BRANCH }}"
-      release-version: "${{ steps.version.outputs.RELEASE_VERSION }}"
-
-  build:
-    name: Build
-    needs: [changed, bump-version]
-    runs-on: ubuntu-latest
+          - host: windows-latest
+            target: "x86_64-pc-windows-msvc"
+            setup: "git config --system core.longpaths true"
+    runs-on: ${{ matrix.settings.host }}
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v3
 
-      - name: Setup node
-        uses: actions/setup-node@v4
+      - uses: ./.github/actions/build-rust
         with:
-          node-version: ${{ env.NODE_LTS_VERSION }}
-          check-latest: true
-      - run: corepack enable
+          target: ${{ matrix.settings.target }}
+          setup: ${{ matrix.settings.setup }}
+          profile: release-discord-api
+          crate: discord-api-napi
+          build-output-files: libdiscord_api_napi*
 
-      - id: get-store-path
-        run: echo STORE_PATH=$(pnpm store path) >> $GITHUB_OUTPUT
-      - uses: actions/cache@v4
-        timeout-minutes: 5
-        id: cache-pnpm-store
-        with:
-          path: ${{ steps.get-store-path.outputs.STORE_PATH }}
-          key: pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
-          restore-keys: |
-            pnpm-store-
-            pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
-      - run: pnpm install
-      - name: Configure git
-        run: |
-          git config --global user.name 'release bot'
-          git config --global user.email 'release@jujutsu.studio'
+  build-fujinoki:
+    name: Build Fujinoki
+    needs: [changed]
+    if: ${{ github.event.inputs.package == 'fujinoki' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # xtask/src/publish/mod.rs:64
+        settings:
+          - host: macos-latest
+            target: "x86_64-apple-darwin"
 
-      - name: Build Fujinoki
-        if: ${{ github.event.inputs.package == 'fujinoki' }}
-        uses: ./.github/actions/build-fujinoki
+          - host: macos-latest
+            target: "aarch64-apple-darwin"
+            # setup: "apt-get install -y build-essential clang-5.0 lldb-5.0 llvm-5.0-dev libclang-5.0-dev"
 
-      - name: Build Discord API Bindings
-        if: ${{ github.event.inputs.package == '@fujinoki/discord-api' }}
-        uses: ./.github/actions/build-discord-api
+          - host: ubuntu-latest
+            target: "x86_64-unknown-linux-musl"
+            # setup: "apt-get install -y build-essential clang-5.0 lldb-5.0 llvm-5.0-dev libclang-5.0-dev"
 
-  npm-publish:
-    name: Publish to NPM
-    needs: [changed, bump-version, build]
-    runs-on: ubuntu-latest
+          - host: windows-latest
+            target: "x86_64-pc-windows-msvc"
+    runs-on: ${{ matrix.settings.host }}
+    timeout-minutes: 45
     steps:
-      - name: Setup node
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v3
+
+      - uses: ./.github/actions/build-rust
         with:
-          node-version: ${{ env.NODE_LTS_VERSION }}
-          check-latest: true
+          target: ${{ matrix.settings.target }}
+          setup: ${{ matrix.settings.setup }}
+          profile: release-fujinoki
+          crate: fujinoki-cli
+          build-output-files: fujinoki-cli*
+          additional-rust-cache-key: ${{ hashFiles('crates/turborepo-binding/Cargo.toml') }}
 
-      - uses: actions/checkout@v4
+  # TODO uncomment
+  # npm-publish:
+  #   name: Publish to NPM
+  #   needs: [changed, stage-bump-version, build]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Setup node
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: ${{ env.NODE_LTS_VERSION }}
+  #         check-latest: true
 
-      - name: Install Rust
-        uses: ./.github/actions/setup-rust
+  #     - uses: actions/checkout@v4
 
-      - uses: Swatinem/rust-cache@v2
-        with:
-          shared-key: release-${{ hashFiles('.cargo/config.toml') }}
+  #     - name: Install Rust
+  #       uses: ./.github/actions/setup-rust
 
-      - run: corepack enable && pnpm --version
+  #     - uses: Swatinem/rust-cache@v2
+  #       with:
+  #         shared-key: xtask-${{ hashFiles('xtask/**/*') }}
+  #         cache-targets: "false"
 
-      - id: get-store-path
-        run: echo STORE_PATH=$(pnpm store path) >> $GITHUB_OUTPUT
+  #     - run: corepack enable && pnpm --version
 
-      - uses: actions/cache@v4
-        timeout-minutes: 5
-        id: cache-pnpm-store
-        with:
-          path: ${{ steps.get-store-path.outputs.STORE_PATH }}
-          key: pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
-          restore-keys: |
-            pnpm-store-
-            pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
+  #     - id: get-store-path
+  #       run: echo STORE_PATH=$(pnpm store path) >> $GITHUB_OUTPUT
 
-      - name: Download Rust artifacts
-        uses: actions/download-artifact@v3
-        with:
-          path: artifacts
+  #     - uses: actions/cache@v4
+  #       timeout-minutes: 5
+  #       id: cache-pnpm-store
+  #       with:
+  #         path: ${{ steps.get-store-path.outputs.STORE_PATH }}
+  #         key: pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
+  #         restore-keys: |
+  #           pnpm-store-
+  #           pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
 
-      # - name: Publish
-      #   run: |
-      #     if [[ "${{ github.event.inputs.package }}" == "fujinoki" ]]; then
-      #       if [[ "${{ inputs.dry-run }}" == "true" ]]; then
-      #         cargo xtask npm --dry-run fujinoki-cli
-      #       else
-      #         cargo xtask npm fujinoki-cli
-      #       fi
-      #     elif [[ "${{ github.event.inputs.package }}" == "@fujinoki/discord-api" ]]; then
-      #       if [[ "${{ inputs.dry-run }}" == "true" ]]; then
-      #         cargo xtask npm --dry-run discord-api-napi
-      #       else
-      #         cargo xtask npm discord-api-napi
-      #       fi
-      #     else
-      #       echo "Invalid package specified"
-      #       exit 1
-      #     fi
-      #   env:
-      #     NPM_TOKEN: ${{ secrets.RELEASE_BOT_PAT }}
+  #     - name: Download Rust artifacts
+  #       uses: actions/download-artifact@v3
+  #       with:
+  #         path: artifacts
 
-      # Upload published artifacts in case they are needed for debugging later
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: debug-artifacts
-          path: artifacts
+  #     # - name: Publish
+  #     #   run: |
+  #     #     if [[ "${{ github.event.inputs.package }}" == "fujinoki" ]]; then
+  #     #       if [[ "${{ inputs.dry-run }}" == "true" ]]; then
+  #     #         cargo xtask npm --dry-run fujinoki-cli
+  #     #       else
+  #     #         cargo xtask npm fujinoki-cli
+  #     #       fi
+  #     #     elif [[ "${{ github.event.inputs.package }}" == "@fujinoki/discord-api" ]]; then
+  #     #       if [[ "${{ inputs.dry-run }}" == "true" ]]; then
+  #     #         cargo xtask npm --dry-run discord-api-napi
+  #     #       else
+  #     #         cargo xtask npm discord-api-napi
+  #     #       fi
+  #     #     else
+  #     #       echo "Invalid package specified"
+  #     #       exit 1
+  #     #     fi
+  #     #   env:
+  #     #     NPM_TOKEN: ${{ secrets.RELEASE_BOT_PAT }}
+
+  #     # Upload published artifacts in case they are needed for debugging later
+  #     - name: Upload Artifacts
+  #       uses: actions/upload-artifact@v3
+  #       with:
+  #         name: debug-artifacts
+  #         path: artifacts
 
   # open-release-pr:
   #   name: Open Release PR

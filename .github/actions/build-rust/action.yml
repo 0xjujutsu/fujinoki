@@ -1,0 +1,66 @@
+name: 'Build Rust'
+description: 'Builds a Rust crate for a given target'
+
+inputs:
+  container-setup:
+    description: 'Container setup command to run'
+    required: false
+  setup:
+    description: 'Setup command to run'
+    required: false
+  rust-build-env:
+    description: 'Rust build environment variables'
+    required: false
+  target:
+    description: 'Rust target to build for'
+    required: true
+  additional-rust-cache-key:
+    description: 'Additional key to add to the Rust cache'
+    required: false
+  profile:
+    description: 'Cargo profile to build with'
+    required: false
+  crate:
+    description: 'Specific crate to build'
+    required: false
+  artifact-name:
+    description: 'Name of the artifact to upload'
+    required: false
+  build-output-files:
+    description: 'Files to upload as the artifact (ex. libdiscord_api_napi* or fujinoki-cli*)'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Container
+      shell: bash
+      if: ${{ inputs.container-setup != null }}
+      run: ${{ inputs.container-setup }}
+
+    - uses: actions/checkout@v4
+
+    - name: Install Rust
+      uses: ./.github/actions/setup-rust
+      with:
+        targets: ${{ inputs.target }}
+
+    - uses: Swatinem/rust-cache@v2
+      with:
+        shared-key: build-rust-${{ hashFiles('.cargo/config.toml') }}-${{ hashFiles('crates/turbopack-binding/Cargo.toml') }}-${{ inputs.additional-rust-cache-key || '' }}
+        cache-targets: "false"
+
+    - name: Setup toolchain
+      shell: bash
+      run: ${{ inputs.setup }}
+      if: ${{ inputs.setup != null }}
+
+    - name: Build
+      shell: bash
+      run: ${{ inputs.rust-build-env || '' }} cargo build ${{ inputs.profile && format('--profile {0}', inputs.profile) || '' }} ${{ inputs.crate && format('-p {0}', inputs.crate) || '' }} --target ${{ inputs.target }}
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact-name || format('{0}-{1}', inputs.crate, inputs.target) }}
+        path: target/${{ inputs.target }}/${{ inputs.profile && format('{0}/', inputs.profile) }}${{ inputs.build-output-files }}

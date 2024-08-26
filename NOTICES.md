@@ -7,6 +7,8 @@ This project incorporates components from the projects listed below. The origina
 - https://github.com/vercel/next.js/tree/canary/crates/next-core
 - https://github.com/vercel/turbo/tree/main/packages/turbo-repository
 - https://github.com/vercel/turbo/tree/main/packages/turbo
+- https://github.com/vercel/turbo/tree/main/crates/turborepo-lib
+- https://github.com/vercel/turbo/tree/main/crates/turborepo-updater
 
 Copyright (c) 2024 Vercel, Inc
 
@@ -18,12 +20,10 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ---
 
+- https://github.com/vercel/next.js/tree/9642c49d2db3419008629fd175e5e64f108d007e/turbopack/crates/turbopack-binding
 - https://github.com/vercel/next.js/tree/canary/turbopack/crates/turbopack-cli
 - https://github.com/vercel/next.js/tree/canary/turbopack/crates/turbopack-cli-utils
 - https://github.com/vercel/next.js/tree/canary/turbopack/crates/turbopack-dev-server
-- https://github.com/vercel/next.js/tree/canary/turbopack/crates/turbopack-node
-- https://github.com/vercel/turbo/tree/main/crates/turborepo-lib
-- https://github.com/vercel/turbo/tree/main/crates/turborepo-updater
 
 # Mozilla Public License Version 2.0
 

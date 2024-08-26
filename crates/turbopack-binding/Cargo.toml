@@ -127,8 +127,11 @@ __feature_auto_hash_map = ["__features", "auto-hash-map"]
 [lints]
 workspace = true
 
+# used by .github/workflows/update-bindings.yml
+[package.metadata]
+rev = "d220bd22836c6741fa5a3392c8b07f76388f449e"
+
 # source https://github.com/vercel/next.js/tree/9642c49d2db3419008629fd175e5e64f108d007e/turbopack/crates/turbopack-binding
-# last rev = 3ab6d1790998f0984b97c4abf8c96ffe1eaad865
 [dependencies]
 # Keep consistent with https://github.com/kijv/next.js/blob/canary/Cargo.toml#L87
 swc_core = { optional = true, version = "0.101.3", features = [

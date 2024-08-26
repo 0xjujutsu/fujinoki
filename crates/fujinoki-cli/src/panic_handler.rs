@@ -3,6 +3,7 @@ use std::{panic::PanicHookInfo, process};
 use const_format::formatcp;
 use fujinoki_core::{get_version, DISPLAY_NAME, GITHUB_REPO, NPM_PACKAGE};
 use human_panic::report::{Method, Report};
+use turborepo_binding::turborepo::ci as turborepo_ci;
 
 const OPEN_ISSUE_MESSAGE: &str =
     formatcp!("Please open an issue at https://github.com/{GITHUB_REPO}/issues/new/choose");

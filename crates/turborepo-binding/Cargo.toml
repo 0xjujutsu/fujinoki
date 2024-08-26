@@ -1,0 +1,27 @@
+[package]
+name = "turborepo-binding"
+version = "0.1.0"
+edition = "2021"
+license = "MPL-2.0"
+autobenches = false
+
+[lib]
+bench = false
+
+[features]
+__turborepo = []
+__turborepo_path = ["__turborepo", "turbopath"]
+__turborepo_ci = ["__turborepo", "turborepo-ci"]
+__turborepo_repository = ["__turborepo", "turborepo-repository"]
+
+[lints]
+workspace = true
+
+# used by .github/workflows/update-bindings.yml
+[package.metadata]
+rev = "2ff3369b09ba3c49ccf61ecca1075918f14f50f2"
+
+[dependencies]
+turbopath = { optional = true, git = "https://github.com/kijv/turborepo.git" }
+turborepo-ci = { optional = true, git = "https://github.com/kijv/turborepo.git" }
+turborepo-repository = { optional = true, git = "https://github.com/kijv/turborepo.git" }
