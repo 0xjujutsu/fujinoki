@@ -114,7 +114,7 @@ jobs:
           git config --global user.name 'release bot'
           git config --global user.email 'release@jujutsu.studio'
 
-      - id: stage
+      - id: prepare-branch
         run: |
           current_time=$(date +"%y%m%d%H%M")
           git checkout -b staging-${{ github.event.inputs.package }}-$current_time
@@ -124,14 +124,19 @@ jobs:
         id: version
         # cargo xtask workspace --bump ${{ github.event.inputs.semverType }} ${{ github.event.inputs.package }}
         run: |
-          echo "RELEASE_VERSION=$(pnpm list -r --depth -1 fujinoki --long --filter fujinoki --parseable | sed 's/.*:fujinoki@//')" >> $GITHUB_OUTPUT
+          echo "RELEASE_VERSION=$(pnpm list -r --depth -1 ${{ github.event.inputs.package }} --long --filter ${{ github.event.inputs.package }} --parseable | rev | cut -d '@' -f 1 | rev)" >> $GITHUB_OUTPUT
+
+      - name: Stage
+        run: |
+          git push origin ${{ steps.prepare-branch.outputs.STAGE_BRANCH }} --tags --force
+
       - name: Show Release Version
         run: echo "${{ steps.version.outputs.RELEASE_VERSION }}"
 
       - name: Show Stage Commit
-        run: echo "${{ steps.stage.outputs.STAGE_BRANCH }}"
+        run: echo "${{ steps.prepare-branch.outputs.STAGE_BRANCH }}"
     outputs:
-      stage-branch: "${{ steps.stage.outputs.STAGE_BRANCH }}"
+      stage-branch: "${{ steps.prepare-branch.outputs.STAGE_BRANCH }}"
       release-version: "${{ steps.version.outputs.RELEASE_VERSION }}"
 
   build-discord-api:
@@ -206,7 +211,6 @@ jobs:
           build-output-files: fujinoki-cli*
           additional-rust-cache-key: ${{ hashFiles('crates/turborepo-binding/Cargo.toml') }}
 
-  # TODO uncomment
   npm-publish:
     name: Publish to NPM
     needs: [build-fujinoki, build-discord-api]
@@ -248,26 +252,10 @@ jobs:
         with:
           path: artifacts
 
-      # - name: Publish
-      #   run: |
-      #     if [[ "${{ github.event.inputs.package }}" == "fujinoki" ]]; then
-      #       if [[ "${{ inputs.dry-run }}" == "true" ]]; then
-      #         cargo xtask npm --dry-run fujinoki-cli
-      #       else
-      #         cargo xtask npm fujinoki-cli
-      #       fi
-      #     elif [[ "${{ github.event.inputs.package }}" == "@fujinoki/discord-api" ]]; then
-      #       if [[ "${{ inputs.dry-run }}" == "true" ]]; then
-      #         cargo xtask npm --dry-run discord-api-napi
-      #       else
-      #         cargo xtask npm discord-api-napi
-      #       fi
-      #     else
-      #       echo "Invalid package specified"
-      #       exit 1
-      #     fi
-      #   env:
-      #     NPM_TOKEN: ${{ secrets.RELEASE_BOT_PAT }}
+      - name: Publish
+        if: ${{ !inputs.dryRun }}
+        run: |
+          echo "Publishing ${{ github.event.inputs.package }}"
 
       # Upload published artifacts in case they are needed for debugging later
       - name: Upload Artifacts
@@ -278,7 +266,7 @@ jobs:
 
   open-release-pr:
     name: Open Release PR
-    needs: [npm-publish]
+    needs: [stage, npm-publish]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@1.0.0
