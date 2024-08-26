@@ -339,7 +339,7 @@ dependencies = [
 [[package]]
 name = "auto-hash-map"
 version = "0.1.0"
-source = "git+https://github.com/kijv/next.js.git#d220bd22836c6741fa5a3392c8b07f76388f449e"
+source = "git+https://github.com/kijv/next.js.git#9602e48a2c2fb542b796ff82fda623fa1e1229d7"
 dependencies = [
  "serde",
  "smallvec",
@@ -4124,7 +4124,7 @@ dependencies = [
 [[package]]
 name = "node-file-trace"
 version = "0.1.0"
-source = "git+https://github.com/kijv/next.js.git#d220bd22836c6741fa5a3392c8b07f76388f449e"
+source = "git+https://github.com/kijv/next.js.git#9602e48a2c2fb542b796ff82fda623fa1e1229d7"
 dependencies = [
  "anyhow",
  "clap 4.5.16",
@@ -6430,9 +6430,9 @@ dependencies = [
 
 [[package]]
 name = "swc_core"
-version = "0.101.7"
+version = "0.101.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "24fd64b47f1da39ff3c229b7a3f4fb4d9542e21b245ac77220a4b2ad1f455065"
+checksum = "860c5d6e5014b47df5d7a15fb364c32ecfed29f13c1159bce2724d274feb586d"
 dependencies = [
  "binding_macros",
  "swc",
@@ -6636,9 +6636,9 @@ dependencies = [
 
 [[package]]
 name = "swc_ecma_codegen"
-version = "0.155.1"
+version = "0.155.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cc7641608ef117cfbef9581a99d02059b522fcca75e5244fa0cbbd8606689c6f"
+checksum = "644514f303dcad13f7d1c244b50af798e0549f6eb8c53d64dd2ba9824266c868"
 dependencies = [
  "memchr",
  "num-bigint",
@@ -7259,9 +7259,9 @@ dependencies = [
 
 [[package]]
 name = "swc_ecma_transforms_typescript"
-version = "0.197.4"
+version = "0.197.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0c7e8646e32ec76ed1bda9c111583f65ed8daa46586bbfd892788536c78a6d4c"
+checksum = "668e3ad397312253784cb1754b43516e68ab5dfb06a9c2827951b72b9a07f0e0"
 dependencies = [
  "ryu-js",
  "serde",
@@ -7293,9 +7293,9 @@ dependencies = [
 
 [[package]]
 name = "swc_ecma_utils"
-version = "0.134.2"
+version = "0.134.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "029eec7dd485923a75b5a45befd04510288870250270292fc2c1b3a9e7547408"
+checksum = "cde8f1ef3f7bd53340c7bd679f1ec563a45225ac8fb63f22d6de1ff4b345475d"
 dependencies = [
  "indexmap 2.4.0",
  "num_cpus",
@@ -8285,12 +8285,12 @@ dependencies = [
 [[package]]
 name = "turbo-prehash"
 version = "0.1.0"
-source = "git+https://github.com/kijv/next.js.git#d220bd22836c6741fa5a3392c8b07f76388f449e"
+source = "git+https://github.com/kijv/next.js.git#9602e48a2c2fb542b796ff82fda623fa1e1229d7"
 
 [[package]]
 name = "turbo-tasks"
 version = "0.1.0"
-source = "git+https://github.com/kijv/next.js.git#d220bd22836c6741fa5a3392c8b07f76388f449e"
+source = "git+https://github.com/kijv/next.js.git#9602e48a2c2fb542b796ff82fda623fa1e1229d7"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -8324,7 +8324,7 @@ dependencies = [
 [[package]]
 name = "turbo-tasks-build"
 version = "0.1.0"
-source = "git+https://github.com/kijv/next.js.git#d220bd22836c6741fa5a3392c8b07f76388f449e"
+source = "git+https://github.com/kijv/next.js.git#9602e48a2c2fb542b796ff82fda623fa1e1229d7"
 dependencies = [
  "anyhow",
  "cargo-lock",
@@ -8337,7 +8337,7 @@ dependencies = [
 [[package]]
 name = "turbo-tasks-bytes"
 version = "0.1.0"
-source = "git+https://github.com/kijv/next.js.git#d220bd22836c6741fa5a3392c8b07f76388f449e"
+source = "git+https://github.com/kijv/next.js.git#9602e48a2c2fb542b796ff82fda623fa1e1229d7"
 dependencies = [
  "anyhow",
  "bytes",
@@ -8351,7 +8351,7 @@ dependencies = [
 [[package]]
 name = "turbo-tasks-env"
 version = "0.1.0"
-source = "git+https://github.com/kijv/next.js.git#d220bd22836c6741fa5a3392c8b07f76388f449e"
+source = "git+https://github.com/kijv/next.js.git#9602e48a2c2fb542b796ff82fda623fa1e1229d7"
 dependencies = [
  "anyhow",
  "dotenvs",
@@ -8365,7 +8365,7 @@ dependencies = [
 [[package]]
 name = "turbo-tasks-fetch"
 version = "0.1.0"
-source = "git+https://github.com/kijv/next.js.git#d220bd22836c6741fa5a3392c8b07f76388f449e"
+source = "git+https://github.com/kijv/next.js.git#9602e48a2c2fb542b796ff82fda623fa1e1229d7"
 dependencies = [
  "anyhow",
  "reqwest",
@@ -8380,7 +8380,7 @@ dependencies = [
 [[package]]
 name = "turbo-tasks-fs"
 version = "0.1.0"
-source = "git+https://github.com/kijv/next.js.git#d220bd22836c6741fa5a3392c8b07f76388f449e"
+source = "git+https://github.com/kijv/next.js.git#9602e48a2c2fb542b796ff82fda623fa1e1229d7"
 dependencies = [
  "anyhow",
  "auto-hash-map",
@@ -8411,7 +8411,7 @@ dependencies = [
 [[package]]
 name = "turbo-tasks-hash"
 version = "0.1.0"
-source = "git+https://github.com/kijv/next.js.git#d220bd22836c6741fa5a3392c8b07f76388f449e"
+source = "git+https://github.com/kijv/next.js.git#9602e48a2c2fb542b796ff82fda623fa1e1229d7"
 dependencies = [
  "md4",
  "turbo-tasks-macros",
@@ -8421,7 +8421,7 @@ dependencies = [
 [[package]]
 name = "turbo-tasks-macros"
 version = "0.1.0"
-source = "git+https://github.com/kijv/next.js.git#d220bd22836c6741fa5a3392c8b07f76388f449e"
+source = "git+https://github.com/kijv/next.js.git#9602e48a2c2fb542b796ff82fda623fa1e1229d7"
 dependencies = [
  "either",
  "proc-macro-error",
@@ -8435,7 +8435,7 @@ dependencies = [
 [[package]]
 name = "turbo-tasks-macros-shared"
 version = "0.1.0"
-source = "git+https://github.com/kijv/next.js.git#d220bd22836c6741fa5a3392c8b07f76388f449e"
+source = "git+https://github.com/kijv/next.js.git#9602e48a2c2fb542b796ff82fda623fa1e1229d7"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -8445,7 +8445,7 @@ dependencies = [
 [[package]]
 name = "turbo-tasks-malloc"
 version = "0.1.0"
-source = "git+https://github.com/kijv/next.js.git#d220bd22836c6741fa5a3392c8b07f76388f449e"
+source = "git+https://github.com/kijv/next.js.git#9602e48a2c2fb542b796ff82fda623fa1e1229d7"
 dependencies = [
  "mimalloc",
 ]
@@ -8453,7 +8453,7 @@ dependencies = [
 [[package]]
 name = "turbo-tasks-memory"
 version = "0.1.0"
-source = "git+https://github.com/kijv/next.js.git#d220bd22836c6741fa5a3392c8b07f76388f449e"
+source = "git+https://github.com/kijv/next.js.git#9602e48a2c2fb542b796ff82fda623fa1e1229d7"
 dependencies = [
  "anyhow",
  "auto-hash-map",
@@ -8480,7 +8480,7 @@ dependencies = [
 [[package]]
 name = "turbo-tasks-testing"
 version = "0.1.0"
-source = "git+https://github.com/kijv/next.js.git#d220bd22836c6741fa5a3392c8b07f76388f449e"
+source = "git+https://github.com/kijv/next.js.git#9602e48a2c2fb542b796ff82fda623fa1e1229d7"
 dependencies = [
  "anyhow",
  "auto-hash-map",
@@ -8493,7 +8493,7 @@ dependencies = [
 [[package]]
 name = "turbopack"
 version = "0.1.0"
-source = "git+https://github.com/kijv/next.js.git#d220bd22836c6741fa5a3392c8b07f76388f449e"
+source = "git+https://github.com/kijv/next.js.git#9602e48a2c2fb542b796ff82fda623fa1e1229d7"
 dependencies = [
  "anyhow",
  "async-recursion",
@@ -8523,7 +8523,7 @@ dependencies = [
 [[package]]
 name = "turbopack-bench"
 version = "0.1.0"
-source = "git+https://github.com/kijv/next.js.git#d220bd22836c6741fa5a3392c8b07f76388f449e"
+source = "git+https://github.com/kijv/next.js.git#9602e48a2c2fb542b796ff82fda623fa1e1229d7"
 dependencies = [
  "anyhow",
  "chromiumoxide",
@@ -8595,7 +8595,7 @@ dependencies = [
 [[package]]
 name = "turbopack-browser"
 version = "0.1.0"
-source = "git+https://github.com/kijv/next.js.git#d220bd22836c6741fa5a3392c8b07f76388f449e"
+source = "git+https://github.com/kijv/next.js.git#9602e48a2c2fb542b796ff82fda623fa1e1229d7"
 dependencies = [
  "anyhow",
  "indexmap 1.9.3",
@@ -8618,7 +8618,7 @@ dependencies = [
 [[package]]
 name = "turbopack-cli-utils"
 version = "0.1.0"
-source = "git+https://github.com/kijv/next.js.git#d220bd22836c6741fa5a3392c8b07f76388f449e"
+source = "git+https://github.com/kijv/next.js.git#9602e48a2c2fb542b796ff82fda623fa1e1229d7"
 dependencies = [
  "anyhow",
  "clap 4.5.16",
@@ -8635,7 +8635,7 @@ dependencies = [
 [[package]]
 name = "turbopack-core"
 version = "0.1.0"
-source = "git+https://github.com/kijv/next.js.git#d220bd22836c6741fa5a3392c8b07f76388f449e"
+source = "git+https://github.com/kijv/next.js.git#9602e48a2c2fb542b796ff82fda623fa1e1229d7"
 dependencies = [
  "anyhow",
  "async-recursion",
@@ -8664,7 +8664,7 @@ dependencies = [
 [[package]]
 name = "turbopack-create-test-app"
 version = "0.1.0"
-source = "git+https://github.com/kijv/next.js.git#d220bd22836c6741fa5a3392c8b07f76388f449e"
+source = "git+https://github.com/kijv/next.js.git#9602e48a2c2fb542b796ff82fda623fa1e1229d7"
 dependencies = [
  "anyhow",
  "clap 4.5.16",
@@ -8677,7 +8677,7 @@ dependencies = [
 [[package]]
 name = "turbopack-css"
 version = "0.1.0"
-source = "git+https://github.com/kijv/next.js.git#d220bd22836c6741fa5a3392c8b07f76388f449e"
+source = "git+https://github.com/kijv/next.js.git#9602e48a2c2fb542b796ff82fda623fa1e1229d7"
 dependencies = [
  "anyhow",
  "indexmap 1.9.3",
@@ -8704,7 +8704,7 @@ dependencies = [
 [[package]]
 name = "turbopack-dev-server"
 version = "0.1.0"
-source = "git+https://github.com/kijv/next.js.git#d220bd22836c6741fa5a3392c8b07f76388f449e"
+source = "git+https://github.com/kijv/next.js.git#9602e48a2c2fb542b796ff82fda623fa1e1229d7"
 dependencies = [
  "anyhow",
  "async-compression",
@@ -8740,7 +8740,7 @@ dependencies = [
 [[package]]
 name = "turbopack-ecmascript"
 version = "0.1.0"
-source = "git+https://github.com/kijv/next.js.git#d220bd22836c6741fa5a3392c8b07f76388f449e"
+source = "git+https://github.com/kijv/next.js.git#9602e48a2c2fb542b796ff82fda623fa1e1229d7"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -8775,7 +8775,7 @@ dependencies = [
 [[package]]
 name = "turbopack-ecmascript-hmr-protocol"
 version = "0.1.0"
-source = "git+https://github.com/kijv/next.js.git#d220bd22836c6741fa5a3392c8b07f76388f449e"
+source = "git+https://github.com/kijv/next.js.git#9602e48a2c2fb542b796ff82fda623fa1e1229d7"
 dependencies = [
  "serde",
  "serde_json",
@@ -8786,7 +8786,7 @@ dependencies = [
 [[package]]
 name = "turbopack-ecmascript-plugins"
 version = "0.1.0"
-source = "git+https://github.com/kijv/next.js.git#d220bd22836c6741fa5a3392c8b07f76388f449e"
+source = "git+https://github.com/kijv/next.js.git#9602e48a2c2fb542b796ff82fda623fa1e1229d7"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -8811,7 +8811,7 @@ dependencies = [
 [[package]]
 name = "turbopack-ecmascript-runtime"
 version = "0.1.0"
-source = "git+https://github.com/kijv/next.js.git#d220bd22836c6741fa5a3392c8b07f76388f449e"
+source = "git+https://github.com/kijv/next.js.git#9602e48a2c2fb542b796ff82fda623fa1e1229d7"
 dependencies = [
  "anyhow",
  "indoc",
@@ -8827,7 +8827,7 @@ dependencies = [
 [[package]]
 name = "turbopack-env"
 version = "0.1.0"
-source = "git+https://github.com/kijv/next.js.git#d220bd22836c6741fa5a3392c8b07f76388f449e"
+source = "git+https://github.com/kijv/next.js.git#9602e48a2c2fb542b796ff82fda623fa1e1229d7"
 dependencies = [
  "anyhow",
  "indexmap 1.9.3",
@@ -8843,7 +8843,7 @@ dependencies = [
 [[package]]
 name = "turbopack-image"
 version = "0.1.0"
-source = "git+https://github.com/kijv/next.js.git#d220bd22836c6741fa5a3392c8b07f76388f449e"
+source = "git+https://github.com/kijv/next.js.git#9602e48a2c2fb542b796ff82fda623fa1e1229d7"
 dependencies = [
  "anyhow",
  "base64 0.21.7",
@@ -8862,7 +8862,7 @@ dependencies = [
 [[package]]
 name = "turbopack-json"
 version = "0.1.0"
-source = "git+https://github.com/kijv/next.js.git#d220bd22836c6741fa5a3392c8b07f76388f449e"
+source = "git+https://github.com/kijv/next.js.git#9602e48a2c2fb542b796ff82fda623fa1e1229d7"
 dependencies = [
  "anyhow",
  "serde",
@@ -8877,7 +8877,7 @@ dependencies = [
 [[package]]
 name = "turbopack-mdx"
 version = "0.1.0"
-source = "git+https://github.com/kijv/next.js.git#d220bd22836c6741fa5a3392c8b07f76388f449e"
+source = "git+https://github.com/kijv/next.js.git#9602e48a2c2fb542b796ff82fda623fa1e1229d7"
 dependencies = [
  "anyhow",
  "markdown",
@@ -8893,7 +8893,7 @@ dependencies = [
 [[package]]
 name = "turbopack-node"
 version = "0.1.0"
-source = "git+https://github.com/kijv/next.js.git#d220bd22836c6741fa5a3392c8b07f76388f449e"
+source = "git+https://github.com/kijv/next.js.git#9602e48a2c2fb542b796ff82fda623fa1e1229d7"
 dependencies = [
  "anyhow",
  "async-stream",
@@ -8929,7 +8929,7 @@ dependencies = [
 [[package]]
 name = "turbopack-nodejs"
 version = "0.1.0"
-source = "git+https://github.com/kijv/next.js.git#d220bd22836c6741fa5a3392c8b07f76388f449e"
+source = "git+https://github.com/kijv/next.js.git#9602e48a2c2fb542b796ff82fda623fa1e1229d7"
 dependencies = [
  "anyhow",
  "indexmap 1.9.3",
@@ -8949,7 +8949,7 @@ dependencies = [
 [[package]]
 name = "turbopack-resolve"
 version = "0.1.0"
-source = "git+https://github.com/kijv/next.js.git#d220bd22836c6741fa5a3392c8b07f76388f449e"
+source = "git+https://github.com/kijv/next.js.git#9602e48a2c2fb542b796ff82fda623fa1e1229d7"
 dependencies = [
  "anyhow",
  "indexmap 1.9.3",
@@ -8967,7 +8967,7 @@ dependencies = [
 [[package]]
 name = "turbopack-static"
 version = "0.1.0"
-source = "git+https://github.com/kijv/next.js.git#d220bd22836c6741fa5a3392c8b07f76388f449e"
+source = "git+https://github.com/kijv/next.js.git#9602e48a2c2fb542b796ff82fda623fa1e1229d7"
 dependencies = [
  "anyhow",
  "serde",
@@ -8983,7 +8983,7 @@ dependencies = [
 [[package]]
 name = "turbopack-swc-utils"
 version = "0.1.0"
-source = "git+https://github.com/kijv/next.js.git#d220bd22836c6741fa5a3392c8b07f76388f449e"
+source = "git+https://github.com/kijv/next.js.git#9602e48a2c2fb542b796ff82fda623fa1e1229d7"
 dependencies = [
  "swc_core",
  "turbo-tasks",
@@ -8994,7 +8994,7 @@ dependencies = [
 [[package]]
 name = "turbopack-test-utils"
 version = "0.1.0"
-source = "git+https://github.com/kijv/next.js.git#d220bd22836c6741fa5a3392c8b07f76388f449e"
+source = "git+https://github.com/kijv/next.js.git#9602e48a2c2fb542b796ff82fda623fa1e1229d7"
 dependencies = [
  "anyhow",
  "once_cell",
@@ -9012,7 +9012,7 @@ dependencies = [
 [[package]]
 name = "turbopack-trace-server"
 version = "0.1.0"
-source = "git+https://github.com/kijv/next.js.git#d220bd22836c6741fa5a3392c8b07f76388f449e"
+source = "git+https://github.com/kijv/next.js.git#9602e48a2c2fb542b796ff82fda623fa1e1229d7"
 dependencies = [
  "anyhow",
  "either",
@@ -9032,7 +9032,7 @@ dependencies = [
 [[package]]
 name = "turbopack-trace-utils"
 version = "0.1.0"
-source = "git+https://github.com/kijv/next.js.git#d220bd22836c6741fa5a3392c8b07f76388f449e"
+source = "git+https://github.com/kijv/next.js.git#9602e48a2c2fb542b796ff82fda623fa1e1229d7"
 dependencies = [
  "anyhow",
  "crossbeam-channel",
@@ -9048,7 +9048,7 @@ dependencies = [
 [[package]]
 name = "turbopack-wasm"
 version = "0.1.0"
-source = "git+https://github.com/kijv/next.js.git#d220bd22836c6741fa5a3392c8b07f76388f449e"
+source = "git+https://github.com/kijv/next.js.git#9602e48a2c2fb542b796ff82fda623fa1e1229d7"
 dependencies = [
  "anyhow",
  "indexmap 1.9.3",

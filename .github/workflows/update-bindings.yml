@@ -19,11 +19,10 @@ jobs:
           echo "current_sha=$CURRENT_SHA" >> $GITHUB_OUTPUT
         shell: bash
       - id: get-latest-sha
-        uses: ./.github/actions/repo-sha
+        uses: ./.github/actions/repo-sha/action.yml
         with:
           repo: kijv/next.js
           branch: canary
-          path: turbopack/**/*
 
       - name: Compare SHAs
         id: compare-sha
@@ -40,25 +39,25 @@ jobs:
       - name: Check if path has changed
         id: check-path
         shell: bash
-        if: ${{ steps.compare-sha.outputs.sha_changed == 'true' }}
+        if: ${{ steps.compare-sha.outputs.sha-changed == 'true' }}
         run: |
           if git diff-tree ${{ steps.get-latest-sha.outputs.sha }} ${{ steps.parse-sha.outputs.current_sha }} --no-commit-id --name-only -r -p | grep 'turbopack/.*/.*'; then
-            echo "path-changed=true" >> $GITHUB_OUTPUT
+            echo "path_changed=true" >> $GITHUB_OUTPUT
           else
-            echo "path-changed=false" >> $GITHUB_OUTPUT
+            echo "path_changed=false" >> $GITHUB_OUTPUT
 
       - name: Output result
         run: |
-          echo "SHA changed: ${{ steps.compare-sha.outputs.sha_changed }}"
-          if [ "${{ steps.compare-sha.outputs.sha_changed }}" == "true" ]; then
+          echo "SHA changed: ${{ steps.compare-sha.outputs.sha-changed }}"
+          if [ "${{ steps.compare-sha.outputs.sha-changed }}" == "true" ]; then
             echo "New SHA: ${{ steps.compare-sha.outputs.new_sha }}"
           fi
         shell: bash
     outputs:
-      path_changed: ${{ steps.check-path.outputs.path_changed || 'false' }}
-      sha_changed: ${{ steps.compare-sha.outputs.sha_changed }}
-      current_sha: ${{ steps.parse-sha.outputs.current_sha }}
-      new_sha: ${{ steps.compare-sha.outputs.new_sha }}
+      path-changed: ${{ steps.check-path.outputs.path_changed || 'false' }}
+      sha-changed: ${{ steps.compare-sha.outputs.sha_changed }}
+      current-sha: ${{ steps.parse-sha.outputs.current_sha }}
+      new-sha: ${{ steps.compare-sha.outputs.new_sha }}
 
   turborepo-changed:
     runs-on: ubuntu-latest
@@ -73,7 +72,7 @@ jobs:
           echo "current_sha=$CURRENT_SHA" >> $GITHUB_OUTPUT
 
       - id: get-latest-sha
-        uses: ./.github/actions/repo-sha
+        uses: ./.github/actions/repo-sha/action.yml
         with:
           repo: kijv/turborepo
           branch: main
@@ -91,48 +90,48 @@ jobs:
 
       - name: Output result
         run: |
-          echo "SHA changed: ${{ steps.compare-sha.outputs.sha_changed }}"
-          if [ "${{ steps.compare-sha.outputs.sha_changed }}" == "true" ]; then
+          echo "SHA changed: ${{ steps.compare-sha.outputs.sha-changed }}"
+          if [ "${{ steps.compare-sha.outputs.sha-changed }}" == "true" ]; then
             echo "New SHA: ${{ steps.compare-sha.outputs.new_sha }}"
           fi
         shell: bash
     outputs:
-      sha_changed: ${{ steps.compare-sha.outputs.sha_changed }}
-      current_sha: ${{ steps.parse-sha.outputs.current_sha }}
-      new_sha: ${{ steps.compare-sha.outputs.new_sha }}
+      sha-changed: ${{ steps.compare-sha.outputs.sha_changed }}
+      current-sha: ${{ steps.parse-sha.outputs.current_sha }}
+      new-sha: ${{ steps.compare-sha.outputs.new_sha }}
 
   update-bindings:
     runs-on: ubuntu-latest
     needs: [turbopack-changed, turborepo-changed]
     steps:
-      - if: ${{ needs.turbopack-changed.outputs.sha_changed == 'true' && needs.turbopack-changed.outputs.path_changed == 'false' }}
+      - if: ${{ needs.turbopack-changed.outputs.sha-changed == 'true' && needs.turbopack-changed.outputs.path-changed == 'false' }}
         run: |
           echo "Next.js repo changed but files in `turbopack` directory have not changed; skipping update"
         shell: bash
 
       - name: Update Turbopack binding in Cargo.toml
-        if: ${{ needs.turbopack-changed.outputs.path_changed == 'true' }}
+        if: ${{ needs.turbopack-changed.outputs.path-changed == 'true' }}
         run: |
-          sed -i '' 's/rev = "${{ needs.turbopack-changed.outputs.current_sha }}"/rev = "${{ needs.turbopack-changed.outputs.new_sha }}"/g' crates/turbopack-binding/Cargo.toml
+          sed -i '' 's/rev = "${{ needs.turbopack-changed.outputs.current-sha }}"/rev = "${{ needs.turbopack-changed.outputs.new-sha }}"/g' crates/turbopack-binding/Cargo.toml
           echo "Updated Turbopack binding in crates/turbopack-binding/Cargo.toml"
         shell: bash
 
       - name: Update Turborepo binding in Cargo.toml
-        if: ${{ needs.turborepo-changed.outputs.sha_changed == 'true' }}
+        if: ${{ needs.turborepo-changed.outputs.sha-changed == 'true' }}
         run: |
-          sed -i '' 's/rev = "${{ needs.turborepo-changed.outputs.current_sha }}"/rev = "${{ needs.turborepo-changed.outputs.new_sha }}"/g' crates/turborepo-binding/Cargo.toml
+          sed -i '' 's/rev = "${{ needs.turborepo-changed.outputs.current-sha }}"/rev = "${{ needs.turborepo-changed.outputs.new-sha }}"/g' crates/turborepo-binding/Cargo.toml
           echo "Updated Turborepo binding in crates/turborepo-binding/Cargo.toml"
         shell: bash
 
       - name: Create branch
         id: branch
         run: |
-          if [[ "${{ needs.turbopack-changed.outputs.path_changed == 'true' }}" == "true" && "${{ needs.turborepo-changed.outputs.sha_changed }}" == "true" ]]; then
-            branch_name="update-bindings-${{ needs.turbopack-changed.outputs.new_sha }}-${{ needs.turborepo-changed.outputs.new_sha }}"
-          elif [[ "${{ needs.turbopack-changed.outputs.path_changed == 'true' }}" == "true" ]]; then
-            branch_name="update-turbopack-${{ needs.turbopack-changed.outputs.new_sha }}"
-          elif [[ "${{ needs.turborepo-changed.outputs.sha_changed }}" == "true" ]]; then
-            branch_name="update-turborepo-${{ needs.turborepo-changed.outputs.new_sha }}"
+          if [[ "${{ needs.turbopack-changed.outputs.path-changed == 'true' }}" == "true" && "${{ needs.turborepo-changed.outputs.sha-changed }}" == "true" ]]; then
+            branch_name="update-bindings-${{ needs.turbopack-changed.outputs.new-sha }}-${{ needs.turborepo-changed.outputs.new-sha }}"
+          elif [[ "${{ needs.turbopack-changed.outputs.path-changed == 'true' }}" == "true" ]]; then
+            branch_name="update-turbopack-${{ needs.turbopack-changed.outputs.new-sha }}"
+          elif [[ "${{ needs.turborepo-changed.outputs.sha-changed }}" == "true" ]]; then
+            branch_name="update-turborepo-${{ needs.turborepo-changed.outputs.new-sha }}"
           else
             echo "No changes detected. Exiting."
             exit 0
@@ -141,7 +140,7 @@ jobs:
           echo "$branch_name" >> $GITHUB_OUTPUT
 
       - name: Stage changes
-        if: ${{ needs.turbopack-changed.outputs.path_changed == 'true' || needs.turborepo-changed.outputs.sha_changed == 'true' }}
+        if: ${{ needs.turbopack-changed.outputs.path-changed == 'true' || needs.turborepo-changed.outputs.sha-changed == 'true' }}
         run: |
           git config --global user.name 'jujutsu bot'
           git config --global user.email 'bot@jujutsu.studio'
