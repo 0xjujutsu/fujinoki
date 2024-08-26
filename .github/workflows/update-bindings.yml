@@ -45,6 +45,35 @@ jobs:
           else
             echo "path_changed=false" >> $GITHUB_OUTPUT
 
+      - name: Check if Cargo.toml has changed
+        id: check-cargo-toml
+        if: ${{ steps.compare-sha.outputs.sha-changed == 'true' }}
+        run: |
+          if git diff-tree ${{ steps.get-latest-sha.outputs.sha }} ${{ steps.parse-sha.outputs.current_sha }} --no-commit-id --name-only -r -p | grep 'Cargo.toml'; then
+            echo "cargo_toml_changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "cargo_toml_changed=false" >> $GITHUB_OUTPUT
+          fi
+        shell: bash
+
+      - name: Parse Cargo.toml
+        id: parse-cargo-toml
+        if: ${{ steps.check-cargo-toml.outputs.cargo_toml_changed == 'true' }}
+        run: |
+          SWC_CORE=$(grep -A 5 'swc_core =' Cargo.toml | sed -n '/^swc_core = {/,/}/p')
+          TESTING=$(grep -A 1 '[workspaces.dependencies]' Cargo.toml | grep 'testing = { version')
+          echo "crate_swc_core=$SWC_CORE" >> $GITHUB_OUTPUT
+          echo "crate_testing=$TESTING" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Output Cargo.toml changes
+        if: ${{ steps.check-cargo-toml.outputs.cargo_toml_changed == 'true' }}
+        run: |
+          echo "Cargo.toml changed: true"
+          echo "swc_core version: ${{ steps.parse-cargo-toml.outputs.swc_core_version }}"
+          echo "testing version: ${{ steps.parse-cargo-toml.outputs.testing_version }}"
+        shell: bash
+
       - name: Output result
         run: |
           echo "SHA changed: ${{ steps.compare-sha.outputs.sha-changed }}"
@@ -56,6 +85,8 @@ jobs:
       # git changes so we need to checkout again or else post local actions will fail
       - uses: actions/checkout@v3
     outputs:
+      crate_swc_core: ${{ steps.parse-cargo-toml.outputs.crate_swc_core }}
+      crate_testing: ${{ steps.parse-cargo-toml.outputs.crate_testing }}
       path-changed: ${{ steps.check-path.outputs.path_changed || 'false' }}
       sha-changed: ${{ steps.compare-sha.outputs.sha_changed }}
       current-sha: ${{ steps.parse-sha.outputs.current_sha }}
@@ -127,6 +158,8 @@ jobs:
         if: ${{ needs.turborepo-changed.outputs.sha-changed == 'true' }}
         run: |
           sed -i '' 's/rev = "${{ needs.turborepo-changed.outputs.current-sha }}"/rev = "${{ needs.turborepo-changed.outputs.new-sha }}"/g' crates/turborepo-binding/Cargo.toml
+          sed -i '' 's/swc_core = { optional = true, version = ".*", features = \[.*\] }/${{ needs.turbopack-changed.outputs.crate_swc_core }}/g' crates/turborepo-binding/Cargo.toml
+          sed -i '' 's/testing = { optional = true, version = ".*" }/${{ needs.turbopack-changed.outputs.crate_testing }}/g' crates/turborepo-binding/Cargo.toml
           echo "Updated Turborepo binding in crates/turborepo-binding/Cargo.toml"
         shell: bash
 
