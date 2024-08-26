@@ -1,4 +1,4 @@
-name: Update Turbopack/Turborepo Bindings
+name: Update turbopack/turborepo bindings
 
 on:
   schedule:
