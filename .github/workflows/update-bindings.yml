@@ -35,7 +35,6 @@ jobs:
           fi
         shell: bash
 
-
       - name: Check if path has changed
         id: check-path
         shell: bash
@@ -70,6 +69,7 @@ jobs:
         run: |
           CURRENT_SHA=$(cat crates/turborepo-binding/Cargo.toml | grep -A 1 'package.metadata' | grep 'rev' | awk -F ' = ' '{print $2}' | tr -d '"')
           echo "current_sha=$CURRENT_SHA" >> $GITHUB_OUTPUT
+          echo "Current SHA: $CURRENT_SHA"
 
       - id: get-latest-sha
         uses: ./.github/actions/repo-sha
@@ -90,7 +90,7 @@ jobs:
 
       - name: Output result
         run: |
-          echo "SHA changed: ${{ steps.compare-sha.outputs.sha-changed }}"
+          echo "SHA changed: ${{ steps.compare-sha.outputs.sha-changed || 'false' }}"
           if [ "${{ steps.compare-sha.outputs.sha-changed }}" == "true" ]; then
             echo "New SHA: ${{ steps.compare-sha.outputs.new_sha }}"
           fi
