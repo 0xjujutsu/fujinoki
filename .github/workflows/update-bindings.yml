@@ -19,7 +19,7 @@ jobs:
           echo "current_sha=$CURRENT_SHA" >> $GITHUB_OUTPUT
         shell: bash
       - id: get-latest-sha
-        uses: ./.github/actions/repo-sha/action.yml
+        uses: ./.github/actions/repo-sha
         with:
           repo: kijv/next.js
           branch: canary
@@ -72,7 +72,7 @@ jobs:
           echo "current_sha=$CURRENT_SHA" >> $GITHUB_OUTPUT
 
       - id: get-latest-sha
-        uses: ./.github/actions/repo-sha/action.yml
+        uses: ./.github/actions/repo-sha
         with:
           repo: kijv/turborepo
           branch: main

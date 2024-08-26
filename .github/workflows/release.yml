@@ -86,55 +86,57 @@ jobs:
             pnpm-store-
             pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
 
-  # TODO uncomment
-  # stage-bump-version:
-  #   name: Stage and bump version
-  #   needs: [changed]
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Setup node
-  #       uses: actions/setup-node@v4
-  #       with:
-  #         node-version: ${{ env.NODE_LTS_VERSION }}
-  #         check-latest: true
+  stage:
+    name: Stage and bump version
+    needs: [changed]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_LTS_VERSION }}
+          check-latest: true
 
-  #     - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-  #     - name: Install Rust
-  #       uses: ./.github/actions/setup-rust
+      - name: Install Rust
+        uses: ./.github/actions/setup-rust
 
-  #     - uses: Swatinem/rust-cache@v2
-  #       with:
-  #         shared-key: xtask-${{ hashFiles('xtask/**/*') }}
-  #         cache-targets: "false"
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: xtask-${{ hashFiles('xtask/**/*') }}
+          cache-targets: "false"
 
-  #     - run: corepack enable && pnpm --version
+      - run: corepack enable && pnpm --version
 
-  #     - name: Configure git
-  #       run: |
-  #         git config --global user.name 'release bot'
-  #         git config --global user.email 'release@jujutsu.studio'
+      - name: Configure git
+        run: |
+          git config --global user.name 'release bot'
+          git config --global user.email 'release@jujutsu.studio'
 
-  #     - name: Version
-  #       id: version
-  #       # cargo xtask workspace --bump ${{ github.event.inputs.semverType }} ${{ github.event.inputs.package }}
-  #       run: |
-  #         echo "RELEASE_VERSION=$(pnpm list -r --depth -1 fujinoki --long --filter fujinoki --parseable | sed 's/.*:fujinoki@//')" >> $GITHUB_OUTPUT
-  #     - run: echo "${{ steps.version.outputs.RELEASE_VERSION }}"
-  #     - name: Stage Commit
-  #       id: stage
-  #       run: echo ""
+      - id: stage
+        run: |
+          current_time=$(date +"%y%m%d%H%M")
+          git checkout -b staging-${{ github.event.inputs.package }}-$current_time
+          echo "STAGE_BRANCH=$(git branch --show-current)" >> $GITHUB_OUTPUT
 
-  #     - name: Show Stage Commit
-  #       run: echo "${{ steps.stage.outputs.STAGE_BRANCH }}"
-  #   outputs:
-  #     stage-branch: "${{ steps.stage.outputs.STAGE_BRANCH }}"
-  #     release-version: "${{ steps.version.outputs.RELEASE_VERSION }}"
+      - name: Version
+        id: version
+        # cargo xtask workspace --bump ${{ github.event.inputs.semverType }} ${{ github.event.inputs.package }}
+        run: |
+          echo "RELEASE_VERSION=$(pnpm list -r --depth -1 fujinoki --long --filter fujinoki --parseable | sed 's/.*:fujinoki@//')" >> $GITHUB_OUTPUT
+      - name: Show Release Version
+        run: echo "${{ steps.version.outputs.RELEASE_VERSION }}"
 
+      - name: Show Stage Commit
+        run: echo "${{ steps.stage.outputs.STAGE_BRANCH }}"
+    outputs:
+      stage-branch: "${{ steps.stage.outputs.STAGE_BRANCH }}"
+      release-version: "${{ steps.version.outputs.RELEASE_VERSION }}"
 
   build-discord-api:
     name: Build Discord API Bindings
-    needs: [changed]
+    needs: [stage]
     if: ${{ github.event.inputs.package == '@fujinoki/discord-api' }}
     strategy:
       fail-fast: false
@@ -170,7 +172,7 @@ jobs:
 
   build-fujinoki:
     name: Build Fujinoki
-    needs: [changed]
+    needs: [stage]
     if: ${{ github.event.inputs.package == 'fujinoki' }}
     strategy:
       fail-fast: false
@@ -205,89 +207,89 @@ jobs:
           additional-rust-cache-key: ${{ hashFiles('crates/turborepo-binding/Cargo.toml') }}
 
   # TODO uncomment
-  # npm-publish:
-  #   name: Publish to NPM
-  #   needs: [changed, stage-bump-version, build]
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Setup node
-  #       uses: actions/setup-node@v4
-  #       with:
-  #         node-version: ${{ env.NODE_LTS_VERSION }}
-  #         check-latest: true
+  npm-publish:
+    name: Publish to NPM
+    needs: [build-fujinoki, build-discord-api]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_LTS_VERSION }}
+          check-latest: true
 
-  #     - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-  #     - name: Install Rust
-  #       uses: ./.github/actions/setup-rust
+      - name: Install Rust
+        uses: ./.github/actions/setup-rust
 
-  #     - uses: Swatinem/rust-cache@v2
-  #       with:
-  #         shared-key: xtask-${{ hashFiles('xtask/**/*') }}
-  #         cache-targets: "false"
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: xtask-${{ hashFiles('xtask/**/*') }}
+          cache-targets: "false"
 
-  #     - run: corepack enable && pnpm --version
+      - run: corepack enable && pnpm --version
 
-  #     - id: get-store-path
-  #       run: echo STORE_PATH=$(pnpm store path) >> $GITHUB_OUTPUT
+      - id: get-store-path
+        run: echo STORE_PATH=$(pnpm store path) >> $GITHUB_OUTPUT
 
-  #     - uses: actions/cache@v4
-  #       timeout-minutes: 5
-  #       id: cache-pnpm-store
-  #       with:
-  #         path: ${{ steps.get-store-path.outputs.STORE_PATH }}
-  #         key: pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
-  #         restore-keys: |
-  #           pnpm-store-
-  #           pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
+      - uses: actions/cache@v4
+        timeout-minutes: 5
+        id: cache-pnpm-store
+        with:
+          path: ${{ steps.get-store-path.outputs.STORE_PATH }}
+          key: pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            pnpm-store-
+            pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
 
-  #     - name: Download Rust artifacts
-  #       uses: actions/download-artifact@v3
-  #       with:
-  #         path: artifacts
+      - name: Download Rust artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: artifacts
 
-  #     # - name: Publish
-  #     #   run: |
-  #     #     if [[ "${{ github.event.inputs.package }}" == "fujinoki" ]]; then
-  #     #       if [[ "${{ inputs.dry-run }}" == "true" ]]; then
-  #     #         cargo xtask npm --dry-run fujinoki-cli
-  #     #       else
-  #     #         cargo xtask npm fujinoki-cli
-  #     #       fi
-  #     #     elif [[ "${{ github.event.inputs.package }}" == "@fujinoki/discord-api" ]]; then
-  #     #       if [[ "${{ inputs.dry-run }}" == "true" ]]; then
-  #     #         cargo xtask npm --dry-run discord-api-napi
-  #     #       else
-  #     #         cargo xtask npm discord-api-napi
-  #     #       fi
-  #     #     else
-  #     #       echo "Invalid package specified"
-  #     #       exit 1
-  #     #     fi
-  #     #   env:
-  #     #     NPM_TOKEN: ${{ secrets.RELEASE_BOT_PAT }}
+      # - name: Publish
+      #   run: |
+      #     if [[ "${{ github.event.inputs.package }}" == "fujinoki" ]]; then
+      #       if [[ "${{ inputs.dry-run }}" == "true" ]]; then
+      #         cargo xtask npm --dry-run fujinoki-cli
+      #       else
+      #         cargo xtask npm fujinoki-cli
+      #       fi
+      #     elif [[ "${{ github.event.inputs.package }}" == "@fujinoki/discord-api" ]]; then
+      #       if [[ "${{ inputs.dry-run }}" == "true" ]]; then
+      #         cargo xtask npm --dry-run discord-api-napi
+      #       else
+      #         cargo xtask npm discord-api-napi
+      #       fi
+      #     else
+      #       echo "Invalid package specified"
+      #       exit 1
+      #     fi
+      #   env:
+      #     NPM_TOKEN: ${{ secrets.RELEASE_BOT_PAT }}
 
-  #     # Upload published artifacts in case they are needed for debugging later
-  #     - name: Upload Artifacts
-  #       uses: actions/upload-artifact@v3
-  #       with:
-  #         name: debug-artifacts
-  #         path: artifacts
+      # Upload published artifacts in case they are needed for debugging later
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: debug-artifacts
+          path: artifacts
 
-  # open-release-pr:
-  #   name: Open Release PR
-  #   needs: [changed, stage, build, npm-publish]
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@1.0.0
-  #       with:
-  #         ref: ${{ needs.stage.outputs.stage-branch }}
+  open-release-pr:
+    name: Open Release PR
+    needs: [npm-publish]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@1.0.0
+        with:
+          ref: ${{ needs.stage.outputs.stage-branch }}
 
-  #     - name: Create pull request
-  #       uses: thomaseizinger/create-pull-request@master
-  #       if: ${{ !inputs.dryRun }}
-  #       with:
-  #         github_token: ${{ secrets.GITHUB_TOKEN }}
-  #         head: ${{ needs.stage.outputs.stage-branch }}
-  #         base: main
-  #         title: "chore: release ${{ inputs.package }} (v${{ needs.stage.outputs.release-version }})"
+      - name: Create pull request
+        uses: thomaseizinger/create-pull-request@master
+        if: ${{ !inputs.dryRun }}
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          head: ${{ needs.stage.outputs.stage-branch }}
+          base: main
+          title: "chore: release ${{ inputs.package }} (v${{ needs.stage.outputs.release-version }})"
