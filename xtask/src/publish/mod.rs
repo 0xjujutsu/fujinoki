@@ -511,6 +511,7 @@ pub fn run_bump(names: HashSet<String>, version_type: Option<&String>, dry_run: 
         .map(|s| format!("- {s}"))
         .collect::<Vec<_>>()
         .join("\n");
+
     Command::program("git")
         .args([
             "commit",
