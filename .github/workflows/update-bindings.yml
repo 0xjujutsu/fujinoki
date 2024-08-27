@@ -151,15 +151,15 @@ jobs:
         if: ${{ needs.turbopack-changed.outputs.path-changed == 'true' }}
         run: |
           sed -i '' 's/rev = "${{ needs.turbopack-changed.outputs.current-sha }}"/rev = "${{ needs.turbopack-changed.outputs.new-sha }}"/g' crates/turbopack-binding/Cargo.toml
+          sed -i '' 's/swc_core = {[^}]*}\n/${{ needs.turbopack-changed.outputs.crate_swc_core }}/g' crates/turbopack-binding/Cargo.toml
+          sed -i '' 's/testing = {[^}]*}/${{ needs.turbopack-changed.outputs.crate_testing }}/g' crates/turbopack-binding/Cargo.toml
           echo "Updated Turbopack binding in crates/turbopack-binding/Cargo.toml"
         shell: bash
 
       - name: Update Turborepo binding in Cargo.toml
         if: ${{ needs.turborepo-changed.outputs.sha-changed == 'true' }}
         run: |
-          sed -i '' 's/rev = "${{ needs.turborepo-changed.outputs.current-sha }}"/rev = "${{ needs.turborepo-changed.outputs.new-sha }}"/g' crates/turborepo-binding/Cargo.toml
-          sed -i '' 's/swc_core = { optional = true, version = ".*", features = \[.*\] }/${{ needs.turbopack-changed.outputs.crate_swc_core }}/g' crates/turborepo-binding/Cargo.toml
-          sed -i '' 's/testing = { optional = true, version = ".*" }/${{ needs.turbopack-changed.outputs.crate_testing }}/g' crates/turborepo-binding/Cargo.toml
+          sed -i '' 's/rev = "${{ needs.turbopack-changed.outputs.current-sha }}"/rev = "${{ needs.turbopack-changed.outputs.new-sha }}"/g' crates/turborepo-binding/Cargo.toml
           echo "Updated Turborepo binding in crates/turborepo-binding/Cargo.toml"
         shell: bash
 
@@ -185,7 +185,7 @@ jobs:
           git config --global user.name 'jujutsu bot'
           git config --global user.email 'bot@jujutsu.studio'
           git add crates/turbopack-binding/Cargo.toml crates/turborepo-binding/Cargo.toml
-          git commit -m "chore(bindings): update turbopack/turborepo revisions"
+          git commit -m "chore: update turbopack/turborepo bindings"
           git push --force --set-upstream origin "${{ steps.branch.outputs.branch_name }}"
     outputs:
       stage-branch: ${{ steps.branch.outputs.branch_name }}
