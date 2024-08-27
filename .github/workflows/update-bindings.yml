@@ -16,8 +16,10 @@ jobs:
         id: parse-sha
         run: |
           CURRENT_SHA=$(cat crates/turbopack-binding/Cargo.toml | grep -A 1 'package.metadata' | grep 'rev' | awk -F ' = ' '{print $2}' | tr -d '"')
-          echo "current_sha=$CURRENT_SHA" >> $GITHUB_OUTPUT
+          echo "CURRENT_SHA=$CURRENT_SHA" >> $GITHUB_OUTPUT
+          echo "$CURRENT_SHA"
         shell: bash
+
       - id: get-latest-sha
         uses: ./.github/actions/repo-sha
         with:
@@ -28,17 +30,17 @@ jobs:
         id: compare-sha
         run: |
           if [ "${{ steps.get-latest-sha.outputs.sha }}" != "${{ steps.parse-sha.outputs.current_sha }}" ]; then
-            echo "sha_changed=true" >> $GITHUB_OUTPUT
-            echo "new_sha=${{ steps.get-latest-sha.outputs.sha }}" >> $GITHUB_OUTPUT
+            echo "SHA_CHANGED=true" >> $GITHUB_OUTPUT
+            echo "NEW_SHA=${{ steps.get-latest-sha.outputs.sha }}" >> $GITHUB_OUTPUT
           else
-            echo "sha_changed=false" >> $GITHUB_OUTPUT
+            echo "SHA_CHANGED=false" >> $GITHUB_OUTPUT
           fi
         shell: bash
 
       - name: Check if path has changed
         id: check-path
         shell: bash
-        if: ${{ steps.compare-sha.outputs.sha-changed == 'true' }}
+        if: ${{ steps.compare-sha.outputs.SHA_CHANGED == 'true' }}
         run: |
           if git diff-tree ${{ steps.get-latest-sha.outputs.sha }} ${{ steps.parse-sha.outputs.current_sha }} --no-commit-id --name-only -r -p | grep 'turbopack/.*/.*'; then
             echo "path_changed=true" >> $GITHUB_OUTPUT
@@ -47,7 +49,7 @@ jobs:
 
       - name: Check if Cargo.toml has changed
         id: check-cargo-toml
-        if: ${{ steps.compare-sha.outputs.sha-changed == 'true' }}
+        if: ${{ steps.compare-sha.outputs.SHA_CHANGED == 'true' }}
         run: |
           if git diff-tree ${{ steps.get-latest-sha.outputs.sha }} ${{ steps.parse-sha.outputs.current_sha }} --no-commit-id --name-only -r -p | grep 'Cargo.toml'; then
             echo "cargo_toml_changed=true" >> $GITHUB_OUTPUT
@@ -76,9 +78,9 @@ jobs:
 
       - name: Output result
         run: |
-          echo "SHA changed: ${{ steps.compare-sha.outputs.sha-changed }}"
-          if [ "${{ steps.compare-sha.outputs.sha-changed }}" == "true" ]; then
-            echo "New SHA: ${{ steps.compare-sha.outputs.new_sha }}"
+          echo "SHA changed: ${{ steps.compare-sha.outputs.SHA_CHANGED }}"
+          if [ "${{ steps.compare-sha.outputs.SHA_CHANGED }}" == "true" ]; then
+            echo "New SHA: ${{ steps.compare-sha.outputs.NEW_SHA }}"
           fi
         shell: bash
 
@@ -88,9 +90,9 @@ jobs:
       crate_swc_core: ${{ steps.parse-cargo-toml.outputs.crate_swc_core }}
       crate_testing: ${{ steps.parse-cargo-toml.outputs.crate_testing }}
       path-changed: ${{ steps.check-path.outputs.path_changed || 'false' }}
-      sha-changed: ${{ steps.compare-sha.outputs.sha_changed }}
-      current-sha: ${{ steps.parse-sha.outputs.current_sha }}
-      new-sha: ${{ steps.compare-sha.outputs.new_sha }}
+      sha-changed: ${{ steps.compare-sha.outputs.SHA_CHANGED }}
+      current-sha: ${{ steps.parse-sha.outputs.CURRENT_SHA }}
+      new-sha: ${{ steps.compare-sha.outputs.NEW_SHA }}
 
   turborepo-changed:
     runs-on: ubuntu-latest
@@ -102,8 +104,8 @@ jobs:
         id: parse-sha
         run: |
           CURRENT_SHA=$(cat crates/turborepo-binding/Cargo.toml | grep -A 1 'package.metadata' | grep 'rev' | awk -F ' = ' '{print $2}' | tr -d '"')
-          echo "current_sha=$CURRENT_SHA" >> $GITHUB_OUTPUT
-          echo "Current SHA: $CURRENT_SHA"
+          echo "CURRENT_SHA=$CURRENT_SHA" >> $GITHUB_OUTPUT
+          echo "$CURRENT_SHA"
 
       - id: get-latest-sha
         uses: ./.github/actions/repo-sha
@@ -114,28 +116,28 @@ jobs:
       - name: Compare SHAs
         id: compare-sha
         run: |
-          if [ "${{ steps.get-latest-sha.outputs.sha }}" != "${{ steps.parse-sha.outputs.current_sha }}" ]; then
-            echo "sha_changed=true" >> $GITHUB_OUTPUT
-            echo "new_sha=${{ steps.get-latest-sha.outputs.sha }}" >> $GITHUB_OUTPUT
+          if [ "${{ steps.get-latest-sha.outputs.sha }}" != "${{ steps.parse-sha.outputs.CURRENT_SHA }}" ]; then
+            echo "SHA_CHANGED=true" >> $GITHUB_OUTPUT
+            echo "NEW_SHA=${{ steps.get-latest-sha.outputs.sha }}" >> $GITHUB_OUTPUT
           else
-            echo "sha_changed=false" >> $GITHUB_OUTPUT
+            echo "SHA_CHANGED=false" >> $GITHUB_OUTPUT
           fi
         shell: bash
 
       - name: Output result
         run: |
-          echo "SHA changed: ${{ steps.compare-sha.outputs.sha-changed || 'false' }}"
-          if [ "${{ steps.compare-sha.outputs.sha-changed }}" == "true" ]; then
-            echo "New SHA: ${{ steps.compare-sha.outputs.new_sha }}"
+          echo "SHA changed: ${{ steps.compare-sha.outputs.SHA_CHANGED || 'false' }}"
+          if [ "${{ steps.compare-sha.outputs.SHA_CHANGED }}" == "true" ]; then
+            echo "New SHA: ${{ steps.compare-sha.outputs.NEW_SHA }}"
           fi
         shell: bash
 
       # git changes so we need to checkout again or else post local actions will fail
       - uses: actions/checkout@v3
     outputs:
-      sha-changed: ${{ steps.compare-sha.outputs.sha_changed }}
-      current-sha: ${{ steps.parse-sha.outputs.current_sha }}
-      new-sha: ${{ steps.compare-sha.outputs.new_sha }}
+      sha-changed: ${{ steps.compare-sha.outputs.SHA_CHANGED }}
+      current-sha: ${{ steps.parse-sha.outputs.CURRENT_SHA }}
+      new-sha: ${{ steps.compare-sha.outputs.NEW_SHA }}
 
   update-bindings:
     runs-on: ubuntu-latest
