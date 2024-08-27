@@ -13,7 +13,10 @@
 </p>
 
 > [!CAUTION]
-> Fujinoki is in beta and will have relies heavily on when [Turbopack](https://turbo.build/pack) will become stable. Because of this, only a development server is currently available. Breaking changes may occur.
+> Fujinoki is currently in alpha and is subject to breaking changes without notice.
+
+> [!NOTE]
+> Fujinoki relies on [Turbopack](https://turbo.build/pack) to become stable before it can be used in production.
 
 Fujinoki is a framework for creating optimized Discord bots in JavaScript/TypeScript, written in Rust.
 
