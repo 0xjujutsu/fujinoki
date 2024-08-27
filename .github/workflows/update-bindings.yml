@@ -29,7 +29,7 @@ jobs:
       - name: Compare SHAs
         id: compare-sha
         run: |
-          if [ "${{ steps.get-latest-sha.outputs.sha }}" != "${{ steps.parse-sha.outputs.current_sha }}" ]; then
+          if [ "${{ steps.get-latest-sha.outputs.sha }}" != "${{ steps.parse-sha.outputs.CURRENT_SHA }}" ]; then
             echo "SHA_CHANGED=true" >> $GITHUB_OUTPUT
             echo "NEW_SHA=${{ steps.get-latest-sha.outputs.sha }}" >> $GITHUB_OUTPUT
           else
@@ -42,16 +42,17 @@ jobs:
         shell: bash
         if: ${{ steps.compare-sha.outputs.SHA_CHANGED == 'true' }}
         run: |
-          if git diff-tree ${{ steps.get-latest-sha.outputs.sha }} ${{ steps.parse-sha.outputs.current_sha }} --no-commit-id --name-only -r -p | grep 'turbopack/.*/.*'; then
+          if git diff-tree ${{ steps.get-latest-sha.outputs.sha }} ${{ steps.parse-sha.outputs.CURRENT_SHA }} --no-commit-id --name-only -r -p | grep 'turbopack/.*/.*'; then
             echo "path_changed=true" >> $GITHUB_OUTPUT
           else
             echo "path_changed=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Check if Cargo.toml has changed
         id: check-cargo-toml
         if: ${{ steps.compare-sha.outputs.SHA_CHANGED == 'true' }}
         run: |
-          if git diff-tree ${{ steps.get-latest-sha.outputs.sha }} ${{ steps.parse-sha.outputs.current_sha }} --no-commit-id --name-only -r -p | grep 'Cargo.toml'; then
+          if git diff-tree ${{ steps.get-latest-sha.outputs.sha }} ${{ steps.parse-sha.outputs.CURRENT_SHA }} --no-commit-id --name-only -r -p | grep 'Cargo.toml'; then
             echo "cargo_toml_changed=true" >> $GITHUB_OUTPUT
           else
             echo "cargo_toml_changed=false" >> $GITHUB_OUTPUT
@@ -72,8 +73,8 @@ jobs:
         if: ${{ steps.check-cargo-toml.outputs.cargo_toml_changed == 'true' }}
         run: |
           echo "Cargo.toml changed: true"
-          echo "swc_core version: ${{ steps.parse-cargo-toml.outputs.swc_core_version }}"
-          echo "testing version: ${{ steps.parse-cargo-toml.outputs.testing_version }}"
+          echo "swc_core = ${{ steps.parse-cargo-toml.outputs.crate_swc_core }}"
+          echo "testing = ${{ steps.parse-cargo-toml.outputs.crate_testing }}"
         shell: bash
 
       - name: Output result
@@ -144,6 +145,8 @@ jobs:
     needs: [turbopack-changed, turborepo-changed]
     if: ${{ needs.turbopack-changed.outputs.sha-changed == 'true' || needs.turborepo-changed.outputs.sha-changed == 'true' }}
     steps:
+      - uses: actions/checkout@v3
+
       - if: ${{ needs.turbopack-changed.outputs.sha-changed == 'true' && needs.turbopack-changed.outputs.path-changed == 'false' }}
         run: |
           echo "Next.js repo changed but files in `turbopack` directory have not changed; skipping update"
@@ -152,16 +155,16 @@ jobs:
       - name: Update Turbopack binding in Cargo.toml
         if: ${{ needs.turbopack-changed.outputs.path-changed == 'true' }}
         run: |
-          sed -i '' 's/rev = "${{ needs.turbopack-changed.outputs.current-sha }}"/rev = "${{ needs.turbopack-changed.outputs.new-sha }}"/g' crates/turbopack-binding/Cargo.toml
-          sed -i '' 's/swc_core = {[^}]*}\n/${{ needs.turbopack-changed.outputs.crate_swc_core }}/g' crates/turbopack-binding/Cargo.toml
-          sed -i '' 's/testing = {[^}]*}/${{ needs.turbopack-changed.outputs.crate_testing }}/g' crates/turbopack-binding/Cargo.toml
+          sed -i 's/rev = "${{ needs.turbopack-changed.outputs.current-sha }}"/rev = "${{ needs.turbopack-changed.outputs.new-sha }}"/g' crates/turbopack-binding/Cargo.toml
+          sed -i 's/swc_core = {[^}]*}\n/${{ needs.turbopack-changed.outputs.crate_swc_core }}/g' crates/turbopack-binding/Cargo.toml
+          sed -i 's/testing = {[^}]*}/${{ needs.turbopack-changed.outputs.crate_testing }}/g' crates/turbopack-binding/Cargo.toml
           echo "Updated Turbopack binding in crates/turbopack-binding/Cargo.toml"
         shell: bash
 
       - name: Update Turborepo binding in Cargo.toml
         if: ${{ needs.turborepo-changed.outputs.sha-changed == 'true' }}
         run: |
-          sed -i '' 's/rev = "${{ needs.turbopack-changed.outputs.current-sha }}"/rev = "${{ needs.turbopack-changed.outputs.new-sha }}"/g' crates/turborepo-binding/Cargo.toml
+          sed -i 's/rev = "${{ needs.turborepo-changed.outputs.current-sha }}"/rev = "${{ needs.turborepo-changed.outputs.new-sha }}"/g' crates/turborepo-binding/Cargo.toml
           echo "Updated Turborepo binding in crates/turborepo-binding/Cargo.toml"
         shell: bash
 
@@ -192,7 +195,7 @@ jobs:
     if: ${{ needs.update-bindings.outputs.stage-branch != '' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@1.0.0
+      - uses: actions/checkout@v3
         with:
           ref: ${{ needs.update-bindings.outputs.stage-branch }}
 
