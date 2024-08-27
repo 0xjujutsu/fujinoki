@@ -2,7 +2,7 @@ name: Update turbopack/turborepo bindings
 
 on:
   schedule:
-    - cron: '0 0 * * *'  # Run every day at midnight
+    - cron: '0 0 * * 0'  # Run every week
   workflow_dispatch:  # Allow manual triggering
 
 jobs:
@@ -163,21 +163,15 @@ jobs:
           echo "Updated Turborepo binding in crates/turborepo-binding/Cargo.toml"
         shell: bash
 
+      - id: branch-name
+        run: |
+          branch_name="update-turbo-bindings"
+          echo "BRANCH_NAME=$branch_name" >> $GITHUB_OUTPUT
+
       - name: Create branch
         id: branch
         run: |
-          if [[ "${{ needs.turbopack-changed.outputs.path-changed == 'true' }}" == "true" && "${{ needs.turborepo-changed.outputs.sha-changed }}" == "true" ]]; then
-            branch_name="update-bindings-${{ needs.turbopack-changed.outputs.new-sha }}-${{ needs.turborepo-changed.outputs.new-sha }}"
-          elif [[ "${{ needs.turbopack-changed.outputs.path-changed == 'true' }}" == "true" ]]; then
-            branch_name="update-turbopack-${{ needs.turbopack-changed.outputs.new-sha }}"
-          elif [[ "${{ needs.turborepo-changed.outputs.sha-changed }}" == "true" ]]; then
-            branch_name="update-turborepo-${{ needs.turborepo-changed.outputs.new-sha }}"
-          else
-            echo "No changes detected. Exiting."
-            exit 0
-          fi
-          git checkout -b "$branch_name"
-          echo "$branch_name" >> $GITHUB_OUTPUT
+          git checkout -b ${{ steps.branch-name.outputs.BRANCH_NAME }}
 
       - name: Stage changes
         if: ${{ needs.turbopack-changed.outputs.path-changed == 'true' || needs.turborepo-changed.outputs.sha-changed == 'true' }}
@@ -185,14 +179,14 @@ jobs:
           git config --global user.name 'jujutsu bot'
           git config --global user.email 'bot@jujutsu.studio'
           git add crates/turbopack-binding/Cargo.toml crates/turborepo-binding/Cargo.toml
-          git commit -m "chore: update turbopack/turborepo bindings"
-          git push --force --set-upstream origin "${{ steps.branch.outputs.branch_name }}"
+          git commit -m "chore: update turbo bindings"
+          git push --force --set-upstream origin "${{ steps.branch-name.outputs.BRANCH_NAME }}"
     outputs:
-      stage-branch: ${{ steps.branch.outputs.branch_name }}
+      stage-branch: ${{ steps.branch-name.outputs.BRANCH_NAME }}
 
   open-pr:
     name: Open PR
-    needs: [update-bindings]
+    needs: [turbopack-changed, turborepo-changed, update-bindings]
     if: ${{ needs.update-bindings.outputs.stage-branch != '' }}
     runs-on: ubuntu-latest
     steps:
@@ -200,10 +194,51 @@ jobs:
         with:
           ref: ${{ needs.update-bindings.outputs.stage-branch }}
 
-      - name: Create pull request
+      - name: Check for existing PR
+        id: check_pr
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const { data: pullRequests } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              head: '${{ needs.update-bindings.outputs.stage-branch }}',
+              base: 'main',
+              state: 'open'
+            });
+            return pullRequests.length > 0 ? pullRequests[0].number : null;
+
+      - name: Update existing PR
+        if: steps.check_pr.outputs.result != 'null'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: ${{ steps.check_pr.outputs.result }},
+              body: `Updates the turbo to the latest commit.
+
+              - Turbopack: ${{ needs.turbopack-changed.outputs.new-sha || 'N/A' }}
+                - swc_core = ${{ needs.turbopack-changed.outputs.crate_swc_core || 'N/A' }}
+                - testing = ${{ needs.turbopack-changed.outputs.crate_testing || 'N/A' }}
+              - Turborepo: ${{ needs.turborepo-changed.outputs.new-sha || 'N/A' }}`
+            });
+
+      - name: Create new PR
+        if: steps.check_pr.outputs.result == 'null'
         uses: thomaseizinger/create-pull-request@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           head: ${{ needs.update-bindings.outputs.stage-branch }}
           base: main
-          title: "chore: update turbopack/turborepo bindings"
+          title: "chore: update turbo bindings"
+          body: |
+            Updates the turbo to the latest commit.
+
+            - Turbopack: ${{ needs.turbopack-changed.outputs.new-sha || 'N/A' }}
+              - swc_core = ${{ needs.turbopack-changed.outputs.crate_swc_core || 'N/A' }}
+              - testing = ${{ needs.turbopack-changed.outputs.crate_testing || 'N/A' }}
+            - Turborepo: ${{ needs.turborepo-changed.outputs.new-sha || 'N/A' }}

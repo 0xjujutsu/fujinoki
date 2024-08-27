@@ -214,6 +214,7 @@ jobs:
   npm-publish:
     name: Publish to NPM
     needs: [build-fujinoki, build-discord-api]
+    if: ${{ github.event.inputs.package == 'fujinoki' }}
     runs-on: ubuntu-latest
     steps:
       - name: Setup node
