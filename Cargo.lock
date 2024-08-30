@@ -10491,6 +10491,7 @@ dependencies = [
  "cargo-lock",
  "chrono",
  "clap 4.5.16",
+ "glob",
  "indexmap 1.9.3",
  "inquire",
  "itertools 0.10.5",

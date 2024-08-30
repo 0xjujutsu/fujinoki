@@ -61,7 +61,7 @@ fn main() {
                     .map(|names| names.cloned().collect::<HashSet<_>>())
                     .unwrap_or_default();
 
-                run_bump(names, sub_matches.get_one::<String>("--semver"), dry_run);
+                run_bump(names, sub_matches.get_one::<String>("semver"), dry_run);
             }
         }
         Some(("upgrade-swc", _)) => {

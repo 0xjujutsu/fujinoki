@@ -114,10 +114,10 @@ jobs:
           git config --global user.name 'release bot'
           git config --global user.email 'release@jujutsu.studio'
 
-      - id: prepare-branch
+      - name: Prepare branch
+        id: prepare-branch
         run: |
-          current_time=$(date +"%y%m%d.%H")
-          git checkout -b release-${{ github.event.inputs.package }}-$current_time
+          git checkout -b release-${{ github.event.inputs.package }}
           echo "STAGE_BRANCH=$(git branch --show-current)" >> $GITHUB_OUTPUT
 
       - name: Version
@@ -146,7 +146,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # xtask/src/publish/mod.rs:64
+        # xtask/src/publish/mod.rs:79
         settings:
           - host: macos-latest
             target: "x86_64-apple-darwin"
@@ -182,7 +182,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # xtask/src/publish/mod.rs:64
+        # xtask/src/publish/mod.rs:65
         settings:
           - host: macos-latest
             target: "x86_64-apple-darwin"

@@ -4,16 +4,17 @@ pub fn default_empty_string() -> String {
     String::new()
 }
 
-pub fn get_nightly_version() -> String {
+pub fn get_nightly_version(pkg_name: Option<String>) -> String {
+    let tag_prefix = pkg_name.map(|pkg_name| format!("{}-", pkg_name)).unwrap_or("nightly-".to_string());
     let now = chrono::Local::now();
     let nightly_tag = Command::program("git")
-        .args(["tag", "-l", "nightly-*"])
+        .args(["tag", "-l", &format!("{}*", tag_prefix)])
         .error_message("Failed to list nightly tags")
         .output_string();
 
     let latest_nightly_tag = nightly_tag
         .lines()
-        .filter(|tag| tag.starts_with("nightly-"))
+        .filter(|tag| tag.starts_with(&tag_prefix))
         .max()
         .unwrap_or("");
 
