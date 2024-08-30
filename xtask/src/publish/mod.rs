@@ -308,19 +308,21 @@ pub fn run_publish(name: &str, is_nightly: bool, dry_run: bool) {
             }
             NpmPackageKind::Napi => {
                 let pattern = format!("{}-*", pkg.crate_name);
-                let glob_path = current_dir
-                    .join("artifacts")
-                    .join(pattern);
+                let glob_path = current_dir.join("artifacts").join(pattern);
                 let paths = glob::glob(glob_path.as_path().to_str().unwrap())
                     .expect("Failed to glob artifacts directory")
                     .filter_map(|entry| entry.ok())
                     .collect::<Vec<_>>();
 
                 if paths.is_empty() {
-                    panic!("No matching artifact directory found for {}", pkg.crate_name);
+                    panic!(
+                        "No matching artifact directory found for {}",
+                        pkg.crate_name
+                    );
                 }
 
-                let intermediate_type_file = paths[0].join(format!("lib{}.typedef", pkg.crate_name.replace("-", "_")));
+                let intermediate_type_file =
+                    paths[0].join(format!("lib{}.typedef", pkg.crate_name.replace("-", "_")));
                 let (dts, exports) = process_typedef(intermediate_type_file, false, None)
                     .expect("unable to process typedef");
 
