@@ -88,3 +88,21 @@ jobs:
             gh pr create --title "Update Turborepo fork" --body "Changes:
           ${{ steps.turbo-changes.outputs.diff }}" --base main
           fi
+
+      - name: Update Turbopack (Next.js) fork and create/update PR
+        if: steps.next-changes.outputs.changes == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.BINDINGS_PAT }}
+        run: |
+          cd next.js
+          git checkout -b update-next-js
+          git pull upstream canary
+          git push -f origin update-next-js
+          PR_URL=$(gh pr list --head update-next-js --json url --jq '.[0].url')
+          if [ -n "$PR_URL" ]; then
+            gh pr edit $PR_URL --body "Updated diff:
+          ${{ steps.next-changes.outputs.diff }}"
+          else
+            gh pr create --title "Update Next.js fork" --body "Changes:
+          ${{ steps.next-changes.outputs.diff }}" --base main
+          fi
