@@ -1,8 +1,5 @@
 <p align="center">
   <a href="https://jujutsu.studio/fujinoki">
-    <picture>
-      <img src="https://github.com/user-attachments/assets/e4996e9b-ee4c-480d-80d4-b8b98184fe38" height="128">
-    </picture>
     <h1 align="center">Fujinoki</h1>
   </a>
 </p>

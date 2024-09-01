@@ -49,7 +49,7 @@ permissions:
 jobs:
   changed:
     name: Check for changes
-    if: github.repository_owner == 'kijv'
+    if: github.repository_owner == '0xjujutsu'
     runs-on: ubuntu-latest
 
     steps:
