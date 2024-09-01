@@ -25,7 +25,7 @@ Fujinoki is a framework for creating optimized Discord bots in JavaScript/TypeSc
 
 <!-- Visit https://jujutsu.studio/fujinoki/docs to get started with Fujinoki. -->
 
-Visit _COMING SOON_ to get started with Fujinoki.
+Coming soon
 
 ## Contributing
 
