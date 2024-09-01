@@ -109,6 +109,11 @@ jobs:
 
       - run: corepack enable && pnpm --version
 
+      - run: |
+          git remote set-url origin https://jujutsu-bot:${{ secrets.GITHUB_TOKEN }}@github.com/kijv/fujinoki.git
+          git config --global user.name 'jujutsu-bot'
+          git config --global user.email 'bot@jujutsu.studio'
+
       - name: Prepare branch
         id: prepare-branch
         run: |
