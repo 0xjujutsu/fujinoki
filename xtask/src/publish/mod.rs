@@ -546,7 +546,7 @@ pub fn run_bump(names: HashSet<String>, version_type: Option<&String>, dry_run: 
     for tag in tags_to_apply {
         Command::program("git")
             .dry_run(dry_run)
-            .args(["tag", "-s", &tag, "-m", &tag])
+            .args(["tag", &tag, "-m", &tag])
             .error_message("Tag failed")
             .execute();
     }
