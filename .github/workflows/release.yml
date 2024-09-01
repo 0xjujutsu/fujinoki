@@ -44,7 +44,6 @@ env:
 
 permissions:
   id-token: write
-  contents: write
 
 jobs:
   changed:
@@ -71,6 +70,7 @@ jobs:
           fi
 
       - run: corepack enable && pnpm --version
+      - run: pnpm install
 
       - id: get-store-path
         run: |
@@ -109,6 +109,7 @@ jobs:
           shared-key: xtask-${{ hashFiles('xtask/**/*') }}
 
       - run: corepack enable && pnpm --version
+      - run: pnpm install
 
       - run: |
           git remote set-url origin https://jujutsu-bot:${{ secrets.BOT_TOKEN }}@github.com/0xjujutsu/fujinoki.git
@@ -235,6 +236,7 @@ jobs:
           shared-key: xtask-${{ hashFiles('xtask/**/*') }}
 
       - run: corepack enable && pnpm --version
+      - run: pnpm install
 
       - id: get-store-path
         run: echo STORE_PATH=$(pnpm store path) >> $GITHUB_OUTPUT
@@ -279,7 +281,7 @@ jobs:
         uses: thomaseizinger/create-pull-request@master
         if: ${{ !inputs.dryRun }}
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.BOT_TOKEN }}
           head: ${{ needs.stage.outputs.stage-branch }}
           base: main
           title: "chore: release ${{ inputs.package }} (v${{ needs.stage.outputs.release-version }})"
