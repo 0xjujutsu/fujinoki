@@ -44,6 +44,7 @@ env:
 
 permissions:
   id-token: write
+  contents: write
 
 jobs:
   changed:
@@ -106,12 +107,10 @@ jobs:
         with:
           cache-on-failure: "true"
           shared-key: xtask-${{ hashFiles('xtask/**/*') }}
-          cache-targets: "false"
 
       - run: corepack enable && pnpm --version
 
       - run: |
-          git remote set-url origin https://jujutsu-bot:${{ secrets.GITHUB_TOKEN }}@github.com/kijv/fujinoki.git
           git config --global user.name 'jujutsu-bot'
           git config --global user.email 'bot@jujutsu.studio'
 
@@ -233,8 +232,8 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
         with:
+          cache-on-failure: "true"
           shared-key: xtask-${{ hashFiles('xtask/**/*') }}
-          cache-targets: "false"
 
       - run: corepack enable && pnpm --version
 
