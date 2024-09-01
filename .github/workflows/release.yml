@@ -29,7 +29,7 @@ on:
         type: boolean
 
       dryRun:
-        description: dry run the release
+        description: dry run
         default: false
         type: boolean
 
@@ -113,7 +113,7 @@ jobs:
 
       - run: |
           git remote set-url origin https://jujutsu-bot:${{ secrets.BOT_TOKEN }}@github.com/0xjujutsu/fujinoki.git
-          git config --global user.signingkey ${{ secrets.BOT_GPG_KEY }}
+          git config --global user.signingKey ${{ secrets.BOT_GPG_KEY }}
           git config --global user.name 'jujutsu-bot'
           git config --global user.email 'bot@jujutsu.studio'
 
