@@ -91,6 +91,8 @@ jobs:
     name: Stage and bump version
     needs: [changed]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Setup node
         uses: actions/setup-node@v4
@@ -130,8 +132,6 @@ jobs:
       - name: Stage
         run: |
           git push origin ${{ steps.prepare-branch.outputs.STAGE_BRANCH }} --tags --force
-        env:
-          GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
 
       - name: Show Release Version
         run: echo "${{ steps.version.outputs.RELEASE_VERSION }}"
