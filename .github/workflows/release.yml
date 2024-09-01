@@ -104,6 +104,7 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
         with:
+          cache-on-failure: "true"
           shared-key: xtask-${{ hashFiles('xtask/**/*') }}
           cache-targets: "false"
 
