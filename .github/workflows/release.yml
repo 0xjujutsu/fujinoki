@@ -54,7 +54,7 @@ jobs:
 
     steps:
       - name: Clone repo
-        run: git clone https://github.com/kijv/fujinoki.git --depth=25 --single-branch --branch ${GITHUB_REF_NAME:-main} .
+        run: git clone https://github.com/0xjujutsu/fujinoki.git --depth=25 --single-branch --branch ${GITHUB_REF_NAME:-main} .
 
       - name: Get commit of the latest tag
         run: echo "LATEST_TAG_COMMIT=$(git rev-list -n 1 $(git describe --tags --abbrev=0))" >> $GITHUB_ENV
@@ -111,13 +111,13 @@ jobs:
       - run: corepack enable && pnpm --version
 
       - run: |
+          git remote set-url origin https://jujutsu-bot:${{ secrets.BOT_TOKEN }}@github.com/0xjujutsu/fujinoki.git
           git config --global user.name 'jujutsu-bot'
           git config --global user.email 'bot@jujutsu.studio'
 
       - name: Prepare branch
         id: prepare-branch
         run: |
-          git config --global user.signingkey ${{ secrets.BOT_GPG_KEY }}
           git checkout -b release-${{ github.event.inputs.package }}
           echo "STAGE_BRANCH=$(git branch --show-current)" >> $GITHUB_OUTPUT
 
