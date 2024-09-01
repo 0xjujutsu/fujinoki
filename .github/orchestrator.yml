@@ -50,6 +50,9 @@ labeler:
     - label: "area: docs"
       when:
         isAnyFilePathMatch: '^(docs\/.*|README\.md)$'
+    - label: "area: core"
+      when:
+        isAnyFilePathMatch: '^(crates\/fujinoki.*|packages\/fujinoki.*)$'
 
     # type
     - label: "rust"

@@ -1,11 +1,14 @@
 // Taken from https://github.com/vercel/next.js/blob/canary/release.js
 
 const sectionLabelMap = {
-  'Core Changes': 'area: fujinoki',
-  'Discord Related Changes': 'area: discord',
+  'Core Changes': 'area: core',
+  'Discord API Related Changes': 'area: discord',
+  'Documentation Changes': 'area: docs',
 };
 
 const fallbackSection = 'Misc Changes';
+
+// --------------------------------------------------
 
 const prNumberRegex = /\(#([-0-9]+)\)$/;
 
@@ -87,7 +90,9 @@ const groupByLabels = async (commits, github) => {
 };
 
 function cleanupPRTitle(title) {
-  title.replace(/^\[.*?\]\s*/g, '');
+  if (title.startsWith('[Docs] ')) {
+    return title.replace('[Docs] ', '');
+  }
 
   return title;
 }
@@ -118,14 +123,12 @@ const buildChangelog = (sections, authors) => {
   if (authors.size > 0) {
     text += '### Credits \n\n';
     text += 'Huge thanks to ';
-
-    let index = 1;
-    for (const author of authors) {
+    for (const [index, author] of [...authors].entries()) {
       // GitHub links usernames if prefixed with @
       text += `@${author}`;
 
-      const penultimate = index === authors.size - 1;
-      const notLast = index !== authors.size;
+      const penultimate = index === authors.size - 2;
+      const notLast = index < authors.size - 1;
 
       if (penultimate) {
         // Oxford comma is applied when list is bigger than 2 names
@@ -137,8 +140,6 @@ const buildChangelog = (sections, authors) => {
       } else if (notLast) {
         text += ', ';
       }
-
-      index += 1;
     }
 
     text += ' for helping!';
@@ -148,7 +149,7 @@ const buildChangelog = (sections, authors) => {
   return text;
 };
 
-module.exports = async (_, metadata) => {
+module.exports = async (markdown, metadata) => {
   const { commits, authors, githubConnection, repoDetails } = metadata;
 
   const github = { connection: githubConnection, repoDetails };
