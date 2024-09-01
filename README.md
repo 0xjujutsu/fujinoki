@@ -1,6 +1,10 @@
 <p align="center">
   <a href="https://jujutsu.studio/fujinoki">
+    <picture>
+      <img src="https://github.com/user-attachments/assets/e4996e9b-ee4c-480d-80d4-b8b98184fe38" height="128">
+    </picture>
     <h1 align="center">Fujinoki</h1>
+  </a>
 </p>
 
 <p align="center">
@@ -23,7 +27,8 @@ Fujinoki is a framework for creating optimized Discord bots in JavaScript/TypeSc
 ## Getting Started
 
 <!-- Visit https://jujutsu.studio/fujinoki/docs to get started with Fujinoki. -->
-Visit *COMING SOON* to get started with Fujinoki.
+
+Visit _COMING SOON_ to get started with Fujinoki.
 
 ## Contributing
 
