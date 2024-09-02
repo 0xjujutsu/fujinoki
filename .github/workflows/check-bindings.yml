@@ -218,7 +218,7 @@ jobs:
               base: 'main',
               state: 'open'
             });
-            return pullRequests.length > 0 ? pullRequests.filter(pr => pr.user?.login === 'jujutsu-bot' && pr.head.ref === '${{ needs.update-bindings.outputs.stage-branch }}')[0].number : null;
+            return pullRequests.length > 0 ? pullRequests.filter(pr => pr.user?.login === 'jujutsu-bot' && pr.head.ref === '${{ needs.update-bindings.outputs.stage-branch }}')?.[0]?.number ?? null : null;
 
       - run: |
           echo "PR: ${{ steps.check_pr.outputs.result }}"
