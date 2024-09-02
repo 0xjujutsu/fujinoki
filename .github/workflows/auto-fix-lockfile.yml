@@ -1,16 +1,19 @@
-name: Auto fix lockfiles
+name: autofix.ci
 
 on:
   pull_request:
-    paths:
-      - 'pnpm-lock.yaml'
-      - 'Cargo.lock'
+    types: [opened, synchronize]
 
 env:
   NODE_LTS_VERSION: 20
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: kijv
+
+permissions:
+  contents: read
 
 jobs:
-  auto-fix-lockfiles:
+  lockfiles:
     runs-on: ubuntu-latest
     permissions:
       contents: write
