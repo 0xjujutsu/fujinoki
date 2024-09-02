@@ -7,7 +7,7 @@ use serde_json::json;
 use tokio::time::Instant;
 use tokio_tungstenite::tungstenite::Message;
 
-use crate::WebsocketContext;
+use crate::context::WebsocketContext;
 
 pub async fn heartbeat(ctx: WebsocketContext, force: bool) -> Result<()> {
     let heartbeat_interval = ctx

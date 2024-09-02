@@ -38,7 +38,6 @@ use url::Url;
 
 use crate::{events::WebsocketEvents, issue::WebsocketIssue};
 
-pub mod discord;
 mod events;
 pub mod invalidation;
 pub mod issue;
@@ -152,7 +151,7 @@ impl Websocket {
         // TODO rename `events` to `message_handler` (same with struct name)
         let events = WebsocketEvents::new(self.tt.clone(), ctx.clone(), get_issue_reporter);
 
-        discord::identify(
+        discord_websocket::identify(
             self.tt.clone(),
             self.get_issue_reporter.clone(),
             ctx.clone(),
@@ -224,7 +223,7 @@ impl Websocket {
                 drop(guard);
             }
 
-            discord::heartbeat(ctx.clone(), false).await?;
+            discord_websocket::heartbeat(ctx.clone(), false).await?;
 
             let read = ctx.api.read.clone();
             let mut read = read.try_lock().expect("failed to lock `read` stream");
@@ -318,6 +317,7 @@ pub async fn connect_to_gateway(url: Option<String>, version: i8) -> Result<Webs
 
 pub fn register() {
     discord_api::register();
+    discord_websocket::register();
     fujinoki_node::register();
     fujinoki_core::register();
     turbopack_binding::turbo::tasks_env::register();

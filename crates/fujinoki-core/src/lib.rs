@@ -59,7 +59,7 @@ pub const fn platform_name() -> &'static str {
         }
     };
 
-    formatcp!("{}-{}", OS, ARCH)
+    formatcp!("{OS}-{ARCH}")
 }
 
 pub fn register() {

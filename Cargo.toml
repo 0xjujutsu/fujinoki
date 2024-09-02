@@ -35,6 +35,7 @@ inherits = "release-fujinoki"
 # ref: https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html#inheriting-a-dependency-from-a-workspace
 [workspace.dependencies]
 discord-api = { path = "crates/discord-api" }
+discord-websocket = { path = "crates/discord-websocket" }
 
 fujinoki-cli-utils = { path = "crates/fujinoki-cli-utils" }
 fujinoki-core = { path = "crates/fujinoki-core" }
