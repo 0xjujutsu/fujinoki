@@ -38,12 +38,6 @@ env:
   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
   TURBO_TEAM: kijv
 
-# run: |
-#   git checkout -b release-${{ inputs.package }}-${{ steps.version.outputs.RELEASE_VERSION }}
-#   cargo xtask workspace --bump ${{ github.event.inputs.semverType }} ${{ github.event.inputs.package }}
-#   git push origin release-${{ inputs.package }}-${{ steps.version.outputs.RELEASE_VERSION }} --tags --force
-#   echo "STAGE_BRANCH=$(git branch --show-current)" >> $GITHUB_OUTPUT
-
 permissions:
   id-token: write
 
@@ -57,12 +51,10 @@ jobs:
       - name: Clone repo
         run: git clone https://github.com/0xjujutsu/fujinoki.git --depth=25 --single-branch --branch ${GITHUB_REF_NAME:-main} .
 
-      - name: Get commit of the latest tag
-        id: get-commit-of-latest-tag
+      - id: get-commit-of-latest-tag
         run: echo "LATEST_TAG_COMMIT=$(git rev-list -n 1 $(git describe --tags --abbrev=0))" >> $GITHUB_ENV
 
-      - name: Get latest commit
-        id: get-latest-commit
+      - id: get-latest-commit
         run: echo "LATEST_COMMIT=$(git rev-parse HEAD)" >> $GITHUB_ENV
 
       - name: Check if new commits since last tag
@@ -73,7 +65,7 @@ jobs:
             exit 1
           fi
     outputs:
-      actually-changed: ${{ steps.get-commit-of-latest-tag.outputs.LATEST_COMMIT != steps.get-latest-commit.outputs.LATEST_COMMIT }}
+      actually-changed: "${{ steps.get-commit-of-latest-tag.outputs.LATEST_COMMIT != steps.get-latest-commit.outputs.LATEST_COMMIT }}"
       latest-commit: "${{ steps.get-latest-commit.outputs.LATEST_COMMIT }}"
 
   stage:
@@ -177,7 +169,7 @@ jobs:
 
       - uses: ./.github/actions/build-rust
         with:
-          cache: ${{ !needs.changed.outputs.actually-changed && needs.changed.outputs.latest-commit || 'false' }}
+          cache: ${{ needs.changed.outputs.actually-changed != 'true' && needs.changed.outputs.latest-commit || 'false' }}
           target: ${{ matrix.settings.target }}
           setup: ${{ matrix.settings.setup }}
           profile: release-discord-api
