@@ -264,4 +264,4 @@ jobs:
               - testing = ${{ needs.turbopack-changed.outputs.crate_testing || 'N/A' }}
             - Turborepo: ${{ needs.turborepo-changed.outputs.new-sha || 'N/A' }}
           labels: |
-            'merge queue'
+            merge queue
