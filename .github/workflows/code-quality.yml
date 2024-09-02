@@ -106,7 +106,6 @@ jobs:
       - name: Check Cargo.toml formatting (taplo)
         run: npx @taplo/cli@0.5.2 format --check
 
-
   biome_lint:
     name: Biome Lint
     runs-on: ubuntu-latest

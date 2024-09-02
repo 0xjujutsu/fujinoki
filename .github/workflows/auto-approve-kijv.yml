@@ -1,4 +1,4 @@
-name: Auto Approve For kijv
+name: Auto approve for kijv
 
 on:
   pull_request:
