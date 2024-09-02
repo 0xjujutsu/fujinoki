@@ -2,8 +2,8 @@ name: Check for changes in turbo bindings
 
 on:
   schedule:
-    - cron: '0 0 * * 0'  # Run every week
-  workflow_dispatch:  # Allow manual triggering
+    - cron: "0 0 * * 0" # Run every week
+  workflow_dispatch: # Allow manual triggering
 
 jobs:
   turbopack-changed:
@@ -218,7 +218,7 @@ jobs:
               base: 'main',
               state: 'open'
             });
-            return pullRequests.length > 0 ? pullRequests[0].number : null;
+            return pullRequests.length > 0 ? pullRequests.filter(pr => pr.user?.login === 'jujutsu-bot' && pr.head.ref === '${{ needs.update-bindings.outputs.stage-branch }}')[0].number : null;
 
       - run: |
           echo "PR: ${{ steps.check_pr.outputs.result }}"
