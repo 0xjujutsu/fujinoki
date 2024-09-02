@@ -19,9 +19,9 @@ workspace = true
 
 # used by .github/workflows/update-bindings.yml
 [package.metadata]
-rev = "2ff3369b09ba3c49ccf61ecca1075918f14f50f2"
+rev = "68962f8fc0ff8fac6bf67102e08a03008088a8a4"
 
 [dependencies]
-turbopath = { optional = true, git = "https://github.com/kijv/turborepo.git", rev = "2ff3369b09ba3c49ccf61ecca1075918f14f50f2" }
-turborepo-ci = { optional = true, git = "https://github.com/kijv/turborepo.git", rev = "2ff3369b09ba3c49ccf61ecca1075918f14f50f2" }
-turborepo-repository = { optional = true, git = "https://github.com/kijv/turborepo.git", rev = "2ff3369b09ba3c49ccf61ecca1075918f14f50f2" }
+turbopath = { optional = true, git = "https://github.com/kijv/turborepo.git", rev = "68962f8fc0ff8fac6bf67102e08a03008088a8a4" }
+turborepo-ci = { optional = true, git = "https://github.com/kijv/turborepo.git", rev = "68962f8fc0ff8fac6bf67102e08a03008088a8a4" }
+turborepo-repository = { optional = true, git = "https://github.com/kijv/turborepo.git", rev = "68962f8fc0ff8fac6bf67102e08a03008088a8a4" }
