@@ -45,9 +45,9 @@ runs:
 
     - name: Restore target/ cache
       uses: actions/cache/restore@v4
-      if: ${{ inputs.cache != false }}
+      if: ${{ inputs.cache != "false" }}
       with:
-        path: target/${{ inputs.target }}/${{ inputs.profile && format('{0}/', inputs.profile) }}
+        path: target/${{ inputs.target }}/${{ inputs.profile }}
         key: ${{ inputs.cache }}-${{ inputs.target }}-${{ inputs.profile || '' }}-${{ inputs.crate || '' }}
 
     - name: Install Rust
@@ -70,7 +70,7 @@ runs:
       run: ${{ inputs.rust-build-env || '' }} cargo build ${{ inputs.profile && format('--profile {0}', inputs.profile) || '' }} ${{ inputs.crate && format('-p {0}', inputs.crate) || '' }} --target ${{ inputs.target }}
 
     - name: Save cache
-      if: ${{ inputs.cache != false }}
+      if: ${{ inputs.cache != "false" }}
       uses: actions/cache/save@v4
       with:
         path: target/${{ inputs.target }}/${{ inputs.profile && format('{0}/', inputs.profile) }}
