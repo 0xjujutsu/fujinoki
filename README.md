@@ -1,6 +1,7 @@
 <p align="center">
   <a href="https://jujutsu.studio/fujinoki">
     <h1 align="center">Fujinoki</h1>
+  </a>
 </p>
 
 <p align="center">
@@ -13,14 +14,18 @@
 </p>
 
 > [!CAUTION]
-> Fujinoki is in beta and will have relies heavily on when [Turbopack](https://turbo.build/pack) will become stable. Because of this, only a development server is currently available. Breaking changes may occur.
+> Fujinoki is currently in alpha and is subject to breaking changes without notice.
+
+> [!NOTE]
+> Fujinoki relies on [Turbopack](https://turbo.build/pack) to become stable before it can be used in production.
 
 Fujinoki is a framework for creating optimized Discord bots in JavaScript/TypeScript, written in Rust.
 
 ## Getting Started
 
 <!-- Visit https://jujutsu.studio/fujinoki/docs to get started with Fujinoki. -->
-Visit *COMING SOON* to get started with Fujinoki.
+
+Coming soon
 
 ## Contributing
 

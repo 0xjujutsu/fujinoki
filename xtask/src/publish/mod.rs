@@ -59,6 +59,7 @@ const NPM_PACKAGES: &[NpmPackage] = &[
     NpmPackage {
         crate_name: "fujinoki-cli",
         name: "fujinoki",
+        alias: None,
         description: "Discord bot framework",
         kind: NpmPackageKind::Bin("fujinoki"),
         platform: &[
@@ -71,6 +72,8 @@ const NPM_PACKAGES: &[NpmPackage] = &[
     NpmPackage {
         crate_name: "discord-api-napi",
         name: "@fujinoki/discord-api",
+        // keep this the same as alias field in package.json
+        alias: Some("discord-api"),
         description: "Discord API bindings",
         kind: NpmPackageKind::Napi,
         platform: &[
@@ -97,6 +100,7 @@ struct NpmPackage {
     crate_name: &'static str,
     name: &'static str,
     description: &'static str,
+    alias: Option<&'static str>,
     kind: NpmPackageKind,
     platform: &'static [NpmSupportedPlatform],
 }
@@ -108,7 +112,7 @@ pub fn run_publish(name: &str, is_nightly: bool, dry_run: bool) {
         let mut is_beta = false;
         let mut is_canary = false;
         let version = if is_nightly {
-            get_nightly_version()
+            get_nightly_version(Some(pkg.alias.unwrap_or(pkg.name).to_string()))
         } else {
             if let Ok(release_version) = env::var("RELEASE_VERSION") {
                 // node-file-trace@1.0.0-alpha.1
@@ -303,10 +307,22 @@ pub fn run_publish(name: &str, is_nightly: bool, dry_run: bool) {
                 .expect("Unable to write bin helper");
             }
             NpmPackageKind::Napi => {
-                let intermediate_type_file = current_dir
-                    .join("artifacts")
-                    .join(pkg.crate_name)
-                    .join(format!("lib{}.typedef", pkg.crate_name.replace("-", "_")));
+                let pattern = format!("{}-*", pkg.crate_name);
+                let glob_path = current_dir.join("artifacts").join(pattern);
+                let paths = glob::glob(glob_path.as_path().to_str().unwrap())
+                    .expect("Failed to glob artifacts directory")
+                    .filter_map(|entry| entry.ok())
+                    .collect::<Vec<_>>();
+
+                if paths.is_empty() {
+                    panic!(
+                        "No matching artifact directory found for {}",
+                        pkg.crate_name
+                    );
+                }
+
+                let intermediate_type_file =
+                    paths[0].join(format!("lib{}.typedef", pkg.crate_name.replace("-", "_")));
                 let (dts, exports) = process_typedef(intermediate_type_file, false, None)
                     .expect("unable to process typedef");
 
@@ -511,6 +527,7 @@ pub fn run_bump(names: HashSet<String>, version_type: Option<&String>, dry_run: 
         .map(|s| format!("- {s}"))
         .collect::<Vec<_>>()
         .join("\n");
+
     Command::program("git")
         .args([
             "commit",
@@ -529,7 +546,7 @@ pub fn run_bump(names: HashSet<String>, version_type: Option<&String>, dry_run: 
     for tag in tags_to_apply {
         Command::program("git")
             .dry_run(dry_run)
-            .args(["tag", "-s", &tag, "-m", &tag])
+            .args(["tag", &tag, "-m", &tag])
             .error_message("Tag failed")
             .execute();
     }
@@ -558,7 +575,10 @@ pub fn publish_workspace(is_nightly: bool, dry_run: bool) {
             let mut full_tag = m.split('@');
             let pkg_name_without_scope = full_tag.next().unwrap().to_string();
             let version = if is_nightly {
-                get_nightly_version()
+                get_nightly_version(Some(format!(
+                    "{}{pkg_name_without_scope}",
+                    scope.unwrap_or_default()
+                )))
             } else {
                 full_tag.next().unwrap().to_string()
             };

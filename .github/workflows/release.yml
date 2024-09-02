@@ -29,18 +29,14 @@ on:
         type: boolean
 
       dryRun:
-        description: dry run the release
+        description: dry run
         default: false
         type: boolean
 
 env:
   NODE_LTS_VERSION: 20
-
-# run: |
-#   git checkout -b release-${{ inputs.package }}-${{ steps.version.outputs.RELEASE_VERSION }}
-#   cargo xtask workspace --bump ${{ github.event.inputs.semverType }} ${{ github.event.inputs.package }}
-#   git push origin release-${{ inputs.package }}-${{ steps.version.outputs.RELEASE_VERSION }} --tags --force
-#   echo "STAGE_BRANCH=$(git branch --show-current)" >> $GITHUB_OUTPUT
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: kijv
 
 permissions:
   id-token: write
@@ -48,17 +44,17 @@ permissions:
 jobs:
   changed:
     name: Check for changes
-    if: github.repository_owner == 'kijv'
+    if: github.repository_owner == '0xjujutsu'
     runs-on: ubuntu-latest
 
     steps:
       - name: Clone repo
-        run: git clone https://github.com/kijv/fujinoki.git --depth=25 --single-branch --branch ${GITHUB_REF_NAME:-main} .
+        run: git clone https://github.com/0xjujutsu/fujinoki.git --depth=25 --single-branch --branch ${GITHUB_REF_NAME:-main} .
 
-      - name: Get commit of the latest tag
+      - id: get-commit-of-latest-tag
         run: echo "LATEST_TAG_COMMIT=$(git rev-list -n 1 $(git describe --tags --abbrev=0))" >> $GITHUB_ENV
 
-      - name: Get latest commit
+      - id: get-latest-commit
         run: echo "LATEST_COMMIT=$(git rev-parse HEAD)" >> $GITHUB_ENV
 
       - name: Check if new commits since last tag
@@ -68,13 +64,39 @@ jobs:
             echo "No new commits. Exiting..."
             exit 1
           fi
+    outputs:
+      actually-changed: "${{ steps.get-commit-of-latest-tag.outputs.LATEST_COMMIT != steps.get-latest-commit.outputs.LATEST_COMMIT }}"
+      latest-commit: "${{ steps.get-latest-commit.outputs.LATEST_COMMIT }}"
+
+  stage:
+    name: Stage and bump version
+    needs: [changed]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_LTS_VERSION }}
+          check-latest: true
+
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: ./.github/actions/setup-rust
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          cache-all-crates: "true"
+          cache-targets: "true"
+          cache-on-failure: "true"
+          shared-key: xtask-${{ hashFiles('xtask/**/*') }}
 
       - run: corepack enable && pnpm --version
 
       - id: get-store-path
-        run: |
-          pnpm store path
-          echo STORE_PATH=$(pnpm store path) >> $GITHUB_OUTPUT
+        run: echo STORE_PATH=$(pnpm store path) >> $GITHUB_OUTPUT
 
       - uses: actions/cache@v4
         timeout-minutes: 5
@@ -86,60 +108,45 @@ jobs:
             pnpm-store-
             pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
 
-  # TODO uncomment
-  # stage-bump-version:
-  #   name: Stage and bump version
-  #   needs: [changed]
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Setup node
-  #       uses: actions/setup-node@v4
-  #       with:
-  #         node-version: ${{ env.NODE_LTS_VERSION }}
-  #         check-latest: true
+      - run: pnpm install
 
-  #     - uses: actions/checkout@v4
+      - run: |
+          git config --global user.name jujutsu-bot
+          git config --global user.email bot@jujutsu.studio
 
-  #     - name: Install Rust
-  #       uses: ./.github/actions/setup-rust
+      - name: Prepare branch
+        id: prepare-branch
+        run: |
+          git checkout -b release-${{ github.event.inputs.package }}
+          echo "STAGE_BRANCH=$(git branch --show-current)" >> $GITHUB_OUTPUT
 
-  #     - uses: Swatinem/rust-cache@v2
-  #       with:
-  #         shared-key: xtask-${{ hashFiles('xtask/**/*') }}
-  #         cache-targets: "false"
+      - name: Version
+        id: version
+        run: |
+          cargo xtask workspace --bump --semver ${{ github.event.inputs.semverType }} ${{ github.event.inputs.package }}
+          echo "RELEASE_VERSION=$(pnpm list -r --depth -1 ${{ github.event.inputs.package }} --long --filter ${{ github.event.inputs.package }} --parseable | rev | cut -d '@' -f 1 | rev)" >> $GITHUB_OUTPUT
 
-  #     - run: corepack enable && pnpm --version
+      - name: Stage
+        run: |
+          git push origin ${{ steps.prepare-branch.outputs.STAGE_BRANCH }} --tags --force
 
-  #     - name: Configure git
-  #       run: |
-  #         git config --global user.name 'release bot'
-  #         git config --global user.email 'release@jujutsu.studio'
+      - name: Show Release Version
+        run: echo "${{ steps.version.outputs.RELEASE_VERSION }}"
 
-  #     - name: Version
-  #       id: version
-  #       # cargo xtask workspace --bump ${{ github.event.inputs.semverType }} ${{ github.event.inputs.package }}
-  #       run: |
-  #         echo "RELEASE_VERSION=$(pnpm list -r --depth -1 fujinoki --long --filter fujinoki --parseable | sed 's/.*:fujinoki@//')" >> $GITHUB_OUTPUT
-  #     - run: echo "${{ steps.version.outputs.RELEASE_VERSION }}"
-  #     - name: Stage Commit
-  #       id: stage
-  #       run: echo ""
-
-  #     - name: Show Stage Commit
-  #       run: echo "${{ steps.stage.outputs.STAGE_BRANCH }}"
-  #   outputs:
-  #     stage-branch: "${{ steps.stage.outputs.STAGE_BRANCH }}"
-  #     release-version: "${{ steps.version.outputs.RELEASE_VERSION }}"
-
+      - name: Show Stage Commit
+        run: echo "${{ steps.prepare-branch.outputs.STAGE_BRANCH }}"
+    outputs:
+      stage-branch: "${{ steps.prepare-branch.outputs.STAGE_BRANCH }}"
+      release-version: "${{ steps.version.outputs.RELEASE_VERSION }}"
 
   build-discord-api:
     name: Build Discord API Bindings
-    needs: [changed]
+    needs: [changed, stage]
     if: ${{ github.event.inputs.package == '@fujinoki/discord-api' }}
     strategy:
       fail-fast: false
       matrix:
-        # xtask/src/publish/mod.rs:64
+        # xtask/src/publish/mod.rs:79
         settings:
           - host: macos-latest
             target: "x86_64-apple-darwin"
@@ -162,6 +169,7 @@ jobs:
 
       - uses: ./.github/actions/build-rust
         with:
+          cache: ${{ needs.changed.outputs.actually-changed != 'true' && needs.changed.outputs.latest-commit || 'false' }}
           target: ${{ matrix.settings.target }}
           setup: ${{ matrix.settings.setup }}
           profile: release-discord-api
@@ -170,12 +178,12 @@ jobs:
 
   build-fujinoki:
     name: Build Fujinoki
-    needs: [changed]
+    needs: [stage]
     if: ${{ github.event.inputs.package == 'fujinoki' }}
     strategy:
       fail-fast: false
       matrix:
-        # xtask/src/publish/mod.rs:64
+        # xtask/src/publish/mod.rs:65
         settings:
           - host: macos-latest
             target: "x86_64-apple-darwin"
@@ -204,90 +212,89 @@ jobs:
           build-output-files: fujinoki-cli*
           additional-rust-cache-key: ${{ hashFiles('crates/turborepo-binding/Cargo.toml') }}
 
-  # TODO uncomment
-  # npm-publish:
-  #   name: Publish to NPM
-  #   needs: [changed, stage-bump-version, build]
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Setup node
-  #       uses: actions/setup-node@v4
-  #       with:
-  #         node-version: ${{ env.NODE_LTS_VERSION }}
-  #         check-latest: true
+  npm-publish:
+    name: Publish to NPM
+    needs: [build-fujinoki, build-discord-api]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_LTS_VERSION }}
+          check-latest: true
 
-  #     - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-  #     - name: Install Rust
-  #       uses: ./.github/actions/setup-rust
+      - name: Install Rust
+        uses: ./.github/actions/setup-rust
 
-  #     - uses: Swatinem/rust-cache@v2
-  #       with:
-  #         shared-key: xtask-${{ hashFiles('xtask/**/*') }}
-  #         cache-targets: "false"
+      - uses: Swatinem/rust-cache@v2
+        with:
+          cache-all-crates: "true"
+          cache-targets: "true"
+          cache-on-failure: "true"
+          shared-key: xtask-${{ hashFiles('xtask/**/*') }}
 
-  #     - run: corepack enable && pnpm --version
+      - run: corepack enable && pnpm --version
 
-  #     - id: get-store-path
-  #       run: echo STORE_PATH=$(pnpm store path) >> $GITHUB_OUTPUT
+      - id: get-store-path
+        run: echo STORE_PATH=$(pnpm store path) >> $GITHUB_OUTPUT
 
-  #     - uses: actions/cache@v4
-  #       timeout-minutes: 5
-  #       id: cache-pnpm-store
-  #       with:
-  #         path: ${{ steps.get-store-path.outputs.STORE_PATH }}
-  #         key: pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
-  #         restore-keys: |
-  #           pnpm-store-
-  #           pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
+      - uses: actions/cache@v4
+        timeout-minutes: 5
+        id: cache-pnpm-store
+        with:
+          path: ${{ steps.get-store-path.outputs.STORE_PATH }}
+          key: pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            pnpm-store-
+            pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
 
-  #     - name: Download Rust artifacts
-  #       uses: actions/download-artifact@v3
-  #       with:
-  #         path: artifacts
+      - run: pnpm install
 
-  #     # - name: Publish
-  #     #   run: |
-  #     #     if [[ "${{ github.event.inputs.package }}" == "fujinoki" ]]; then
-  #     #       if [[ "${{ inputs.dry-run }}" == "true" ]]; then
-  #     #         cargo xtask npm --dry-run fujinoki-cli
-  #     #       else
-  #     #         cargo xtask npm fujinoki-cli
-  #     #       fi
-  #     #     elif [[ "${{ github.event.inputs.package }}" == "@fujinoki/discord-api" ]]; then
-  #     #       if [[ "${{ inputs.dry-run }}" == "true" ]]; then
-  #     #         cargo xtask npm --dry-run discord-api-napi
-  #     #       else
-  #     #         cargo xtask npm discord-api-napi
-  #     #       fi
-  #     #     else
-  #     #       echo "Invalid package specified"
-  #     #       exit 1
-  #     #     fi
-  #     #   env:
-  #     #     NPM_TOKEN: ${{ secrets.RELEASE_BOT_PAT }}
+      - name: Download Rust artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: artifacts
 
-  #     # Upload published artifacts in case they are needed for debugging later
-  #     - name: Upload Artifacts
-  #       uses: actions/upload-artifact@v3
-  #       with:
-  #         name: debug-artifacts
-  #         path: artifacts
+      # xtask/src/publish/mod.rs:58
+      - id: get-crate-name
+        run: |
+          if [ "${{ github.event.inputs.package }}" = "fujinoki" ]; then
+            echo "CRATE_NAME=fujinoki-cli" >> $GITHUB_OUTPUT
+          else
+            echo "CRATE_NAME=discord-api-napi" >> $GITHUB_OUTPUT
+          fi
 
-  # open-release-pr:
-  #   name: Open Release PR
-  #   needs: [changed, stage, build, npm-publish]
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@1.0.0
-  #       with:
-  #         ref: ${{ needs.stage.outputs.stage-branch }}
+      - name: Publish
+        run: |
+          if [ "${{ inputs.dryRun }}" = "false" ]; then
+            cargo xtask npm ${{ steps.get-crate-name.outputs.CRATE_NAME }}
+          else
+            cargo xtask npm --dry-run ${{ steps.get-crate-name.outputs.CRATE_NAME }}
+          fi
 
-  #     - name: Create pull request
-  #       uses: thomaseizinger/create-pull-request@master
-  #       if: ${{ !inputs.dryRun }}
-  #       with:
-  #         github_token: ${{ secrets.GITHUB_TOKEN }}
-  #         head: ${{ needs.stage.outputs.stage-branch }}
-  #         base: main
-  #         title: "chore: release ${{ inputs.package }} (v${{ needs.stage.outputs.release-version }})"
+      # Upload published artifacts in case they are needed for debugging later
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: debug-artifacts
+          path: artifacts
+
+  open-release-pr:
+    name: Open Release PR
+    needs: [stage, npm-publish]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@1.0.0
+        with:
+          ref: ${{ needs.stage.outputs.stage-branch }}
+
+      - name: Create pull request
+        uses: thomaseizinger/create-pull-request@master
+        if: ${{ !inputs.dryRun }}
+        with:
+          github_token: ${{ secrets.BOT_TOKEN }}
+          head: ${{ needs.stage.outputs.stage-branch }}
+          base: main
+          title: "chore: release ${{ inputs.package }} (v${{ needs.stage.outputs.release-version }})"

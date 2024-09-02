@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "description": "Discord API bindings",
   "license": "MPL-2.0",
-  "bugs": "https://github.com/kijv/fujinoki/issues",
+  "bugs": "https://github.com/0xjujutsu/fujinoki/issues",
   "main": "index.js",
   "types": "index.d.ts",
   "alias": "discord-api"

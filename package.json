@@ -19,5 +19,10 @@
     "turbo": "^2.0.11",
     "typescript": "^5.5.4"
   },
-  "packageManager": "pnpm@9.6.0"
+  "packageManager": "pnpm@9.6.0",
+  "pnpm": {
+    "patchedDependencies": {
+      "tagged-versions@1.3.0": "patches/tagged-versions@1.3.0.patch"
+    }
+  }
 }

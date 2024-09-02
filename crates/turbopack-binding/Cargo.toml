@@ -140,42 +140,42 @@ swc_core = { optional = true, version = "0.101.3", features = [
 ] }
 testing = { optional = true, version = "0.39.0" }
 
-auto-hash-map = { optional = true, git = "https://github.com/kijv/next.js.git" }
+auto-hash-map = { optional = true, git = "https://github.com/kijv/next.js.git", rev = "d220bd22836c6741fa5a3392c8b07f76388f449e" }
 
-node-file-trace = { optional = true, git = "https://github.com/kijv/next.js.git" }
-turbo-tasks = { optional = true, git = "https://github.com/kijv/next.js.git" }
-turbo-tasks-build = { optional = true, git = "https://github.com/kijv/next.js.git" }
-turbo-tasks-bytes = { optional = true, git = "https://github.com/kijv/next.js.git" }
-turbo-tasks-env = { optional = true, git = "https://github.com/kijv/next.js.git" }
-turbo-tasks-fetch = { optional = true, git = "https://github.com/kijv/next.js.git" }
-turbo-tasks-fs = { optional = true, git = "https://github.com/kijv/next.js.git" }
-turbo-tasks-hash = { optional = true, git = "https://github.com/kijv/next.js.git" }
-turbo-tasks-macros = { optional = true, git = "https://github.com/kijv/next.js.git" }
-turbo-tasks-macros-shared = { optional = true, git = "https://github.com/kijv/next.js.git" }
-turbo-tasks-malloc = { optional = true, git = "https://github.com/kijv/next.js.git", default-features = false }
-turbo-tasks-memory = { optional = true, git = "https://github.com/kijv/next.js.git" }
-turbo-tasks-testing = { optional = true, git = "https://github.com/kijv/next.js.git" }
-turbopack = { optional = true, git = "https://github.com/kijv/next.js.git" }
-turbopack-bench = { optional = true, git = "https://github.com/kijv/next.js.git" }
-turbopack-browser = { optional = true, git = "https://github.com/kijv/next.js.git" }
-turbopack-cli-utils = { optional = true, git = "https://github.com/kijv/next.js.git" }
-turbopack-core = { optional = true, git = "https://github.com/kijv/next.js.git" }
-turbopack-create-test-app = { optional = true, git = "https://github.com/kijv/next.js.git" }
-turbopack-css = { optional = true, git = "https://github.com/kijv/next.js.git" }
-turbopack-dev-server = { optional = true, git = "https://github.com/kijv/next.js.git" }
-turbopack-ecmascript = { optional = true, git = "https://github.com/kijv/next.js.git" }
-turbopack-ecmascript-hmr-protocol = { optional = true, git = "https://github.com/kijv/next.js.git" }
-turbopack-ecmascript-plugins = { optional = true, git = "https://github.com/kijv/next.js.git", default-features = false }
-turbopack-ecmascript-runtime = { optional = true, git = "https://github.com/kijv/next.js.git" }
-turbopack-env = { optional = true, git = "https://github.com/kijv/next.js.git" }
-turbopack-image = { optional = true, git = "https://github.com/kijv/next.js.git" }
-turbopack-json = { optional = true, git = "https://github.com/kijv/next.js.git" }
-turbopack-mdx = { optional = true, git = "https://github.com/kijv/next.js.git" }
-turbopack-node = { optional = true, git = "https://github.com/kijv/next.js.git" }
-turbopack-nodejs = { optional = true, git = "https://github.com/kijv/next.js.git" }
-turbopack-resolve = { optional = true, git = "https://github.com/kijv/next.js.git" }
-turbopack-static = { optional = true, git = "https://github.com/kijv/next.js.git" }
-turbopack-swc-utils = { optional = true, git = "https://github.com/kijv/next.js.git" }
-turbopack-test-utils = { optional = true, git = "https://github.com/kijv/next.js.git" }
-turbopack-trace-server = { optional = true, git = "https://github.com/kijv/next.js.git" }
-turbopack-trace-utils = { optional = true, git = "https://github.com/kijv/next.js.git" }
+node-file-trace = { optional = true, git = "https://github.com/kijv/next.js.git", rev = "d220bd22836c6741fa5a3392c8b07f76388f449e" }
+turbo-tasks = { optional = true, git = "https://github.com/kijv/next.js.git", rev = "d220bd22836c6741fa5a3392c8b07f76388f449e" }
+turbo-tasks-build = { optional = true, git = "https://github.com/kijv/next.js.git", rev = "d220bd22836c6741fa5a3392c8b07f76388f449e" }
+turbo-tasks-bytes = { optional = true, git = "https://github.com/kijv/next.js.git", rev = "d220bd22836c6741fa5a3392c8b07f76388f449e" }
+turbo-tasks-env = { optional = true, git = "https://github.com/kijv/next.js.git", rev = "d220bd22836c6741fa5a3392c8b07f76388f449e" }
+turbo-tasks-fetch = { optional = true, git = "https://github.com/kijv/next.js.git", rev = "d220bd22836c6741fa5a3392c8b07f76388f449e" }
+turbo-tasks-fs = { optional = true, git = "https://github.com/kijv/next.js.git", rev = "d220bd22836c6741fa5a3392c8b07f76388f449e" }
+turbo-tasks-hash = { optional = true, git = "https://github.com/kijv/next.js.git", rev = "d220bd22836c6741fa5a3392c8b07f76388f449e" }
+turbo-tasks-macros = { optional = true, git = "https://github.com/kijv/next.js.git", rev = "d220bd22836c6741fa5a3392c8b07f76388f449e" }
+turbo-tasks-macros-shared = { optional = true, git = "https://github.com/kijv/next.js.git", rev = "d220bd22836c6741fa5a3392c8b07f76388f449e" }
+turbo-tasks-malloc = { optional = true, git = "https://github.com/kijv/next.js.git", rev = "d220bd22836c6741fa5a3392c8b07f76388f449e", default-features = false }
+turbo-tasks-memory = { optional = true, git = "https://github.com/kijv/next.js.git", rev = "d220bd22836c6741fa5a3392c8b07f76388f449e" }
+turbo-tasks-testing = { optional = true, git = "https://github.com/kijv/next.js.git", rev = "d220bd22836c6741fa5a3392c8b07f76388f449e" }
+turbopack = { optional = true, git = "https://github.com/kijv/next.js.git", rev = "d220bd22836c6741fa5a3392c8b07f76388f449e" }
+turbopack-bench = { optional = true, git = "https://github.com/kijv/next.js.git", rev = "d220bd22836c6741fa5a3392c8b07f76388f449e" }
+turbopack-browser = { optional = true, git = "https://github.com/kijv/next.js.git", rev = "d220bd22836c6741fa5a3392c8b07f76388f449e" }
+turbopack-cli-utils = { optional = true, git = "https://github.com/kijv/next.js.git", rev = "d220bd22836c6741fa5a3392c8b07f76388f449e" }
+turbopack-core = { optional = true, git = "https://github.com/kijv/next.js.git", rev = "d220bd22836c6741fa5a3392c8b07f76388f449e" }
+turbopack-create-test-app = { optional = true, git = "https://github.com/kijv/next.js.git", rev = "d220bd22836c6741fa5a3392c8b07f76388f449e" }
+turbopack-css = { optional = true, git = "https://github.com/kijv/next.js.git", rev = "d220bd22836c6741fa5a3392c8b07f76388f449e" }
+turbopack-dev-server = { optional = true, git = "https://github.com/kijv/next.js.git", rev = "d220bd22836c6741fa5a3392c8b07f76388f449e" }
+turbopack-ecmascript = { optional = true, git = "https://github.com/kijv/next.js.git", rev = "d220bd22836c6741fa5a3392c8b07f76388f449e" }
+turbopack-ecmascript-hmr-protocol = { optional = true, git = "https://github.com/kijv/next.js.git", rev = "d220bd22836c6741fa5a3392c8b07f76388f449e" }
+turbopack-ecmascript-plugins = { optional = true, git = "https://github.com/kijv/next.js.git", rev = "d220bd22836c6741fa5a3392c8b07f76388f449e", default-features = false }
+turbopack-ecmascript-runtime = { optional = true, git = "https://github.com/kijv/next.js.git", rev = "d220bd22836c6741fa5a3392c8b07f76388f449e" }
+turbopack-env = { optional = true, git = "https://github.com/kijv/next.js.git", rev = "d220bd22836c6741fa5a3392c8b07f76388f449e" }
+turbopack-image = { optional = true, git = "https://github.com/kijv/next.js.git", rev = "d220bd22836c6741fa5a3392c8b07f76388f449e" }
+turbopack-json = { optional = true, git = "https://github.com/kijv/next.js.git", rev = "d220bd22836c6741fa5a3392c8b07f76388f449e" }
+turbopack-mdx = { optional = true, git = "https://github.com/kijv/next.js.git", rev = "d220bd22836c6741fa5a3392c8b07f76388f449e" }
+turbopack-node = { optional = true, git = "https://github.com/kijv/next.js.git", rev = "d220bd22836c6741fa5a3392c8b07f76388f449e" }
+turbopack-nodejs = { optional = true, git = "https://github.com/kijv/next.js.git", rev = "d220bd22836c6741fa5a3392c8b07f76388f449e" }
+turbopack-resolve = { optional = true, git = "https://github.com/kijv/next.js.git", rev = "d220bd22836c6741fa5a3392c8b07f76388f449e" }
+turbopack-static = { optional = true, git = "https://github.com/kijv/next.js.git", rev = "d220bd22836c6741fa5a3392c8b07f76388f449e" }
+turbopack-swc-utils = { optional = true, git = "https://github.com/kijv/next.js.git", rev = "d220bd22836c6741fa5a3392c8b07f76388f449e" }
+turbopack-test-utils = { optional = true, git = "https://github.com/kijv/next.js.git", rev = "d220bd22836c6741fa5a3392c8b07f76388f449e" }
+turbopack-trace-server = { optional = true, git = "https://github.com/kijv/next.js.git", rev = "d220bd22836c6741fa5a3392c8b07f76388f449e" }
+turbopack-trace-utils = { optional = true, git = "https://github.com/kijv/next.js.git", rev = "d220bd22836c6741fa5a3392c8b07f76388f449e" }

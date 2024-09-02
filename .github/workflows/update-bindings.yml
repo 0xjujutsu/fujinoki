@@ -1,169 +1,108 @@
-name: Update Turbopack/Turborepo Bindings
+name: Update forks of turborepo/next.js
 
 on:
   schedule:
-    - cron: '0 23 * * *'  # Run every day at 23:00
+    - cron: '0 0 * * 0'  # Run every week
   workflow_dispatch:  # Allow manual triggering
 
 jobs:
-  turbopack-changed:
+  update-forks:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Parse current SHA from Cargo.toml
-        id: parse-sha
+      - name: Setup Git
         run: |
-          CURRENT_SHA=$(cat crates/turbopack-binding/Cargo.toml | grep -A 1 'package.metadata' | grep 'rev' | awk -F ' = ' '{print $2}' | tr -d '"')
-          echo "current_sha=$CURRENT_SHA" >> $GITHUB_OUTPUT
-        shell: bash
-      - id: get-latest-sha
-        uses: ./.github/actions/repo-sha
-        with:
-          repo: kijv/next.js
-          branch: canary
-          path: turbopack/**/*
+          git config --global user.name 'GitHub Action'
+          git config --global user.email 'action@github.com'
 
-      - name: Compare SHAs
-        id: compare-sha
+      - name: Get latest SHAs
+        id: get-shas
         run: |
-          if [ "${{ steps.get-latest-sha.outputs.sha }}" != "${{ steps.parse-sha.outputs.current_sha }}" ]; then
-            echo "sha_changed=true" >> $GITHUB_OUTPUT
-            echo "new_sha=${{ steps.get-latest-sha.outputs.sha }}" >> $GITHUB_OUTPUT
+          echo "NEXT_SHA=$(git ls-remote https://github.com/vercel/next.js.git HEAD | cut -f1)" >> $GITHUB_OUTPUT
+          echo "TURBO_SHA=$(git ls-remote https://github.com/vercel/turborepo.git HEAD | cut -f1)" >> $GITHUB_OUTPUT
+
+      - name: Check for changes in Next.js
+        id: next-changes
+        run: |
+          git clone https://github.com/kijv/next.js.git
+          cd next.js
+          git remote add upstream https://github.com/vercel/next.js.git
+          git fetch upstream
+          DIFF=$(git diff HEAD...${{ steps.get-shas.outputs.NEXT_SHA }} --name-only)
+          if [ -n "$DIFF" ]; then
+            echo "changes=true" >> $GITHUB_OUTPUT
+            echo "diff=$DIFF" >> $GITHUB_OUTPUT
           else
-            echo "sha_changed=false" >> $GITHUB_OUTPUT
+            echo "changes=false" >> $GITHUB_OUTPUT
           fi
-        shell: bash
 
-
-      - name: Check if path has changed
-        id: check-path
-        shell: bash
-        if: ${{ steps.compare-sha.outputs.sha_changed == 'true' }}
+      - name: Check for changes in Turborepo
+        id: turbo-changes
         run: |
-          if git diff-tree ${{ steps.get-latest-sha.outputs.sha }} ${{ steps.parse-sha.outputs.current_sha }} --no-commit-id --name-only -r -p | grep 'turbopack/.*/.*'; then
-            echo "path-changed=true" >> $GITHUB_OUTPUT
+          git clone https://github.com/kijv/turborepo.git
+          cd turborepo
+          git remote add upstream https://github.com/vercel/turborepo.git
+          git fetch upstream
+          DIFF=$(git diff HEAD...${{ steps.get-shas.outputs.TURBO_SHA }} --name-only)
+          if [ -n "$DIFF" ]; then
+            echo "changes=true" >> $GITHUB_OUTPUT
+            echo "diff=$DIFF" >> $GITHUB_OUTPUT
           else
-            echo "path-changed=false" >> $GITHUB_OUTPUT
-
-      - name: Output result
-        run: |
-          echo "SHA changed: ${{ steps.compare-sha.outputs.sha_changed }}"
-          if [ "${{ steps.compare-sha.outputs.sha_changed }}" == "true" ]; then
-            echo "New SHA: ${{ steps.compare-sha.outputs.new_sha }}"
+            echo "changes=false" >> $GITHUB_OUTPUT
           fi
-        shell: bash
-    outputs:
-      path_changed: ${{ steps.check-path.outputs.path_changed || 'false' }}
-      sha_changed: ${{ steps.compare-sha.outputs.sha_changed }}
-      current_sha: ${{ steps.parse-sha.outputs.current_sha }}
-      new_sha: ${{ steps.compare-sha.outputs.new_sha }}
 
-  turborepo-changed:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Parse current SHA from Cargo.toml
-        id: parse-sha
+      - name: Update Next.js fork and create/update PR
+        if: steps.next-changes.outputs.changes == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.BINDINGS_PAT }}
         run: |
-          CURRENT_SHA=$(cat crates/turborepo-binding/Cargo.toml | grep -A 1 'package.metadata' | grep 'rev' | awk -F ' = ' '{print $2}' | tr -d '"')
-          echo "current_sha=$CURRENT_SHA" >> $GITHUB_OUTPUT
-
-      - id: get-latest-sha
-        uses: ./.github/actions/repo-sha
-        with:
-          repo: kijv/turborepo
-          branch: main
-
-      - name: Compare SHAs
-        id: compare-sha
-        run: |
-          if [ "${{ steps.get-latest-sha.outputs.sha }}" != "${{ steps.parse-sha.outputs.current_sha }}" ]; then
-            echo "sha_changed=true" >> $GITHUB_OUTPUT
-            echo "new_sha=${{ steps.get-latest-sha.outputs.sha }}" >> $GITHUB_OUTPUT
+          cd next.js
+          git checkout -b update-next-js
+          git pull upstream canary
+          git push -f origin update-next-js
+          PR_URL=$(gh pr list --head update-next-js --json url --jq '.[0].url')
+          if [ -n "$PR_URL" ]; then
+            gh pr edit $PR_URL --body "Updated diff:
+          ${{ steps.next-changes.outputs.diff }}"
           else
-            echo "sha_changed=false" >> $GITHUB_OUTPUT
+            gh pr create --title "Update Next.js fork" --body "Changes:
+          ${{ steps.next-changes.outputs.diff }}" --base main
           fi
-        shell: bash
 
-      - name: Output result
+      - name: Update Turborepo fork and create/update PR
+        if: steps.turbo-changes.outputs.changes == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.BINDINGS_PAT }}
         run: |
-          echo "SHA changed: ${{ steps.compare-sha.outputs.sha_changed }}"
-          if [ "${{ steps.compare-sha.outputs.sha_changed }}" == "true" ]; then
-            echo "New SHA: ${{ steps.compare-sha.outputs.new_sha }}"
-          fi
-        shell: bash
-    outputs:
-      sha_changed: ${{ steps.compare-sha.outputs.sha_changed }}
-      current_sha: ${{ steps.parse-sha.outputs.current_sha }}
-      new_sha: ${{ steps.compare-sha.outputs.new_sha }}
-
-  update-bindings:
-    runs-on: ubuntu-latest
-    needs: [turbopack-changed, turborepo-changed]
-    steps:
-      - if: ${{ needs.turbopack-changed.outputs.sha_changed == 'true' && needs.turbopack-changed.outputs.path_changed == 'false' }}
-        run: |
-          echo "Next.js repo changed but files in `turbopack` directory have not changed; skipping update"
-        shell: bash
-
-      - name: Update Turbopack binding in Cargo.toml
-        if: ${{ needs.turbopack-changed.outputs.path_changed == 'true' }}
-        run: |
-          sed -i '' 's/rev = "${{ needs.turbopack-changed.outputs.current_sha }}"/rev = "${{ needs.turbopack-changed.outputs.new_sha }}"/g' crates/turbopack-binding/Cargo.toml
-          echo "Updated Turbopack binding in crates/turbopack-binding/Cargo.toml"
-        shell: bash
-
-      - name: Update Turborepo binding in Cargo.toml
-        if: ${{ needs.turborepo-changed.outputs.sha_changed == 'true' }}
-        run: |
-          sed -i '' 's/rev = "${{ needs.turborepo-changed.outputs.current_sha }}"/rev = "${{ needs.turborepo-changed.outputs.new_sha }}"/g' crates/turborepo-binding/Cargo.toml
-          echo "Updated Turborepo binding in crates/turborepo-binding/Cargo.toml"
-        shell: bash
-
-      - name: Create branch
-        id: branch
-        run: |
-          if [[ "${{ needs.turbopack-changed.outputs.path_changed == 'true' }}" == "true" && "${{ needs.turborepo-changed.outputs.sha_changed }}" == "true" ]]; then
-            branch_name="update-bindings-${{ needs.turbopack-changed.outputs.new_sha }}-${{ needs.turborepo-changed.outputs.new_sha }}"
-          elif [[ "${{ needs.turbopack-changed.outputs.path_changed == 'true' }}" == "true" ]]; then
-            branch_name="update-turbopack-${{ needs.turbopack-changed.outputs.new_sha }}"
-          elif [[ "${{ needs.turborepo-changed.outputs.sha_changed }}" == "true" ]]; then
-            branch_name="update-turborepo-${{ needs.turborepo-changed.outputs.new_sha }}"
+          cd turborepo
+          git checkout -b update-turborepo
+          git pull upstream main
+          git push -f origin update-turborepo
+          PR_URL=$(gh pr list --head update-turborepo --json url --jq '.[0].url')
+          if [ -n "$PR_URL" ]; then
+            gh pr edit $PR_URL --body "Updated diff:
+          ${{ steps.turbo-changes.outputs.diff }}"
           else
-            echo "No changes detected. Exiting."
-            exit 0
+            gh pr create --title "Update Turborepo fork" --body "Changes:
+          ${{ steps.turbo-changes.outputs.diff }}" --base main
           fi
-          git checkout -b "$branch_name"
-          echo "$branch_name" >> $GITHUB_OUTPUT
 
-      - name: Stage changes
-        if: ${{ needs.turbopack-changed.outputs.path_changed == 'true' || needs.turborepo-changed.outputs.sha_changed == 'true' }}
+      - name: Update Turbopack (Next.js) fork and create/update PR
+        if: steps.next-changes.outputs.changes == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.BINDINGS_PAT }}
         run: |
-          git config --global user.name 'jujutsu bot'
-          git config --global user.email 'bot@jujutsu.studio'
-          git add crates/turbopack-binding/Cargo.toml crates/turborepo-binding/Cargo.toml
-          git commit -m "chore(bindings): update turbopack/turborepo revisions"
-          git push --force --set-upstream origin "${{ steps.branch.outputs.branch_name }}"
-    outputs:
-      stage-branch: ${{ steps.branch.outputs.branch_name }}
-
-  open-pr:
-    name: Open PR
-    needs: [update-bindings]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@1.0.0
-        with:
-          ref: ${{ needs.update-bindings.outputs.stage-branch }}
-
-      - name: Create pull request
-        uses: thomaseizinger/create-pull-request@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          head: ${{ needs.update-bindings.outputs.stage-branch }}
-          base: main
-          title: "chore: update turbopack/turborepo bindings"
+          cd next.js
+          git checkout -b update-next-js
+          git pull upstream canary
+          git push -f origin update-next-js
+          PR_URL=$(gh pr list --head update-next-js --json url --jq '.[0].url')
+          if [ -n "$PR_URL" ]; then
+            gh pr edit $PR_URL --body "Updated diff:
+          ${{ steps.next-changes.outputs.diff }}"
+          else
+            gh pr create --title "Update Next.js fork" --body "Changes:
+          ${{ steps.next-changes.outputs.diff }}" --base main
+          fi

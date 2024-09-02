@@ -8,7 +8,7 @@ pub mod structures;
 
 // The main reason for doing this is to make sure everything is correctly
 // spelled and formatted.
-pub const GITHUB_REPO: &'static str = "kijv/fujinoki";
+pub const GITHUB_REPO: &'static str = "0xjujutsu/fujinoki";
 /// Does not include the protocol
 pub const WEBSITE: &'static str = "jujutsu.studio";
 /// Or the name of the binary

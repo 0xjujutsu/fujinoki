@@ -28,7 +28,8 @@ fn cli() -> Command {
         .subcommand(
             Command::new("workspace")
                 .about("Manage packages in pnpm workspaces")
-                .arg(arg!(--bump <VERSION_TYPE> "bump new version for packages in pnpm workspace"))
+                .arg(arg!(--bump "bump new version for packages in pnpm workspace"))
+                .arg(arg!(--semver <VERSION_TYPE> "semver increment"))
                 .arg(arg!(--"dry-run" "dry run all operations"))
                 .arg(arg!([NAME]... "the package to bump").required(true))
                 .arg_required_else_help(true),
@@ -52,13 +53,16 @@ fn main() {
         }
         Some(("workspace", sub_matches)) => {
             let dry_run = sub_matches.get_flag("dry-run");
-            let version_type = sub_matches.get_one::<String>("bump");
+            let bump = sub_matches.get_flag("bump");
 
-            let names = sub_matches
-                .get_many::<String>("NAME")
-                .map(|names| names.cloned().collect::<HashSet<_>>())
-                .unwrap_or_default();
-            run_bump(names, version_type, dry_run);
+            if bump {
+                let names = sub_matches
+                    .get_many::<String>("NAME")
+                    .map(|names| names.cloned().collect::<HashSet<_>>())
+                    .unwrap_or_default();
+
+                run_bump(names, sub_matches.get_one::<String>("semver"), dry_run);
+            }
         }
         Some(("upgrade-swc", _)) => {
             let workspace_dir = var_os("CARGO_WORKSPACE_DIR")

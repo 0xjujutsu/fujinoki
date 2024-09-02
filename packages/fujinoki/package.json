@@ -4,8 +4,8 @@
   "description": "Discord bot framework",
   "license": "MPL-2.0",
   "homepage": "https://jujutsu.studio/fujinoki",
-  "bugs": "https://github.com/kijv/fujinoki/issues",
-  "repository": "https://github.com/kijv/fujinoki",
+  "bugs": "https://github.com/0xjujutsu/fujinoki/issues",
+  "repository": "https://github.com/0xjujutsu/fujinoki",
   "main": "./bin/fujinoki",
   "bin": {
     "fujinoki": "./bin/fujinoki"

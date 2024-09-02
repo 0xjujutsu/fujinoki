@@ -34,6 +34,7 @@ walkdir = "2.3.2"
 itertools = "0.10.5"
 
 turbopack-binding = { workspace = true, features = ["__swc_core_xtask"] }
+glob = "0.3.1"
 
 [dev-dependencies]
 tempfile = "3.5.0"
