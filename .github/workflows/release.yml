@@ -177,7 +177,7 @@ jobs:
 
       - uses: ./.github/actions/build-rust
         with:
-          cache: ${{ !needs.changed.outputs.actually-changed && needs.changed.outputs.latest-commit }}
+          cache: ${{ !needs.changed.outputs.actually-changed && needs.changed.outputs.latest-commit || 'false' }}
           target: ${{ matrix.settings.target }}
           setup: ${{ matrix.settings.setup }}
           profile: release-discord-api
