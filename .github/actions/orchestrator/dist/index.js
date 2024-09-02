@@ -78124,7 +78124,8 @@ exports["default"] = (app) => {
                             }
                             case 'isPRAuthorMatch': {
                                 const regex = new RegExp(value, 'i');
-                                return regex.test(context.payload.sender.login);
+                                return (context.payload.action === 'opened' &&
+                                    regex.test(context.payload.sender.login));
                             }
                             case 'isPRAuthorCompanyMatch': {
                                 const regex = new RegExp(value, 'i');
