@@ -6,6 +6,8 @@ on:
 
 env:
   NODE_LTS_VERSION: 20
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: kijv
 
 jobs:
   auto-fix-lockfiles:
