@@ -76,6 +76,9 @@ jobs:
             });
             return pullRequests.filter(pr => pr.labels.map(label => label.name).includes('rust')).length > 0;
 
+      - run: |
+          echo "Has rust label: ${{ steps.rust_label.outputs.result == 'true' }}"
+
       - name: Biome linter related changes
         id: biome
         uses: technote-space/get-diff-action@v6
