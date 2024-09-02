@@ -229,7 +229,7 @@ jobs:
         with:
           github-token: ${{ secrets.BOT_TOKEN }}
           script: |
-            github.rest.pulls.update({
+            await github.rest.pulls.update({
               owner: context.repo.owner,
               repo: context.repo.repo,
               pull_number: ${{ steps.check_pr.outputs.result }},
@@ -239,6 +239,13 @@ jobs:
                 - swc_core = ${{ needs.turbopack-changed.outputs.crate_swc_core || 'N/A' }}
                 - testing = ${{ needs.turbopack-changed.outputs.crate_testing || 'N/A' }}
               - Turborepo: ${{ needs.turborepo-changed.outputs.new-sha || 'N/A' }}`
+            });
+
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: ${{ steps.check_pr.outputs.result }},
+              labels: ['merge queue']
             });
 
       - name: Create new PR
@@ -256,3 +263,5 @@ jobs:
               - swc_core = ${{ needs.turbopack-changed.outputs.crate_swc_core || 'N/A' }}
               - testing = ${{ needs.turbopack-changed.outputs.crate_testing || 'N/A' }}
             - Turborepo: ${{ needs.turborepo-changed.outputs.new-sha || 'N/A' }}
+          labels: |
+            'merge queue'
