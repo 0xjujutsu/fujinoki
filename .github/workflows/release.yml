@@ -35,6 +35,8 @@ on:
 
 env:
   NODE_LTS_VERSION: 20
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: kijv
 
 # run: |
 #   git checkout -b release-${{ inputs.package }}-${{ steps.version.outputs.RELEASE_VERSION }}

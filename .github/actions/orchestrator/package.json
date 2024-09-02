@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "scripts": {
     "build": "ncc build src/index.ts -o dist --source-map --minify",
-    "prepare": "pnpm run build"
+    "prepare": "turbo run build --filter=orchestrator-action"
   },
   "dependencies": {
     "@probot/adapter-github-actions": "^4.0.0",

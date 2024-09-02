@@ -197,7 +197,7 @@ target/
 #.idea/
 
 # Turborepo
-.turbo/
+.turbo
 
 # TODO(kijv) remove this eventually (personal sandbox)
 z*/
