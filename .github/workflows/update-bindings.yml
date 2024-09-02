@@ -1,4 +1,4 @@
-name: Update forks of turborepo/next.js
+name: Update forks of turbo bindings
 
 on:
   schedule:

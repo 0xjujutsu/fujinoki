@@ -1,4 +1,4 @@
-name: Check for changes turbopack/turborepo bindings
+name: Check for changes in turbo bindings
 
 on:
   schedule:
