@@ -1,0 +1,17 @@
+name: Auto Approve For kijv
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  auto-approve:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Auto approve PR if author is kijv
+        if: github.event.pull_request.user.login == 'kijv'
+        uses: hmarr/auto-approve-action@v3
+        with:
+          github-token: ${{ secrets.BOT_TOKEN }}
