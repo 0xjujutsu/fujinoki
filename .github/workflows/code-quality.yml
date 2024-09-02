@@ -76,9 +76,6 @@ jobs:
             });
             return pullRequests.filter(pr => pr.labels.map(label => label.name).includes('rust')).length > 0;
 
-      - run: |
-          echo "Run rust lint: ${{ steps.ci.outputs.diff != '' || steps.rust.outputs.diff != '' || steps.rust_label.outputs.result == 'true' }}"
-
       - name: Biome linter related changes
         id: biome
         uses: technote-space/get-diff-action@v6
