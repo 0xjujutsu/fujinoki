@@ -150,7 +150,6 @@ const buildChangelog = (sections, authors) => {
 };
 
 module.exports = async (markdown, metadata) => {
-  console.log(metadata)
   const { commits, authors, githubConnection, repoDetails } = metadata;
 
   const github = { connection: githubConnection, repoDetails };
