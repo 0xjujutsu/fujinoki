@@ -1,0 +1,16 @@
+diff --git a/.npmignore b/.npmignore
+deleted file mode 100644
+index 5148e527a7e286a1efcc44d65a7f8241267dce9b..0000000000000000000000000000000000000000
+diff --git a/src/index.js b/src/index.js
+index aaa9a0b53aa28ff35eb8a69821e7b6512c013127..2e463942bff7cb0087e1763d6e0a6194b96a3784 100644
+--- a/src/index.js
++++ b/src/index.js
+@@ -45,7 +45,7 @@ function getSemanticCommits(refs) {
+ 
+   return tagNames.map(name => ({
+     tag: name,
+-    version: semver.valid(name),
++    version: semver.valid(name) || semver.valid(name.split('@')[1]),
+     hash: null,
+     date: null,
+   })).filter(
