@@ -2,9 +2,7 @@ name: autofix.ci
 
 on:
   pull_request:
-    paths:
-      - 'pnpm-lock.yaml'
-      - 'Cargo.lock'
+    types: [opened, synchronize]
 
 env:
   NODE_LTS_VERSION: 20
