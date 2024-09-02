@@ -55,20 +55,6 @@ runs:
         path: target/${{ inputs.target }}/${{ inputs.profile }}
         key: ${{ inputs.cache }}-${{ inputs.target }}-${{ inputs.profile || '' }}-${{ inputs.crate || '' }}
 
-    - name: Upload build cache as artifact
-      if: ${{ steps.cache.outputs.cache-hit == 'true' }}
-      uses: actions/upload-artifact@v4
-      with:
-        name: ${{ inputs.artifact-name || format('{0}-{1}', inputs.crate, inputs.target) }}
-        path: target/${{ inputs.target }}/${{ inputs.profile && format('{0}/', inputs.profile) }}${{ inputs.build-output-files }}
-        if-no-files-found: error
-
-    - if: ${{ steps.cache.outputs.cache-hit == 'true' }}
-      shell: bash
-      run: |
-        echo "Cache hit, skipping build"
-        exit 0
-
     - name: Install Rust
       uses: ./.github/actions/setup-rust
       with:
