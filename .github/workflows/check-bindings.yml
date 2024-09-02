@@ -220,17 +220,20 @@ jobs:
             });
             return pullRequests.length > 0 ? pullRequests[0].number : null;
 
+      - run: |
+          echo "PR: ${{ steps.check_pr.outputs.result }}"
+
       - name: Update existing PR
         if: steps.check_pr.outputs.result != 'null'
         uses: actions/github-script@v6
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.BOT_TOKEN }}
           script: |
             github.rest.pulls.update({
               owner: context.repo.owner,
               repo: context.repo.repo,
               pull_number: ${{ steps.check_pr.outputs.result }},
-              body: `Updates the turbo to the latest commit.
+              body: `Updates the turbopack and/or turborepo to the latest commit.
 
               - Turbopack: ${{ needs.turbopack-changed.outputs.new-sha || 'N/A' }}
                 - swc_core = ${{ needs.turbopack-changed.outputs.crate_swc_core || 'N/A' }}
@@ -242,12 +245,12 @@ jobs:
         if: steps.check_pr.outputs.result == 'null'
         uses: thomaseizinger/create-pull-request@master
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.BOT_TOKEN }}
           head: ${{ needs.update-bindings.outputs.stage-branch }}
           base: main
           title: "chore: update turbo bindings"
           body: |
-            Updates the turbo to the latest commit.
+            Updates the turbopack and/or turborepo to the latest commit.
 
             - Turbopack: ${{ needs.turbopack-changed.outputs.new-sha || 'N/A' }}
               - swc_core = ${{ needs.turbopack-changed.outputs.crate_swc_core || 'N/A' }}

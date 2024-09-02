@@ -22,6 +22,6 @@ workspace = true
 rev = "2ff3369b09ba3c49ccf61ecca1075918f14f50f2"
 
 [dependencies]
-turbopath = { optional = true, git = "https://github.com/kijv/turborepo.git" }
-turborepo-ci = { optional = true, git = "https://github.com/kijv/turborepo.git" }
-turborepo-repository = { optional = true, git = "https://github.com/kijv/turborepo.git" }
+turbopath = { optional = true, git = "https://github.com/kijv/turborepo.git", rev = "2ff3369b09ba3c49ccf61ecca1075918f14f50f2" }
+turborepo-ci = { optional = true, git = "https://github.com/kijv/turborepo.git", rev = "2ff3369b09ba3c49ccf61ecca1075918f14f50f2" }
+turborepo-repository = { optional = true, git = "https://github.com/kijv/turborepo.git", rev = "2ff3369b09ba3c49ccf61ecca1075918f14f50f2" }
