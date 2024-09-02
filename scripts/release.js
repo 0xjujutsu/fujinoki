@@ -120,8 +120,6 @@ const buildChangelog = (sections, authors) => {
     text += '\n';
   }
 
-  console.log(authors)
-
   if (authors.size > 0) {
     text += '### Credits \n\n';
     text += 'Huge thanks to ';
@@ -152,6 +150,7 @@ const buildChangelog = (sections, authors) => {
 };
 
 module.exports = async (markdown, metadata) => {
+  console.log(metadata)
   const { commits, authors, githubConnection, repoDetails } = metadata;
 
   const github = { connection: githubConnection, repoDetails };
