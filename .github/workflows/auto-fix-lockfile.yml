@@ -9,8 +9,11 @@ env:
   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
   TURBO_TEAM: kijv
 
+permissions:
+  contents: read
+
 jobs:
-  auto-fix-lockfiles:
+  lockfiles:
     runs-on: ubuntu-latest
     permissions:
       contents: write
