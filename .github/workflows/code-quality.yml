@@ -16,6 +16,7 @@ permissions:
 
 jobs:
   optimize_ci:
+    name: Optimize CI
     runs-on: ubuntu-latest
     outputs:
       skip: ${{ steps.check_skip.outputs.skip }}
@@ -60,6 +61,21 @@ jobs:
             !**.md
             !**.mdx
 
+      - name: PR with rust label
+        id: rust_label
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.BOT_TOKEN }}
+          script: |
+            const { data: pullRequests } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              head: context.head_ref,
+              base: 'main',
+              state: 'open',
+            });
+            return pullRequests.filter(pr => pr.labels.map(label => label.name).includes('rust')).length > 0;
+
       - name: Biome linter related changes
         id: biome
         uses: technote-space/get-diff-action@v6
@@ -68,7 +84,7 @@ jobs:
             **/*.{js,jsx,ts,tsx,json,jsonc,css,graphql,yaml,yml,html}
 
     outputs:
-      rust: ${{ steps.ci.outputs.diff != '' || steps.rust.outputs.diff != '' }}
+      rust: ${{ steps.ci.outputs.diff != '' || steps.rust.outputs.diff != '' || steps.rust_label.outputs.result == 'true' }}
       biome: ${{ steps.ci.outputs.diff != '' || steps.biome.outputs.diff != '' }}
 
   rust_lint:
