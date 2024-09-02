@@ -14,8 +14,8 @@ jobs:
 
       - name: Setup Git
         run: |
-          git config --global user.name 'GitHub Action'
-          git config --global user.email 'action@github.com'
+          git config --global user.name 'jujutsu-bot'
+          git config --global user.email 'bot@jujutsu.studio'
 
       - name: Get latest SHAs
         id: get-shas
@@ -56,7 +56,7 @@ jobs:
       - name: Update Next.js fork and create/update PR
         if: steps.next-changes.outputs.changes == 'true'
         env:
-          GITHUB_TOKEN: ${{ secrets.BINDINGS_PAT }}
+          GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
           cd next.js
           git checkout -b update-next-js
@@ -74,7 +74,7 @@ jobs:
       - name: Update Turborepo fork and create/update PR
         if: steps.turbo-changes.outputs.changes == 'true'
         env:
-          GITHUB_TOKEN: ${{ secrets.BINDINGS_PAT }}
+          GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
           cd turborepo
           git checkout -b update-turborepo
@@ -92,7 +92,7 @@ jobs:
       - name: Update Turbopack (Next.js) fork and create/update PR
         if: steps.next-changes.outputs.changes == 'true'
         env:
-          GITHUB_TOKEN: ${{ secrets.BINDINGS_PAT }}
+          GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
           cd next.js
           git checkout -b update-next-js
