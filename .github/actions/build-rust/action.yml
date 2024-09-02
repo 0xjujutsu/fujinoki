@@ -44,6 +44,7 @@ runs:
     - uses: actions/checkout@v4
 
     - name: Restore target/ cache
+      id: cache
       uses: actions/cache/restore@v4
       if: ${{ inputs.cache != 'false' }}
       with:
@@ -58,7 +59,6 @@ runs:
     - uses: Swatinem/rust-cache@v2
       with:
         shared-key: build-rust-${{ hashFiles('.cargo/config.toml') }}-${{ hashFiles('crates/turbopack-binding/Cargo.toml') }}-${{ inputs.additional-rust-cache-key || '' }}
-        cache-targets: "true"
 
     - name: Setup toolchain
       shell: bash
@@ -66,11 +66,12 @@ runs:
       if: ${{ inputs.setup != null }}
 
     - name: Build
+      if: ${{ cache.outputs.cache-hit != 'true' }}
       shell: bash
       run: ${{ inputs.rust-build-env || '' }} cargo build ${{ inputs.profile && format('--profile {0}', inputs.profile) || '' }} ${{ inputs.crate && format('-p {0}', inputs.crate) || '' }} --target ${{ inputs.target }}
 
     - name: Save cache
-      if: ${{ inputs.cache != 'false' }}
+      if: ${{ inputs.cache != 'false' && cache.outputs.cache-hit != 'true' }}
       uses: actions/cache/save@v4
       with:
         path: target/${{ inputs.target }}/${{ inputs.profile && format('{0}/', inputs.profile) }}
