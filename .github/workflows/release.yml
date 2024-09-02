@@ -56,9 +56,11 @@ jobs:
         run: git clone https://github.com/0xjujutsu/fujinoki.git --depth=25 --single-branch --branch ${GITHUB_REF_NAME:-main} .
 
       - name: Get commit of the latest tag
+        id: get-commit-of-latest-tag
         run: echo "LATEST_TAG_COMMIT=$(git rev-list -n 1 $(git describe --tags --abbrev=0))" >> $GITHUB_ENV
 
       - name: Get latest commit
+        id: get-latest-commit
         run: echo "LATEST_COMMIT=$(git rev-parse HEAD)" >> $GITHUB_ENV
 
       - name: Check if new commits since last tag
@@ -68,25 +70,9 @@ jobs:
             echo "No new commits. Exiting..."
             exit 1
           fi
-
-      - run: corepack enable && pnpm --version
-
-      - id: get-store-path
-        run: |
-          pnpm store path
-          echo STORE_PATH=$(pnpm store path) >> $GITHUB_OUTPUT
-
-      - uses: actions/cache@v4
-        timeout-minutes: 5
-        id: cache-pnpm-store
-        with:
-          path: ${{ steps.get-store-path.outputs.STORE_PATH }}
-          key: pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
-          restore-keys: |
-            pnpm-store-
-            pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
-
-      - run: pnpm install
+    outputs:
+      actually-changed: ${{ steps.get-commit-of-latest-tag.outputs.LATEST_COMMIT != steps.get-latest-commit.outputs.LATEST_COMMIT }}
+      latest-commit: ${{ steps.get-latest-commit.outputs.LATEST_COMMIT }}
 
   stage:
     name: Stage and bump version
@@ -108,6 +94,7 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
         with:
+          cache-all-crates: "true"
           cache-on-failure: "true"
           shared-key: xtask-${{ hashFiles('xtask/**/*') }}
 
@@ -159,7 +146,7 @@ jobs:
 
   build-discord-api:
     name: Build Discord API Bindings
-    needs: [stage]
+    needs: [changed, stage]
     if: ${{ github.event.inputs.package == '@fujinoki/discord-api' }}
     strategy:
       fail-fast: false
@@ -187,6 +174,7 @@ jobs:
 
       - uses: ./.github/actions/build-rust
         with:
+          cache: ${{ !needs.changed.outputs.actually-changed && needs.changed.outputs.latest-commit }}
           target: ${{ matrix.settings.target }}
           setup: ${{ matrix.settings.setup }}
           profile: release-discord-api
@@ -247,6 +235,7 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
         with:
+          cache-all-crates: "true"
           cache-on-failure: "true"
           shared-key: xtask-${{ hashFiles('xtask/**/*') }}
 

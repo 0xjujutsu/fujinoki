@@ -2,6 +2,9 @@ name: 'Build Rust'
 description: 'Builds a Rust crate for a given target'
 
 inputs:
+  cache:
+    description: 'Cache path to use (or false to not use cache)'
+    required: true
   container-setup:
     description: 'Container setup command to run'
     required: false
@@ -40,6 +43,15 @@ runs:
 
     - uses: actions/checkout@v4
 
+    - uses: actions/cache@v4
+      if: ${{ inputs.cache != false }}
+      with:
+        path: target/${{ inputs.target }}/${{ inputs.profile && format('{0}/', inputs.profile) }}
+        key: ${{ inputs.cache }}
+        restore-keys: |
+          ${{ inputs.cache }}-
+          ${{ inputs.cache }}-*
+
     - name: Install Rust
       uses: ./.github/actions/setup-rust
       with:
@@ -48,7 +60,7 @@ runs:
     - uses: Swatinem/rust-cache@v2
       with:
         shared-key: build-rust-${{ hashFiles('.cargo/config.toml') }}-${{ hashFiles('crates/turbopack-binding/Cargo.toml') }}-${{ inputs.additional-rust-cache-key || '' }}
-        cache-targets: "false"
+        cache-targets: "true"
 
     - name: Setup toolchain
       shell: bash
