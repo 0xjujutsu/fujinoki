@@ -74,7 +74,7 @@ jobs:
           fi
     outputs:
       actually-changed: ${{ steps.get-commit-of-latest-tag.outputs.LATEST_COMMIT != steps.get-latest-commit.outputs.LATEST_COMMIT }}
-      latest-commit: ${{ steps.get-latest-commit.outputs.LATEST_COMMIT }}
+      latest-commit: "${{ steps.get-latest-commit.outputs.LATEST_COMMIT }}"
 
   stage:
     name: Stage and bump version

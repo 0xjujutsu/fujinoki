@@ -1,40 +1,40 @@
-name: 'Build Rust'
-description: 'Builds a Rust crate for a given target'
+name: "Build Rust"
+description: "Builds a Rust crate for a given target"
 
 inputs:
   cache:
-    description: 'Cache path to use (or false to not use cache)'
+    description: "Cache path to use (or false to not use cache)"
     required: true
   container-setup:
-    description: 'Container setup command to run'
+    description: "Container setup command to run"
     required: false
   setup:
-    description: 'Setup command to run'
+    description: "Setup command to run"
     required: false
   rust-build-env:
-    description: 'Rust build environment variables'
+    description: "Rust build environment variables"
     required: false
   target:
-    description: 'Rust target to build for'
+    description: "Rust target to build for"
     required: true
   additional-rust-cache-key:
-    description: 'Additional key to add to the Rust cache'
+    description: "Additional key to add to the Rust cache"
     required: false
   profile:
-    description: 'Cargo profile to build with'
+    description: "Cargo profile to build with"
     required: false
   crate:
-    description: 'Specific crate to build'
+    description: "Specific crate to build"
     required: false
   artifact-name:
-    description: 'Name of the artifact to upload'
+    description: "Name of the artifact to upload"
     required: false
   build-output-files:
-    description: 'Files to upload as the artifact (ex. libdiscord_api_napi* or fujinoki-cli*)'
+    description: "Files to upload as the artifact (ex. libdiscord_api_napi* or fujinoki-cli*)"
     required: true
 
 runs:
-  using: 'composite'
+  using: "composite"
   steps:
     - name: Setup Container
       shell: bash
@@ -42,6 +42,10 @@ runs:
       run: ${{ inputs.container-setup }}
 
     - uses: actions/checkout@v4
+
+    - shell: bash
+      run: |
+        echo "cache: ${{ inputs.cache }}"
 
     - name: Restore build cache
       id: cache
@@ -59,11 +63,11 @@ runs:
         path: target/${{ inputs.target }}/${{ inputs.profile && format('{0}/', inputs.profile) }}${{ inputs.build-output-files }}
         if-no-files-found: error
 
-    - run: |
-        if [ -d target/${{ inputs.target }}/${{ inputs.profile }} ]; then
-          echo "Cache hit, skipping build"
-          exit 0
-        fi
+    - if: ${{ steps.cache.outputs.cache-hit == 'true' }}
+      shell: bash
+      run: |
+        echo "Cache hit, skipping build"
+        exit 0
 
     - name: Install Rust
       uses: ./.github/actions/setup-rust
