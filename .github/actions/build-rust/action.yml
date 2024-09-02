@@ -66,12 +66,12 @@ runs:
       if: ${{ inputs.setup != null }}
 
     - name: Build
-      if: ${{ cache.outputs.cache-hit != 'true' }}
+      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
       shell: bash
       run: ${{ inputs.rust-build-env || '' }} cargo build ${{ inputs.profile && format('--profile {0}', inputs.profile) || '' }} ${{ inputs.crate && format('-p {0}', inputs.crate) || '' }} --target ${{ inputs.target }}
 
     - name: Save cache
-      if: ${{ inputs.cache != 'false' && cache.outputs.cache-hit != 'true' }}
+      if: ${{ inputs.cache != 'false' && steps.cache.outputs.cache-hit != 'true' }}
       uses: actions/cache/save@v4
       with:
         path: target/${{ inputs.target }}/${{ inputs.profile && format('{0}/', inputs.profile) }}
