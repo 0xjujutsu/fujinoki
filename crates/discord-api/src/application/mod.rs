@@ -12,7 +12,8 @@ use crate::{
     user::User,
 };
 
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[turbo_tasks::value(shared, serialization = "custom")]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 #[non_exhaustive]
 pub struct PartialApplication {
     /// the id of the app

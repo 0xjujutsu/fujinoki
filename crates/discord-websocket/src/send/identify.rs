@@ -2,9 +2,14 @@
 use std::sync::Arc;
 
 use anyhow::{anyhow, Result};
-use discord_api::gateway::{OpCode, Payload};
+use discord_api::gateway::{
+    opcode::OpCode,
+    payload::{
+        send::{ConnectionProperties, IdentifyPayloadData},
+        Payload,
+    },
+};
 use futures::SinkExt;
-use serde_json::json;
 use tokio_tungstenite::tungstenite::Message;
 use turbopack_binding::{
     turbo::tasks::{run_once_with_reason, TurboTasksApi, Vc},
@@ -32,7 +37,6 @@ pub async fn identify(
             .try_lock()
             .expect("failed to lock `write` stream");
 
-        // TODO(kijv) instead of taking fujinoki config, take in client config (intents, token, etc.)
         let token = ctx.config.client().token();
 
         handle_issues(
@@ -48,15 +52,22 @@ pub async fn identify(
 
         let payload = Payload {
             op: OpCode::Identify,
-            d: Some(json!({
-                "token": token.await?,
-                "intents": intents.await?,
-                "properties": {
-                    "os": std::env::consts::OS,
-                    "browser": "fujinoki",
-                    "device": "fujinoki"
+            d: Some(
+                IdentifyPayloadData {
+                    token: token.await?,
+                    properties: ConnectionProperties {
+                        os: std::env::consts::OS.to_string(),
+                        browser: "fujinoki".to_string(),
+                        device: "fujinoki".to_string(),
+                    },
+                    intents: intents.await?,
+                    compress: None,
+                    large_threshold: None,
+                    shard: None,
                 }
-            })),
+                .into()
+                .into(),
+            ),
             s: None,
             t: None,
         };

@@ -1,4 +1,5 @@
-// TODO better generics for data that is passed around (ctx.config, ContentSource...)
+// TODO better generics for data that is passed around (ctx.config,
+// ContentSource...)
 use std::{collections::BTreeMap, sync::Arc};
 
 use anyhow::{Context, Result};
@@ -7,7 +8,7 @@ use discord_api::{
         Embed, EmbedAuthor, EmbedField, EmbedFooter, EmbedImage, EmbedProvider, EmbedThumbnail,
         EmbedType, EmbedVideo,
     },
-    gateway::{OpCodeName, Payload, ReadyEventPayload},
+    gateway::payload::{Payload, receive::ReadyPayloadData},
     id::InteractionId,
     interactions::{
         InteractionCallbackData, InteractionCallbackMessagesData, InteractionCallbackType,
@@ -19,7 +20,7 @@ use tokio::sync::Mutex;
 use turbopack_binding::{
     turbo::{
         tasks as turbo_tasks,
-        tasks::{run_once_with_reason, RcStr, ValueToString, Vc},
+        tasks::{run_once_with_reason, RcStr, Vc},
         tasks_bytes::stream::SingleValue,
         tasks_fs::{json::parse_json_with_source_context, FileSystemPath},
     },
@@ -36,9 +37,7 @@ use turbopack_binding::{
 
 use super::{external::lilybird, issue::RuntimeIssue};
 use crate::{
-    invalidation::WebsocketMessageSideEffects,
-    util::CamelCaseJson,
-    context::WebsocketContext
+    context::WebsocketContext, invalidation::WebsocketMessageSideEffects
 };
 
 // TODO break each event into its own function if possible
@@ -67,7 +66,7 @@ pub async fn dispatch(
     )
     .await?;
 
-    let mut data = json.clone().d.expect("failed to retrieve dispatch data");
+    let mut data: JsonValue = json.clone().d.into().expect("failed to retrieve dispatch data");
     let data = data.as_object_mut().unwrap();
 
     let event_name: RcStr = json.clone().t.unwrap().into();
@@ -97,6 +96,8 @@ pub async fn dispatch(
                 .resume_gateway_url
                 .try_lock()
                 .expect("failed to lock `resume_gateway_url`");
+
+            let ready_payload_data: ReadyPayloadData = serde_json::from_value(data.clone())?;
 
             *session_id = Some(data["session_id"].as_str().unwrap().to_string());
             *resume_gateway_url = Some(data["resume_gateway_url"].as_str().unwrap().to_string());
@@ -131,10 +132,6 @@ pub async fn dispatch(
             //     )
             //     .await?;
             // }
-
-            let client_data = ReadyEventPayload {
-                client: JsonValue::Object(client_data.camel_case_json()),
-            };
 
             *clean_client_data = Some(client_data.client.clone());
             drop(clean_client_data);
