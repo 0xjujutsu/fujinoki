@@ -70,7 +70,6 @@ jobs:
           fi
 
       - run: corepack enable && pnpm --version
-      - run: pnpm install
 
       - id: get-store-path
         run: |
@@ -86,6 +85,8 @@ jobs:
           restore-keys: |
             pnpm-store-
             pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
+
+      - run: pnpm install
 
   stage:
     name: Stage and bump version
@@ -111,6 +112,20 @@ jobs:
           shared-key: xtask-${{ hashFiles('xtask/**/*') }}
 
       - run: corepack enable && pnpm --version
+
+      - id: get-store-path
+        run: echo STORE_PATH=$(pnpm store path) >> $GITHUB_OUTPUT
+
+      - uses: actions/cache@v4
+        timeout-minutes: 5
+        id: cache-pnpm-store
+        with:
+          path: ${{ steps.get-store-path.outputs.STORE_PATH }}
+          key: pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            pnpm-store-
+            pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
+
       - run: pnpm install
 
       - run: |
@@ -217,7 +232,6 @@ jobs:
   npm-publish:
     name: Publish to NPM
     needs: [build-fujinoki, build-discord-api]
-    if: ${{ github.event.inputs.package == 'fujinoki' }}
     runs-on: ubuntu-latest
     steps:
       - name: Setup node
@@ -237,7 +251,6 @@ jobs:
           shared-key: xtask-${{ hashFiles('xtask/**/*') }}
 
       - run: corepack enable && pnpm --version
-      - run: pnpm install
 
       - id: get-store-path
         run: echo STORE_PATH=$(pnpm store path) >> $GITHUB_OUTPUT
@@ -252,15 +265,29 @@ jobs:
             pnpm-store-
             pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
 
+      - run: pnpm install
+
       - name: Download Rust artifacts
         uses: actions/download-artifact@v3
         with:
           path: artifacts
 
-      - name: Publish
-        if: ${{ !inputs.dryRun }}
+      # xtask/src/publish/mod.rs:58
+      - id: get-crate-name
         run: |
-          echo "Publishing ${{ github.event.inputs.package }}"
+          if [ "${{ github.event.inputs.package }}" = "fujinoki" ]; then
+            echo "CRATE_NAME=fujinoki-cli" >> $GITHUB_OUTPUT
+          else
+            echo "CRATE_NAME=discord-api-napi" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Publish
+        run: |
+          if [ "${{ inputs.dryRun }}" = "false" ]; then
+            cargo xtask npm ${{ steps.get-crate-name.outputs.CRATE_NAME }}
+          else
+            cargo xtask npm --dry-run ${{ steps.get-crate-name.outputs.CRATE_NAME }}
+          fi
 
       # Upload published artifacts in case they are needed for debugging later
       - name: Upload Artifacts
