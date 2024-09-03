@@ -44,7 +44,7 @@ jobs:
         with:
           PATTERNS: |
             package.json
-            Cargo.**
+            Cargo.toml
 
     outputs:
       lockfile-deps: ${{ steps.lockfile-deps.outputs.diff != '' }}
