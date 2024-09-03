@@ -1,16 +1,7 @@
-use std::{
-    convert::{TryFrom, TryInto},
-    time::Duration,
-};
+use std::convert::{TryFrom, TryInto};
 
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use serde_json::Value as JsonValue;
-use turbopack_binding::turbo::{
-    tasks as turbo_tasks,
-    tasks::{RcStr, TaskInput},
-};
-
-use crate::{application::PartialApplication, guild::UnavailableGuild, user::User};
+use turbopack_binding::turbo::{tasks as turbo_tasks, tasks::TaskInput};
 
 #[turbo_tasks::value(shared, serialization = "custom", eq = "manual")]
 #[derive(Clone, Copy, Debug, PartialEq, PartialOrd, Eq, Ord, Hash, TaskInput)]
@@ -129,64 +120,4 @@ impl TryFrom<u8> for OpCode {
             _ => Err(()),
         }
     }
-}
-
-#[turbo_tasks::value(shared, serialization = "custom")]
-#[derive(Clone, Debug, Serialize, Deserialize, Hash)]
-pub struct Payload {
-    pub op: OpCode,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub d: Option<JsonValue>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub s: Option<u16>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub t: Option<RcStr>,
-}
-
-pub trait PayloadToString {
-    fn to_string(&self) -> String;
-}
-
-impl PayloadToString for Payload {
-    fn to_string(&self) -> String {
-        serde_json::to_string(self).unwrap()
-    }
-}
-
-// TODO Do rest of these
-pub enum DispatchPayload {
-    Ready(ReadyEventPayload),
-}
-
-#[derive(Deserialize, Serialize, Debug, Clone)]
-pub struct ReadyEventPayload {
-    // TODO: add client struct to client.rs
-    pub client: JsonValue,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct ReadyEvent {
-    /// API version
-    v: u8,
-    /// Information about the user including email
-    user: User,
-    /// Guilds the user is in
-    guilds: Vec<UnavailableGuild>,
-    /// Used for resuming connections
-    session_id: String,
-    /// Gateway URL for resuming connections
-    resume_gateway_url: String,
-    /// Shard information associated with this session, if sent when identifying
-    shard: (i8, i8),
-    /// Contains id and flags
-    application: PartialApplication,
-}
-
-pub struct HelloPayload {
-    pub op: u32,
-    pub d: HelloPayloadData,
-}
-
-pub struct HelloPayloadData {
-    pub heartbeat_interval: Duration,
 }

@@ -1,6 +1,6 @@
 use std::fmt::{Display, Formatter};
 
-use discord_api::gateway::{OpCode, OpCodeName};
+use discord_api::gateway::opcode::{OpCode, OpCodeName};
 use indexmap::IndexSet;
 use turbopack_binding::turbo::tasks::{
     util::StaticOrArc, InvalidationReason, InvalidationReasonKind,

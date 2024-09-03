@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use anyhow::{anyhow, Result};
-use discord_api::gateway::OpCode;
+use discord_api::gateway::opcode::OpCode;
 use futures::SinkExt;
 use serde_json::json;
 use tokio::time::Instant;
