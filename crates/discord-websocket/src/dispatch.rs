@@ -1,3 +1,4 @@
+// TODO better generics for data that is passed around (ctx.config, ContentSource...)
 use std::{collections::BTreeMap, sync::Arc};
 
 use anyhow::{Context, Result};
@@ -36,9 +37,8 @@ use turbopack_binding::{
 use super::{external::lilybird, issue::RuntimeIssue};
 use crate::{
     invalidation::WebsocketMessageSideEffects,
-    source::{ContentSource, ContentSourceData},
     util::CamelCaseJson,
-    WebsocketContext,
+    context::WebsocketContext
 };
 
 // TODO break each event into its own function if possible

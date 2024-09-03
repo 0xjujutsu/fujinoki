@@ -1,3 +1,4 @@
+// TODO better generics for data that is passed around (application command data, etc.)
 use anyhow::{Context, Result};
 use discord_api::id::ApplicationId;
 use fujinoki_core::{

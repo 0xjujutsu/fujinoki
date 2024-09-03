@@ -1,3 +1,4 @@
+// TODO better generics for data that is passed around (ctx.config)
 use std::sync::Arc;
 
 use anyhow::{anyhow, Result};
@@ -10,7 +11,7 @@ use turbopack_binding::{
     turbopack::core::issue::{handle_issues, IssueReporter, IssueSeverity},
 };
 
-use crate::{invalidation::WebsocketMessage, WebsocketContext};
+use crate::{context::WebsocketContext, invalidation::WebsocketMessage};
 
 pub async fn identify(
     tt: Arc<dyn TurboTasksApi>,
@@ -30,6 +31,8 @@ pub async fn identify(
             .write
             .try_lock()
             .expect("failed to lock `write` stream");
+
+        // TODO(kijv) instead of taking fujinoki config, take in client config (intents, token, etc.)
         let token = ctx.config.client().token();
 
         handle_issues(
