@@ -11,6 +11,7 @@ permissions:
 
 jobs:
   label:
+    if: ${{ !startsWith(github.event.pull_request.title, '[Graphite MQ]') }}
     name: Label
     runs-on: ubuntu-latest
     steps:

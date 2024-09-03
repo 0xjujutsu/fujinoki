@@ -16,6 +16,7 @@ permissions:
 
 jobs:
   optimize_ci:
+    if: ${{ !startsWith(github.event.pull_request.title, '[Graphite MQ]') }}
     name: Optimize CI
     runs-on: ubuntu-latest
     outputs:
