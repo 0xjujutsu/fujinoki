@@ -9,7 +9,7 @@ use fujinoki_node::transforms::exports::ExportsContext;
 use serde_json::{json, Value as JsonValue};
 use turbopack_binding::{
     turbo::{
-        tasks::{self as turbo_tasks, Completion, ValueToString, Vc},
+        tasks::{self as turbo_tasks, Completion, Vc},
         tasks_bytes::stream::SingleValue,
         tasks_fs::json::parse_json_with_source_context,
     },

@@ -1,4 +1,3 @@
-// TODO better generics for data that is passed around (ctx.config)
 use std::sync::Arc;
 
 use anyhow::{anyhow, Result};
@@ -6,21 +5,21 @@ use discord_api::gateway::{
     opcode::OpCode,
     payload::{
         send::{ConnectionProperties, IdentifyPayloadData},
-        Payload,
+        Payload, PayloadData, SendEvents,
     },
 };
 use futures::SinkExt;
 use tokio_tungstenite::tungstenite::Message;
-use turbopack_binding::{
-    turbo::tasks::{run_once_with_reason, TurboTasksApi, Vc},
-    turbopack::core::issue::{handle_issues, IssueReporter, IssueSeverity},
+use turbopack_binding::turbo::tasks::{
+    run_once_with_reason, TurboTasksApi, Vc,
 };
 
 use crate::{context::WebsocketContext, invalidation::WebsocketMessage};
 
 pub async fn identify(
+    // TODO make identify payload_data (IdentifyPayloadData) partial
+    payload_data: Vc<IdentifyPayloadData>,
     tt: Arc<dyn TurboTasksApi>,
-    get_issue_reporter: Arc<dyn Fn() -> Vc<Box<dyn IssueReporter>> + Send + Sync>,
     ctx: WebsocketContext,
 ) -> Result<()> {
     let reason = WebsocketMessage {
@@ -30,44 +29,25 @@ pub async fn identify(
     };
 
     run_once_with_reason(tt.clone(), reason, async move {
-        let issue_reporter = get_issue_reporter();
         let mut write = ctx
             .api
             .write
             .try_lock()
             .expect("failed to lock `write` stream");
 
-        let token = ctx.config.client().token();
-
-        handle_issues(
-            token,
-            issue_reporter,
-            IssueSeverity::Fatal.cell(),
-            None,
-            Some("get config token"),
-        )
-        .await?;
-
-        let intents = ctx.config.client().intents();
+        let partial_payload_data = payload_data.await?.clone_value();
 
         let payload = Payload {
             op: OpCode::Identify,
-            d: Some(
-                IdentifyPayloadData {
-                    token: token.await?,
-                    properties: ConnectionProperties {
-                        os: std::env::consts::OS.to_string(),
-                        browser: "fujinoki".to_string(),
-                        device: "fujinoki".to_string(),
-                    },
-                    intents: intents.await?,
-                    compress: None,
-                    large_threshold: None,
-                    shard: None,
-                }
-                .into()
-                .into(),
-            ),
+            d: PayloadData::from(SendEvents::from(IdentifyPayloadData {
+                properties: ConnectionProperties {
+                    os: std::env::consts::OS.to_string(),
+                    browser: "fujinoki".to_string(),
+                    device: "fujinoki".to_string(),
+                },
+                ..partial_payload_data
+            }))
+            .into(),
             s: None,
             t: None,
         };

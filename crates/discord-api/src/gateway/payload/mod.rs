@@ -39,6 +39,17 @@ pub enum PayloadData {
     Send(SendEvents),
 }
 
+impl TryFrom<PayloadData> for JsonValue {
+    type Error = ();
+
+    fn try_from(value: PayloadData) -> Result<Self, Self::Error> {
+        match value {
+            PayloadData::Json(value) => Ok(value),
+            _ => Err(()),
+        }
+    }
+}
+
 impl From<JsonValue> for PayloadData {
     fn from(value: JsonValue) -> Self {
         PayloadData::Json(value)
@@ -65,6 +76,17 @@ pub enum ReceiveEvents {
     Ready(ReadyPayloadData),
 }
 
+impl TryFrom<PayloadData> for ReceiveEvents {
+    type Error = ();
+
+    fn try_from(value: PayloadData) -> Result<Self, Self::Error> {
+        match value {
+            PayloadData::Receive(event) => Ok(event),
+            _ => Err(()),
+        }
+    }
+}
+
 impl From<HelloPayloadData> for ReceiveEvents {
     fn from(value: HelloPayloadData) -> Self {
         ReceiveEvents::Hello(value)
@@ -81,6 +103,17 @@ impl From<ReadyPayloadData> for ReceiveEvents {
 #[serde(untagged)]
 pub enum SendEvents {
     Identify(IdentifyPayloadData),
+}
+
+impl TryFrom<PayloadData> for SendEvents {
+    type Error = ();
+
+    fn try_from(value: PayloadData) -> Result<Self, Self::Error> {
+        match value {
+            PayloadData::Send(event) => Ok(event),
+            _ => Err(()),
+        }
+    }
 }
 
 impl From<IdentifyPayloadData> for SendEvents {
