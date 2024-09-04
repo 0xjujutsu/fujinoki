@@ -949,9 +949,9 @@ checksum = "37b2a672a2cb129a2e41c10b1224bb368f9f37a2b16b612598138befd7b37eb5"
 
 [[package]]
 name = "cc"
-version = "1.1.15"
+version = "1.1.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "57b6a275aa2903740dc87da01c62040406b8812552e97129a63ea8850a17c6e6"
+checksum = "e9d013ecb737093c0e86b151a7b837993cf9ec6c502946cfb44bedc392421e0b"
 dependencies = [
  "jobserver",
  "libc",
@@ -1095,9 +1095,9 @@ dependencies = [
 
 [[package]]
 name = "clap"
-version = "4.5.16"
+version = "4.5.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ed6719fffa43d0d87e5fd8caeab59be1554fb028cd30edc88fc4369b17971019"
+checksum = "3e5a21b8495e732f1b3c364c9949b201ca7bae518c502c80256c96ad79eaf6ac"
 dependencies = [
  "clap_builder",
  "clap_derive",
@@ -1105,9 +1105,9 @@ dependencies = [
 
 [[package]]
 name = "clap_builder"
-version = "4.5.15"
+version = "4.5.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "216aec2b177652e3846684cbfe25c9964d18ec45234f0f5da5157b207ed1aab6"
+checksum = "8cf2dd12af7a047ad9d6da2b6b249759a22a7abc0f474c1dae1777afa4b21a73"
 dependencies = [
  "anstream",
  "anstyle",
@@ -2400,7 +2400,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "camino",
- "clap 4.5.16",
+ "clap 4.5.17",
  "console",
  "console-subscriber",
  "const_format",
@@ -2440,7 +2440,7 @@ name = "fujinoki-cli-utils"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "clap 4.5.16",
+ "clap 4.5.17",
  "crossterm 0.26.1",
  "owo-colors 3.5.0",
  "serde",
@@ -3858,12 +3858,12 @@ dependencies = [
 
 [[package]]
 name = "mdxjs"
-version = "0.2.8"
+version = "0.2.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f7020bbd1c63e66cdbaca4937f534ff3a556a85fa2a42bf5d8df009f4281b6ac"
+checksum = "ec5cf50756dfb3eaf8f72979c94a3c2e281f3ba6e35280fa4b73eaac2cd23b6f"
 dependencies = [
  "markdown",
- "swc_core 0.102.2",
+ "swc_core 0.103.1",
 ]
 
 [[package]]
@@ -4189,7 +4189,7 @@ version = "0.1.0"
 source = "git+https://github.com/kijv/next.js.git?rev=d220bd22836c6741fa5a3392c8b07f76388f449e#d220bd22836c6741fa5a3392c8b07f76388f449e"
 dependencies = [
  "anyhow",
- "clap 4.5.16",
+ "clap 4.5.17",
  "serde",
  "serde_json",
  "tokio",
@@ -5070,9 +5070,9 @@ dependencies = [
 
 [[package]]
 name = "psm"
-version = "0.1.22"
+version = "0.1.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3b1f9bf148c15500d44581654fb9260bc9d82970f3ef777a79a40534f6aa784f"
+checksum = "aa37f80ca58604976033fae9515a8a2989fc13797d953f7c04fb8fa36a11f205"
 dependencies = [
  "cc",
 ]
@@ -6543,9 +6543,9 @@ dependencies = [
 
 [[package]]
 name = "swc_core"
-version = "0.102.2"
+version = "0.103.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5449b5ad145a9457c7ae21b6d4bcb8db52e430c2e68e86fda849db2f5f53f734"
+checksum = "2b522497b5185baff8c02c0b5b40e7eb7f3e44bf8213b01b00d6816a09a5d35a"
 dependencies = [
  "swc_allocator",
  "swc_atoms",
@@ -6553,7 +6553,7 @@ dependencies = [
  "swc_ecma_ast",
  "swc_ecma_codegen",
  "swc_ecma_parser",
- "swc_ecma_transforms_base 0.145.0",
+ "swc_ecma_transforms_base 0.146.0",
  "swc_ecma_visit",
  "vergen 9.0.0",
 ]
@@ -7185,29 +7185,6 @@ dependencies = [
  "once_cell",
  "phf 0.11.2",
  "rayon",
- "rustc-hash 1.1.0",
- "serde",
- "smallvec",
- "swc_atoms",
- "swc_common",
- "swc_ecma_ast",
- "swc_ecma_parser",
- "swc_ecma_utils",
- "swc_ecma_visit",
- "tracing",
-]
-
-[[package]]
-name = "swc_ecma_transforms_base"
-version = "0.145.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "65f21494e75d0bd8ef42010b47cabab9caaed8f2207570e809f6f4eb51a710d1"
-dependencies = [
- "better_scoped_tls",
- "bitflags 2.6.0",
- "indexmap 2.5.0",
- "once_cell",
- "phf 0.11.2",
  "rustc-hash 1.1.0",
  "serde",
  "smallvec",
@@ -8819,7 +8796,7 @@ version = "0.1.0"
 source = "git+https://github.com/kijv/next.js.git?rev=d220bd22836c6741fa5a3392c8b07f76388f449e#d220bd22836c6741fa5a3392c8b07f76388f449e"
 dependencies = [
  "anyhow",
- "clap 4.5.16",
+ "clap 4.5.17",
  "crossterm 0.26.1",
  "owo-colors 3.5.0",
  "serde",
@@ -8865,7 +8842,7 @@ version = "0.1.0"
 source = "git+https://github.com/kijv/next.js.git?rev=d220bd22836c6741fa5a3392c8b07f76388f449e#d220bd22836c6741fa5a3392c8b07f76388f449e"
 dependencies = [
  "anyhow",
- "clap 4.5.16",
+ "clap 4.5.17",
  "indoc",
  "pathdiff",
  "serde_json",
@@ -10300,9 +10277,9 @@ dependencies = [
 
 [[package]]
 name = "webc"
-version = "6.0.0-rc2"
+version = "6.0.0-rc3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fb3e2ccb43d303c5bd48f31db7a129481a9aaa5343d623f92951751df190df81"
+checksum = "b85ffb11d1fabf0ebfc458a3d1d34ccf6d4d9596ca7576370cae4eab554c63d1"
 dependencies = [
  "anyhow",
  "base64 0.22.1",
@@ -10673,7 +10650,7 @@ dependencies = [
  "anyhow",
  "cargo-lock",
  "chrono",
- "clap 4.5.16",
+ "clap 4.5.17",
  "glob",
  "indexmap 1.9.3",
  "inquire",
