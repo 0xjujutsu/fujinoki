@@ -3,7 +3,7 @@
 pub mod commands;
 pub mod context;
 mod external;
-mod invalidation;
+pub mod invalidation;
 pub mod issue;
 pub mod send;
 pub mod receive;

@@ -83,3 +83,15 @@ pub enum PresenceStatus {
     #[serde(rename = "offline")]
     Offline,
 }
+
+impl Into<String> for PresenceStatus {
+    fn into(self) -> String {
+        match self {
+            PresenceStatus::Online => "online".to_string(),
+            PresenceStatus::DoNotDisturb => "dnd".to_string(),
+            PresenceStatus::Idle => "idle".to_string(),
+            PresenceStatus::Invisible => "invisible".to_string(),
+            PresenceStatus::Offline => "offline".to_string(),
+        }
+    }
+}

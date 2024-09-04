@@ -1,7 +1,8 @@
 use std::{sync::Arc, time::Duration};
 
 use anyhow::{anyhow, Result};
-use discord_api::gateway::{OpCode, Payload};
+use discord_api::gateway::{opcode::OpCode, payload::Payload};
+use discord_websocket::invalidation::WebsocketMessage;
 use futures::{SinkExt, StreamExt};
 use serde_json::json;
 use tokio_tungstenite::tungstenite::{protocol::CloseFrame, Message};
@@ -16,8 +17,6 @@ use url::Url;
 use super::WebsocketContext;
 use crate::{
     connect_to_gateway,
-    discord::{self, dispatch},
-    invalidation::WebsocketMessage,
     issue::WebsocketIssue,
     source::ContentSourceSideEffect,
     SourceProvider,
@@ -79,158 +78,153 @@ impl WebsocketEvents {
         };
 
         run_once_with_reason(tt.clone(), reason, async move {
-            let raw_data = data.clone();
-            let data = data
-                .as_ref()
-                .unwrap_or(&empty_obj)
-                .as_object()
-                .unwrap_or(&empty_obj.as_object().unwrap());
             let data = data.clone();
 
-            match json.op {
-                OpCode::Dispatch => {
-                    if json.t.is_some() {
-                        let result = dispatch(
-                            json.cell(),
-                            source_provider.get_source(),
-                            get_issue_reporter(),
-                            ctx.cell(),
-                        );
+            // match json.op {
+            //     OpCode::Dispatch => {
+            //         if json.t.is_some() {
+            //             // TODO
+            //             // let result = discord_websocket::receive::dispatch(
+            //             //     json.cell(),
+            //             //     source_provider.get_source(),
+            //             //     get_issue_reporter(),
+            //             //     ctx.cell(),
+            //             // );
 
-                        // TODO make actual side effects
-                        let _se: AutoSet<Vc<Box<dyn ContentSourceSideEffect>>> =
-                            result.peek_collectibles();
+            //             // TODO make actual side effects
+            //             // let _se: AutoSet<Vc<Box<dyn ContentSourceSideEffect>>> =
+            //             //     result.peek_collectibles();
 
-                        handle_issues(
-                            result,
-                            get_issue_reporter(),
-                            IssueSeverity::Fatal.cell(),
-                            None,
-                            Some("DISPATCH"),
-                        )
-                        .await?;
-                    }
-                }
-                // TODO redo (match djs?)
-                OpCode::Reconnect => {
-                    let resume_gateway_url = ctx
-                        .resume_gateway_url
-                        .try_lock()
-                        .expect("failed to lock `resume_gateway_url`");
-                    let session_id = ctx
-                        .session_id
-                        .try_lock()
-                        .expect("failed to lock `session_id`");
-                    let sequence = ctx.sequence.try_lock().expect("failed to lock `sequence`");
+            //             // handle_issues(
+            //             //     result,
+            //             //     get_issue_reporter(),
+            //             //     IssueSeverity::Fatal.cell(),
+            //             //     None,
+            //             //     Some("DISPATCH"),
+            //             // )
+            //             // .await?;
+            //         }
+            //     }
+            //     // TODO redo (match djs?)
+            //     OpCode::Reconnect => {
+            //         let resume_gateway_url = ctx
+            //             .resume_gateway_url
+            //             .try_lock()
+            //             .expect("failed to lock `resume_gateway_url`");
+            //         let session_id = ctx
+            //             .session_id
+            //             .try_lock()
+            //             .expect("failed to lock `session_id`");
+            //         let sequence = ctx.sequence.try_lock().expect("failed to lock `sequence`");
 
-                    let payload = json!({
-                        "op": OpCode::Resume,
-                        "d": {
-                            "token": ctx.config.client().token().await?,
-                            "session_id": *session_id,
-                            "seq": *sequence
-                        }
-                    });
+            //         let payload = json!({
+            //             "op": OpCode::Resume,
+            //             "d": {
+            //                 "token": ctx.config.client().token().await?,
+            //                 "session_id": *session_id,
+            //                 "seq": *sequence
+            //             }
+            //         });
 
-                    let (new_write, new_read) =
-                        connect_to_gateway(resume_gateway_url.clone(), discord_api::VERSION)
-                            .await?
-                            .split();
+            //         let (new_write, new_read) =
+            //             connect_to_gateway(resume_gateway_url.clone(), discord_api::VERSION)
+            //                 .await?
+            //                 .split();
 
-                    let mut write = ctx
-                        .api
-                        .write
-                        .try_lock()
-                        .expect("failed to lock `write` stream");
-                    let mut read = ctx
-                        .api
-                        .read
-                        .try_lock()
-                        .expect("failed to lock `read` stream");
-                    *write = new_write;
-                    *read = new_read;
+            //         let mut write = ctx
+            //             .api
+            //             .write
+            //             .try_lock()
+            //             .expect("failed to lock `write` stream");
+            //         let mut read = ctx
+            //             .api
+            //             .read
+            //             .try_lock()
+            //             .expect("failed to lock `read` stream");
+            //         *write = new_write;
+            //         *read = new_read;
 
-                    write.send(Message::Text(payload.to_string())).await?;
-                }
-                // TODO redo (match djs?)
-                OpCode::InvalidSession => {
-                    let should_reconnect = raw_data
-                        .unwrap_or(serde_json::to_value(false).unwrap())
-                        .as_bool()
-                        .unwrap_or(false);
+            //         write.send(Message::Text(payload.to_string())).await?;
+            //     }
+            //     // TODO redo (match djs?)
+            //     OpCode::InvalidSession => {
+            //         let should_reconnect = raw_data
+            //             .unwrap_or(serde_json::to_value(false).unwrap())
+            //             .as_bool()
+            //             .unwrap_or(false);
 
-                    if should_reconnect {
-                        let resume_gateway_url = ctx
-                            .resume_gateway_url
-                            .try_lock()
-                            .expect("failed to lock `resume_gateway_url`");
-                        let session_id = ctx
-                            .session_id
-                            .try_lock()
-                            .expect("failed to lock `session_id`");
-                        let sequence = ctx.sequence.try_lock().expect("failed to lock `sequence`");
+            //         if should_reconnect {
+            //             let resume_gateway_url = ctx
+            //                 .resume_gateway_url
+            //                 .try_lock()
+            //                 .expect("failed to lock `resume_gateway_url`");
+            //             let session_id = ctx
+            //                 .session_id
+            //                 .try_lock()
+            //                 .expect("failed to lock `session_id`");
+            //             let sequence = ctx.sequence.try_lock().expect("failed to lock `sequence`");
 
-                        let payload = json!({
-                            "op": OpCode::Resume,
-                            "d": {
-                                "token": ctx.config.client().token().await?,
-                                "session_id": *session_id,
-                                "seq": *sequence
-                            }
-                        });
+            //             let payload = json!({
+            //                 "op": OpCode::Resume,
+            //                 "d": {
+            //                     "token": ctx.config.client().token().await?,
+            //                     "session_id": *session_id,
+            //                     "seq": *sequence
+            //                 }
+            //             });
 
-                        let url = Url::parse(&*resume_gateway_url.clone().unwrap()).unwrap();
-                        let (new_write, new_read) =
-                            connect_to_gateway(Some(url.to_string()), discord_api::VERSION)
-                                .await?
-                                .split();
+            //             let url = Url::parse(&*resume_gateway_url.clone().unwrap()).unwrap();
+            //             let (new_write, new_read) =
+            //                 connect_to_gateway(Some(url.to_string()), discord_api::VERSION)
+            //                     .await?
+            //                     .split();
 
-                        let mut write = ctx
-                            .api
-                            .write
-                            .try_lock()
-                            .expect("failed to lock `write` stream");
-                        let mut read = ctx
-                            .api
-                            .read
-                            .try_lock()
-                            .expect("failed to lock `read` stream");
-                        *write = new_write;
-                        *read = new_read;
+            //             let mut write = ctx
+            //                 .api
+            //                 .write
+            //                 .try_lock()
+            //                 .expect("failed to lock `write` stream");
+            //             let mut read = ctx
+            //                 .api
+            //                 .read
+            //                 .try_lock()
+            //                 .expect("failed to lock `read` stream");
+            //             *write = new_write;
+            //             *read = new_read;
 
-                        write.send(Message::Text(payload.to_string())).await?;
-                    }
-                }
-                OpCode::Hello => {
-                    let heartbeat_interval = ctx.heartbeat_interval.clone();
-                    let mut heartbeat_interval = heartbeat_interval
-                        .try_lock()
-                        .expect("failed to lock `heartbeat_interval`");
+            //             write.send(Message::Text(payload.to_string())).await?;
+            //         }
+            //     }
+            //     OpCode::Hello => {
+            //         let heartbeat_interval = ctx.heartbeat_interval.clone();
+            //         let mut heartbeat_interval = heartbeat_interval
+            //             .try_lock()
+            //             .expect("failed to lock `heartbeat_interval`");
 
-                    *heartbeat_interval = data["heartbeat_interval"]
-                        .as_u64()
-                        .map(Duration::from_millis);
+            //         *heartbeat_interval = data["heartbeat_interval"]
+            //             .as_u64()
+            //             .map(Duration::from_millis);
 
-                    // so we can re-lock in the heartbeat function
-                    drop(heartbeat_interval);
+            //         // so we can re-lock in the heartbeat function
+            //         drop(heartbeat_interval);
 
-                    discord::heartbeat(ctx.clone(), true).await?;
-                }
-                OpCode::Heartbeat => {
-                    discord::heartbeat(ctx.clone(), true).await?;
-                }
-                OpCode::HeartbeatAck => {
-                    let heartbeat_ack = ctx.heartbeat_ack.clone();
-                    let mut heartbeat_ack = heartbeat_ack
-                        .try_lock()
-                        .expect("failed to lock `heartbeat_ack`");
+            //         discord::heartbeat(ctx.clone(), true).await?;
+            //     }
+            //     OpCode::Heartbeat => {
+            //         discord_websocket::send::heartbeat(ctx.clone(), true).await?;
+            //     }
+            //     OpCode::HeartbeatAck => {
+            //         let heartbeat_ack = ctx.heartbeat_ack.clone();
+            //         let mut heartbeat_ack = heartbeat_ack
+            //             .try_lock()
+            //             .expect("failed to lock `heartbeat_ack`");
 
-                    *heartbeat_ack = true;
-                }
-                _ => {
-                    dbg!(data);
-                }
-            }
+            //         *heartbeat_ack = true;
+            //     }
+            //     _ => {
+            //         dbg!(data);
+            //     }
+            // }
 
             Ok(())
         })

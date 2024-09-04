@@ -6,7 +6,7 @@ members = [
   "crates/discord*",
   "crates/turbopack*",
   "crates/turborepo*",
-  "xtask",
+  "xtask"
 ]
 
 [workspace.metadata.groups]

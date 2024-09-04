@@ -50,23 +50,24 @@ impl TryFrom<PayloadData> for JsonValue {
     }
 }
 
-impl From<JsonValue> for PayloadData {
-    fn from(value: JsonValue) -> Self {
-        PayloadData::Json(value)
+macro_rules! impl_from {
+    ($enum_type:ident, $($variant:ident, $payload:ident),+) => {
+        $(
+            impl From<$payload> for $enum_type {
+                fn from(value: $payload) -> Self {
+                    $enum_type::$variant(value)
+                }
+            }
+        )+
     }
 }
 
-impl From<ReceiveEvents> for PayloadData {
-    fn from(value: ReceiveEvents) -> Self {
-        PayloadData::Receive(value)
-    }
-}
-
-impl From<SendEvents> for PayloadData {
-    fn from(value: SendEvents) -> Self {
-        PayloadData::Send(value)
-    }
-}
+impl_from!(
+    PayloadData,
+    Json, JsonValue,
+    Receive, ReceiveEvents,
+    Send, SendEvents
+);
 
 #[turbo_tasks::value(shared, serialization = "custom")]
 #[derive(Deserialize, Serialize, Debug, Clone)]
@@ -87,22 +88,18 @@ impl TryFrom<PayloadData> for ReceiveEvents {
     }
 }
 
-impl From<HelloPayloadData> for ReceiveEvents {
-    fn from(value: HelloPayloadData) -> Self {
-        ReceiveEvents::Hello(value)
-    }
-}
+impl_from!(
+    ReceiveEvents,
+    Hello, HelloPayloadData,
+    Ready, ReadyPayloadData
+);
 
-impl From<ReadyPayloadData> for ReceiveEvents {
-    fn from(value: ReadyPayloadData) -> Self {
-        ReceiveEvents::Ready(value)
-    }
-}
 #[turbo_tasks::value(shared, serialization = "custom")]
 #[derive(Deserialize, Serialize, Debug, Clone)]
 #[serde(untagged)]
 pub enum SendEvents {
     Identify(IdentifyPayloadData),
+    UpdatePresence(UpdatePresencePayloadData),
 }
 
 impl TryFrom<PayloadData> for SendEvents {
@@ -116,8 +113,8 @@ impl TryFrom<PayloadData> for SendEvents {
     }
 }
 
-impl From<IdentifyPayloadData> for SendEvents {
-    fn from(value: IdentifyPayloadData) -> Self {
-        SendEvents::Identify(value)
-    }
-}
+impl_from!(
+    SendEvents,
+    Identify, IdentifyPayloadData,
+    UpdatePresence, UpdatePresencePayloadData
+);
