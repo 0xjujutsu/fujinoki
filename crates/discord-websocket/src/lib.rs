@@ -2,14 +2,12 @@
 
 pub mod commands;
 pub mod context;
-pub mod dispatch;
 mod external;
-mod invalidation;
+pub mod invalidation;
 pub mod issue;
 pub mod send;
+pub mod receive;
 mod util;
-
-pub use dispatch::dispatch;
 
 pub fn register() {
     discord_api::register();

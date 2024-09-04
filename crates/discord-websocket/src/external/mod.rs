@@ -5,6 +5,4 @@
 //! Even if libraries have the same format for their data and value types, it
 //! shouldn't matter because the library that it originates from is not
 //! important, the values will be interpreted the same
-// TODO move this to a different crate (discord-external-libs or
-// discord-libraries?)
 pub mod lilybird;

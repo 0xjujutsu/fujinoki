@@ -4,13 +4,16 @@
 use std::{collections::VecDeque, sync::Arc, time::Duration};
 
 use anyhow::{Context, Result};
-use discord_api::gateway::{OpCode, Payload, PayloadToString};
+use discord_api::gateway::{
+    opcode::OpCode,
+    payload::{send::{PresenceStatus, UpdatePresencePayloadData}, Payload, PayloadData, PayloadToString, SendEvents},
+};
 use fujinoki_core::config::FujinokiConfig;
 use futures::{
     stream::{SplitSink, SplitStream},
     SinkExt, StreamExt,
 };
-use serde_json::{json, Value as JsonValue};
+use serde_json::Value as JsonValue;
 use source::ContentSourceData;
 use tokio::{
     net::TcpStream,
@@ -39,7 +42,6 @@ use url::Url;
 use crate::{events::WebsocketEvents, issue::WebsocketIssue};
 
 mod events;
-pub mod invalidation;
 pub mod issue;
 pub mod source;
 mod util;
@@ -151,12 +153,12 @@ impl Websocket {
         // TODO rename `events` to `message_handler` (same with struct name)
         let events = WebsocketEvents::new(self.tt.clone(), ctx.clone(), get_issue_reporter);
 
-        discord_websocket::identify(
-            self.tt.clone(),
-            self.get_issue_reporter.clone(),
-            ctx.clone(),
-        )
-        .await?;
+        // discord_websocket::identify(
+        //     self.tt.clone(),
+        //     self.get_issue_reporter.clone(),
+        //     ctx.clone(),
+        // )
+        // .await?;
 
         // TODO move exit handler to separate function
         if let Some(exit_handler) = exit_handler {
@@ -166,11 +168,13 @@ impl Websocket {
                 let mut write = write.try_lock().expect("failed to lock `write` stream");
                 let payload = Payload {
                     op: OpCode::PresenceUpdate,
-                    d: Some(json!({
-                        "afk": false,
-                        "status": "invisible",
-                        "activities": []
-                    })),
+                    d: PayloadData::from(SendEvents::from(UpdatePresencePayloadData {
+                        afk: false,
+                        status: PresenceStatus::Invisible,
+                        activities: vec![],
+                        since: None,
+                    }))
+                    .into(),
                     s: None,
                     t: None,
                 };
@@ -223,7 +227,7 @@ impl Websocket {
                 drop(guard);
             }
 
-            discord_websocket::heartbeat(ctx.clone(), false).await?;
+            // discord_websocket::send::heartbeat(ctx.clone(), false).await?;
 
             let read = ctx.api.read.clone();
             let mut read = read.try_lock().expect("failed to lock `read` stream");

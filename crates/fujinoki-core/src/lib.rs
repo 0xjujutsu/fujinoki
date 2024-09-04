@@ -16,12 +16,15 @@ pub const NPM_PACKAGE: &'static str = "fujinoki";
 pub const DISPLAY_NAME: &'static str = "Fujinoki";
 
 pub fn get_version() -> &'static str {
-    include_str!("../../../version.txt")
-        .split_once('\n')
-        .expect("Failed to read version from version.txt")
-        .0
-        // On windows we still have a trailing \r
-        .trim_end()
+    let package_json = include_str!("../../../packages/fujinoki/package.json");
+
+    if let Some(version) = package_json.split("\"version\": \"").nth(1) {
+        if let Some(version) = version.split('\"').next() {
+            return version;
+        }
+    }
+
+    unreachable!()
 }
 
 pub const fn platform_name() -> &'static str {

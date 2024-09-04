@@ -13,11 +13,49 @@ permissions:
   contents: read
 
 jobs:
+  optimize_ci:
+    if: ${{ !startsWith(github.event.pull_request.title, '[Graphite MQ]') }}
+    name: Optimize CI
+    runs-on: ubuntu-latest
+    outputs:
+      skip: ${{ steps.check_skip.outputs.skip }}
+    steps:
+      - name: Optimize CI
+        id: check_skip
+        uses: withgraphite/graphite-ci-action@main
+        with:
+          graphite_token: ${{ secrets.GRAPHITE_TOKEN }}
+
+  determine_jobs:
+    name: Determine jobs to run
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    needs: optimize_ci
+    if: needs.optimize_ci.outputs.skip == 'false'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Lockfile dependent files
+        id: lockfile-deps
+        uses: technote-space/get-diff-action@v6
+        with:
+          PATTERNS: |
+            package.json
+            Cargo.**
+
+    outputs:
+      lockfile-deps: ${{ steps.lockfile-deps.outputs.diff != '' }}
+
   lockfiles:
     runs-on: ubuntu-latest
     permissions:
       contents: write
       pull-requests: write
+    needs: determine_jobs
+    if: needs.determine_jobs.outputs.lockfile-deps == 'true'
     steps:
       - name: Setup node
         uses: actions/setup-node@v4
