@@ -23,6 +23,7 @@ impl InvalidationReason for WebsocketMessage {
 impl Display for WebsocketMessage {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         if self.hide {
+            // dumb way to tell stats reporter to ignore this (unless they opt in)
             write!(f, "[hide] ").unwrap();
         }
 
